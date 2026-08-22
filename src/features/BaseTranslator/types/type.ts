@@ -8,6 +8,7 @@ export type UnitTranslation = {
 };
 
 export type UnitRevision = {
+  // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread: boolean;
   proofreadText?: string;
 };

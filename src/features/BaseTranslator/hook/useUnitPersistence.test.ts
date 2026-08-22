@@ -79,6 +79,95 @@ describe("unit save persistence", () => {
     expect(onReloadUnits).not.toHaveBeenCalled();
   });
 
+  test("clears translation and preserves proofreading status when text is removed", () => {
+    const baseline: UnitInfo[] = [{
+      ...localUnit,
+      id: "unit_1",
+      translatedText: "existing translation",
+      translatorId: "translator_1",
+      isProofread: true,
+      proofreadText: "existing revision",
+      proofreaderId: "proofreader_1",
+    }];
+    const current: UnitInfo[] = [{
+      ...baseline[0],
+      translatedText: undefined,
+      translatorId: undefined,
+      proofreadText: undefined,
+      proofreaderId: undefined,
+    }];
+
+    expect(buildUnitDiff(current, baseline)).toEqual({
+      ops: [{
+        edit: "patch",
+        id: "unit_1",
+        nextId: { type: "skip" },
+        translation: { type: "clear" },
+        revision: {
+          type: "assign",
+          value: { isProofread: true, proofreadText: undefined },
+        },
+      }],
+    });
+  });
+
+  test("updates proofreading status without changing revision text", () => {
+    const baseline: UnitInfo[] = [{
+      ...localUnit,
+      id: "unit_1",
+      isProofread: true,
+      proofreadText: "existing revision",
+    }];
+    const current: UnitInfo[] = [{ ...baseline[0], isProofread: false }];
+
+    expect(buildUnitDiff(current, baseline)).toEqual({
+      ops: [{
+        edit: "patch",
+        id: "unit_1",
+        nextId: { type: "skip" },
+        translation: { type: "skip" },
+        revision: {
+          type: "assign",
+          value: { isProofread: false, proofreadText: "existing revision" },
+        },
+      }],
+    });
+  });
+
+  test("saves removed translation text instead of treating it as clean", async () => {
+    const baseline: UnitInfo[] = [{
+      ...localUnit,
+      id: "unit_1",
+      translatedText: "existing translation",
+      translatorId: "translator_1",
+    }];
+    const current: UnitInfo[] = [{
+      ...baseline[0],
+      translatedText: undefined,
+      translatorId: undefined,
+    }];
+    const onSaveUnits = vi.fn();
+    const onReloadUnits = vi.fn(async () => current);
+
+    await persistDirtyUnits({
+      pageId: "page_1",
+      currentUnits: current,
+      baselineUnits: baseline,
+      onSaveUnits,
+      onReloadUnits,
+    });
+
+    expect(onSaveUnits).toHaveBeenCalledWith("page_1", {
+      ops: [{
+        edit: "patch",
+        id: "unit_1",
+        nextId: { type: "skip" },
+        translation: { type: "clear" },
+        revision: { type: "skip" },
+      }],
+    });
+  });
+
   test("normalizes indexes and expresses order through nextId edits", () => {
     const baseline = normalizeUnitIndexes([
       { ...localUnit, id: "unit_a", index: 10 },

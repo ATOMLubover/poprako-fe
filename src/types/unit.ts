@@ -18,6 +18,7 @@ export type UnitInfo = {
   translatorId?: string;
   translatorCommnet?: string;
 
+  // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread: boolean;
   proofreadText?: string;
   proofreaderId?: string;
@@ -31,6 +32,7 @@ export type UnitEdit = {
   translatedText?: string;
   translatorId?: string;
   translatorCommnet?: string;
+  // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread?: boolean;
   proofreadText?: string;
   proofreaderId?: string;
@@ -204,7 +206,7 @@ export function modifyUnitProofreadText(
 ) {
   return {
     ...unit,
-    isProofread: proofreadText != null && proofreadText != "",
+    // proofreadText 与 isProofread 完全独立：修改或清空文本不得改变校对状态。
     proofreadText: proofreadText ?? undefined,
     // 当 proofreadText 为空时，无论是否提供 proofreaderId 都不应该保留 proofreaderId
     proofreaderId: proofreadText ? (proofreaderId ?? undefined) : undefined,
@@ -214,6 +216,7 @@ export function modifyUnitProofreadText(
 export function modifyUnitIsProofread(unit: UnitInfo, isProofread: boolean) {
   return {
     ...unit,
+    // isProofread 与 proofreadText 完全独立：切换状态不得改变校对文本。
     isProofread: isProofread,
   };
 }
@@ -285,6 +288,7 @@ export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
     "proofreadText" in updates || "proofreaderId" in updates;
 
   if (hasProofreadContentUpdate) {
+    // 校对文本更新不得影响 isProofread；状态只由下方的 isProofread 更新处理。
     nextUnit = modifyUnitProofreadText(
       nextUnit,
       "proofreadText" in updates
@@ -297,6 +301,7 @@ export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
   }
 
   if ("isProofread" in updates && !hasProofreadContentUpdate) {
+    // 校对状态更新不得影响 proofreadText。
     nextUnit = modifyUnitIsProofread(
       nextUnit,
       updates.isProofread ?? unitIsProofread(nextUnit),
@@ -340,9 +345,11 @@ export function createUnitPatch(
     patch.translatorCommnet = unitTranslatorComment(current);
   }
   if (unitIsProofread(current) !== unitIsProofread(baseline)) {
+    // 校对状态与文本独立，分别生成 patch。
     patch.isProofread = unitIsProofread(current);
   }
   if (unitProofreadText(current) !== unitProofreadText(baseline)) {
+    // 校对文本与状态独立，分别生成 patch。
     patch.proofreadText = unitProofreadText(current);
   }
   if (current.proofreaderId !== baseline.proofreaderId) {
@@ -402,6 +409,7 @@ export type UnitPatch = {
   translatorId?: string | null;
   translatorCommnet?: string | null;
 
+  // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread?: boolean;
   proofreadText?: string | null;
   proofreaderId?: string | null;

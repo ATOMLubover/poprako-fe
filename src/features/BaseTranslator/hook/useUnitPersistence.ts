@@ -43,6 +43,7 @@ function buildUnitTranslation(unit: UnitInfo) {
 
 function buildUnitRevision(unit: UnitInfo) {
   const proofreadText = normalizedText(unit.proofreadText);
+  // 新建 unit 未设置校对状态且没有文本时可省略 revision；这不是两者的耦合。
   if (!unit.isProofread && proofreadText === null) return undefined;
 
   return {
@@ -101,15 +102,19 @@ function buildPatchUnitOp(
 
   if (normalizedText(unit.translatedText) !== normalizedText(baseline.translatedText)) {
     const translation = buildUnitTranslation(unit);
-    edit.translation = translation ? assignPatch(translation) : skipPatch();
+    edit.translation = translation ? assignPatch(translation) : clearPatch();
   }
 
   if (
     unit.isProofread !== baseline.isProofread
     || normalizedText(unit.proofreadText) !== normalizedText(baseline.proofreadText)
   ) {
-    const revision = buildUnitRevision(unit);
-    edit.revision = revision ? assignPatch(revision) : skipPatch();
+    // 协议将状态与文本放在同一 revision payload，但二者完全独立。
+    // 任一值变化时必须保留另一值，绝不能从文本推导状态或反之。
+    edit.revision = assignPatch({
+      isProofread: unit.isProofread,
+      proofreadText: normalizedText(unit.proofreadText) ?? undefined,
+    });
   }
 
   return edit;

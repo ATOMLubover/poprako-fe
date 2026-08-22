@@ -80,6 +80,7 @@ export default function UnitList({
 
   const proofreadAll = () => {
     units.forEach((unit) =>
+      // 批量操作只切换校对状态；isProofread 与 proofreadText 完全独立。
       onModifyUnit?.(unitId(unit), { isProofread: !allUnitsProofread }),
     );
     showToast(allUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");

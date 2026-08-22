@@ -91,9 +91,9 @@ export default function ProofreadModeUnitItem({
     const end = textarea.selectionEnd;
     const next =
       textarea.value.substring(0, start) + char + textarea.value.substring(end);
+    // 校对文本与校对状态完全独立：输入文本不得切换 isProofread。
     onModifyUnit?.(unitId(unit), {
       proofreadText: next,
-      isProofread: next.trim().length > 0,
     });
     setTimeout(() => {
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
@@ -164,10 +164,10 @@ export default function ProofreadModeUnitItem({
                   ref={proofRef}
                   value={unitProofreadText(unit) ?? undefined}
                   onChange={(val) =>
-                    onModifyUnit?.(unitId(unit), {
-                      proofreadText: val,
-                      isProofread: val.trim().length > 0,
-                    })
+                  onModifyUnit?.(unitId(unit), {
+                    // 校对文本与校对状态完全独立：编辑文本不得切换 isProofread。
+                    proofreadText: val,
+                  })
                   }
                   onFocus={() => onSelect?.(unitId(unit))}
                   placeholder="输入校对..."
@@ -185,8 +185,8 @@ export default function ProofreadModeUnitItem({
                     const text = unitTranslatedText(unit);
                     if (text) {
                       onModifyUnit?.(unitId(unit), {
+                        // 校对文本与校对状态完全独立：复制文本不得切换 isProofread。
                         proofreadText: text,
-                        isProofread: true,
                       });
                     }
                   }}
@@ -203,6 +203,7 @@ export default function ProofreadModeUnitItem({
                 <button
                   title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
                   onClick={() =>
+                    // 校对状态与校对文本完全独立：此操作不得修改 proofreadText。
                     onModifyUnit?.(unitId(unit), {
                       isProofread: !unitIsProofread(unit),
                     })
