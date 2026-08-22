@@ -70,7 +70,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     const handlePointerDown = (event: PointerEvent) => {
       if (
         event.target instanceof Element &&
-        event.target.closest("[data-terminology-dialog]")
+        event.target.closest("[data-app-dialog]")
       ) return;
       if (!rootRef.current?.contains(event.target as Node)) {
         setPanel("closed");
@@ -215,9 +215,10 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
           aria-label={renderedPanel === "termbases" ? "选择术语库" : "查询术语"}
           className={clsx(
             "absolute bottom-[calc(100%+0.25rem)] left-0 flex w-full flex-col",
-            "max-h-[min(18rem,calc(100vh-5rem))] overflow-hidden rounded-sm",
+            "max-h-[min(18rem,calc(100vh-5rem))] overflow-hidden rounded-lg",
             "sm:h-[20dvh]",
-            "border border-black/5 bg-white/95 shadow-lg shadow-black/10",
+            "border border-(--color-border-green-200) bg-white/95",
+            "shadow-(--shadow-sm)",
             "backdrop-blur-md duration-150 motion-reduce:animate-none",
             isExpanded
               ? "animate-in fade-in-0 slide-in-from-bottom-1"
@@ -256,8 +257,9 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
 
       <div
         className={clsx(
-          "flex h-8 overflow-hidden rounded-sm border border-black/5",
-          "bg-white/95 shadow-lg shadow-black/10 backdrop-blur-md",
+          "flex h-8 overflow-hidden rounded-lg",
+          "border border-(--color-border-green-200)",
+          "bg-white/95 shadow-(--shadow-sm) backdrop-blur-md",
         )}
       >
         <button

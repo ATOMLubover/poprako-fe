@@ -104,29 +104,37 @@ export default function SpecialCharPanel({ onClose }: Props) {
       className={clsx(
         "fixed inset-0 z-50",
         "flex items-center justify-center",
-        "bg-black/20 backdrop-blur-[1px]",
+        "bg-white/60 backdrop-blur-sm",
       )}
       onClick={onClose}
     >
       <div
         className={clsx(
-          "bg-background w-full max-w-md",
-          "rounded-xl shadow-lg overflow-hidden",
+          "w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-xl bg-white",
+          "border border-(--color-border-green-200) shadow-(--shadow-sm)",
+          "animate-in zoom-in-95 duration-200",
         )}
         onClick={(e) => e.stopPropagation()}
       >
+        <div
+          className="h-1 w-full opacity-20"
+          style={{ background: "var(--color-green-500)" }}
+        />
         {/* Header */}
         <div
           className={clsx(
             "flex justify-between items-center",
-            "px-4 py-2 border-b border-border",
+            "px-5 pb-2 pt-4",
           )}
         >
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-base font-bold text-slate-800">
             特殊符号面板
           </span>
           <button
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className={clsx(
+              "flex size-7 items-center justify-center rounded-md text-slate-300",
+              "transition-colors hover:bg-slate-50 hover:text-slate-500",
+            )}
             onClick={onClose}
           >
             <X size={16} />
@@ -134,19 +142,20 @@ export default function SpecialCharPanel({ onClose }: Props) {
         </div>
 
         {/* Body */}
-        <div className="p-5">
+        <div className="px-5 pb-5 pt-3">
           {/* Mode Tabs */}
           <div className="flex justify-center mb-5">
-            <div className="inline-flex items-center p-1 bg-muted rounded-xl gap-0.5">
+            <div className="inline-flex items-center gap-0.5 rounded-lg bg-slate-50 p-1">
               {(["select", "delete"] as Mode[]).map((m) => (
                 <button
                   key={m}
                   onClick={() => handleModeChange(m)}
                   className={clsx(
-                    "px-5 py-1.5 text-sm rounded-[9px] transition-all duration-200 outline-none",
+                    "rounded-md px-5 py-1.5 text-sm outline-none",
+                    "transition-all duration-200",
                     mode === m
-                      ? "bg-background text-foreground shadow-sm font-medium"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "bg-white font-medium text-slate-700 shadow-sm"
+                      : "text-slate-400 hover:text-slate-600",
                   )}
                 >
                   {m === "select" ? "优选" : "删除"}

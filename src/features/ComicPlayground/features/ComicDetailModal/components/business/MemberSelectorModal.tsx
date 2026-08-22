@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
-import { Search, X, Loader2, Plus } from "lucide-react";
+import { Search, Loader2, Plus } from "lucide-react";
+import AppDialog from "@/components/ui/AppDialog";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
 import {
@@ -54,17 +55,6 @@ export default function MemberSelectorModal({
   const latestRequestIdRef = useRef(0);
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
-  useEffect(() => {
     if (!chapterId || !onLoadMembers) {
       /* eslint-disable react-hooks/set-state-in-effect */
       setMembers([]);
@@ -112,62 +102,35 @@ export default function MemberSelectorModal({
   }, [chapterId, keyword, onLoadMembers, role, setIsLoading]);
 
   return (
-    <div
-      className={clsx(
-        "fixed inset-0 z-[90] flex items-center justify-center p-4",
-        "bg-slate-950/30 backdrop-blur-sm",
-      )}
+    <AppDialog
+      title={title}
+      size="large"
+      onClose={onClose}
+      bodyClassName="p-0"
     >
-      <button
-        type="button"
-        aria-label="关闭成员选择器"
-        className="absolute inset-0 cursor-default"
-        onClick={onClose}
-      />
-      <div
-        className={clsx(
-          "relative z-10 flex max-h-[75vh] w-full max-w-xl flex-col",
-          "overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl",
-        )}
-      >
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <div>
-            <h3 className="text-sm font-bold text-slate-800">{title}</h3>
-            <p className="text-xs text-slate-400">选择成员并立即加入当前分工</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
+      <div className="border-b border-slate-100 px-4 py-3">
+        <div
+          className={clsx(
+            "flex items-center gap-2 rounded-md border px-3 py-2",
+            "border-slate-200 bg-white shadow-sm shadow-slate-100",
+            "focus-within:border-slate-300",
+          )}
+        >
+          <Search size={14} className="text-slate-400" />
+          <input
+            autoFocus
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            placeholder="搜索昵称 / QQ"
             className={clsx(
-              "rounded-sm p-1 text-slate-400 transition-colors",
-              "hover:bg-slate-100 hover:text-slate-700",
+              "w-full bg-transparent text-sm text-slate-700 outline-none",
+              "placeholder:text-slate-300",
             )}
-          >
-            <X size={16} />
-          </button>
+          />
         </div>
+      </div>
 
-        <div className="border-b border-slate-100 px-4 py-3">
-          <div
-            className={clsx(
-              "flex items-center gap-2 rounded-md border px-3 py-2",
-              "border-slate-200 bg-slate-50",
-            )}
-          >
-            <Search size={14} className="text-slate-400" />
-            <input
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-              placeholder="搜索昵称 / QQ"
-              className={clsx(
-                "w-full bg-transparent text-sm text-slate-700 outline-none",
-                "placeholder:text-slate-300",
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+        <div className="max-h-[55dvh] overflow-y-auto px-3 py-3">
           <div className="flex flex-col gap-2">
             {members.map((member) => (
               <button
@@ -176,9 +139,9 @@ export default function MemberSelectorModal({
                 onClick={() => onSelectUser(member.userId)}
                 disabled={isSubmitting}
                 className={clsx(
-                  "flex items-center gap-3 rounded-md border px-3 py-2 text-left transition-all",
+                  "flex items-center gap-3 rounded-lg border px-3 py-2 text-left",
                   "border-slate-200",
-                  "hover:border-slate-300 hover:bg-slate-50",
+                  "transition-all hover:border-green-100 hover:bg-green-50/40",
                   isSubmitting && "cursor-wait opacity-60",
                 )}
               >
@@ -228,8 +191,8 @@ export default function MemberSelectorModal({
                 </div>
                 <div
                   className={clsx(
-                    "flex h-7 w-7 shrink-0 items-center justify-center",
-                    "rounded-sm border border-slate-200 bg-white text-slate-400",
+                    "flex size-7 shrink-0 items-center justify-center rounded-md",
+                    "border border-green-100 bg-green-50 text-green-500",
                   )}
                 >
                   {isSubmitting ? (
@@ -254,7 +217,6 @@ export default function MemberSelectorModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </AppDialog>
   );
 }
