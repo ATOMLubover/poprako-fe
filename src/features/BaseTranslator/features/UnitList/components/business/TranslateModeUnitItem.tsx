@@ -34,6 +34,7 @@ type Props = {
   proofreader?: UserInfo;
   specialCharInsertRequest?: SpecialCharInsertRequest;
   onSpecialCharUse?: (char: string) => void;
+  onSpecialCharInserted?: (requestId: number, char: string) => void;
 };
 
 export default function TranslateModeUnitItem({
@@ -50,6 +51,7 @@ export default function TranslateModeUnitItem({
   translator,
   specialCharInsertRequest,
   onSpecialCharUse,
+  onSpecialCharInserted,
 }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -74,19 +76,30 @@ export default function TranslateModeUnitItem({
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+    const text = unitTranslatedText(unit) ?? "";
     const next =
-      textarea.value.substring(0, start) + char + textarea.value.substring(end);
+      text.substring(0, start) + char + text.substring(end);
     onModifyUnit?.(unitId(unit), { translatedText: next });
     setTimeout(() => {
+      if (document.activeElement !== textarea) return;
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
-      textarea.focus();
     }, 0);
   }
 
   useEffect(() => {
-    if (!isFocused || enableReadOnly || !specialCharInsertRequest) return;
+    if (
+      !isFocused ||
+      enableReadOnly ||
+      !specialCharInsertRequest ||
+      specialCharInsertRequest.targetUnitId !== unitId(unit)
+    ) {
+      return;
+    }
     insertChar(specialCharInsertRequest.char);
-    onSpecialCharUse?.(specialCharInsertRequest.char);
+    onSpecialCharInserted?.(
+      specialCharInsertRequest.id,
+      specialCharInsertRequest.char,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialCharInsertRequest?.id]);
 

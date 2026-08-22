@@ -254,28 +254,37 @@ export default function BaseTranslator({
 
   function handleQuickSpecialChar() {
     const char = lastSpecialCharRef.current ?? allChars[0]?.text;
-    if (!char) return;
+    if (!char || !focusedUnitId) return;
 
     setSpecialCharInsertRequest((prev) => ({
       id: (prev?.id ?? 0) + 1,
       char,
+      targetUnitId: focusedUnitId,
     }));
   }
 
   function handleQuickSpecialCharAt(index: number) {
     return () => {
       const char = favoriteChars[index];
-      if (!char) return;
+      if (!char || !focusedUnitId) return;
 
       setSpecialCharInsertRequest((prev) => ({
         id: (prev?.id ?? 0) + 1,
         char,
+        targetUnitId: focusedUnitId,
       }));
     };
   }
 
   function handleSpecialCharUse(char: string) {
     lastSpecialCharRef.current = char;
+  }
+
+  function handleSpecialCharInserted(requestId: number, char: string) {
+    lastSpecialCharRef.current = char;
+    setSpecialCharInsertRequest((request) =>
+      request?.id === requestId ? undefined : request,
+    );
   }
 
   function handleModifyUnit(targetUnitId: string, updates: UnitEdit) {
@@ -586,6 +595,7 @@ export default function BaseTranslator({
           enableReadOnly={!canEditView}
           specialCharInsertRequest={specialCharInsertRequest}
           onSpecialCharUse={handleSpecialCharUse}
+          onSpecialCharInserted={handleSpecialCharInserted}
         />
       </div>
     </>

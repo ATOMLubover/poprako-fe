@@ -21,6 +21,7 @@ import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
 export type SpecialCharInsertRequest = {
   id: number;
   char: string;
+  targetUnitId: string;
 };
 
 type Props = {
@@ -35,6 +36,7 @@ type Props = {
   enableReadOnly?: boolean;
   specialCharInsertRequest?: SpecialCharInsertRequest;
   onSpecialCharUse?: (char: string) => void;
+  onSpecialCharInserted?: (requestId: number, char: string) => void;
 };
 
 export default function UnitList({
@@ -48,6 +50,7 @@ export default function UnitList({
   enableReadOnly = false,
   specialCharInsertRequest,
   onSpecialCharUse,
+  onSpecialCharInserted,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const canReorder = !enableReadOnly && onReorderUnit !== undefined;
@@ -117,6 +120,7 @@ export default function UnitList({
               enableReadOnly={enableReadOnly}
               specialCharInsertRequest={specialCharInsertRequest}
               onSpecialCharUse={onSpecialCharUse}
+              onSpecialCharInserted={onSpecialCharInserted}
             />
           ))}
         </div>

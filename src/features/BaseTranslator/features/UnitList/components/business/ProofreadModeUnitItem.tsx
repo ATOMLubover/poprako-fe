@@ -37,6 +37,7 @@ type Props = {
   proofreader?: UserInfo;
   specialCharInsertRequest?: SpecialCharInsertRequest;
   onSpecialCharUse?: (char: string) => void;
+  onSpecialCharInserted?: (requestId: number, char: string) => void;
 };
 
 export default function ProofreadModeUnitItem({
@@ -54,6 +55,7 @@ export default function ProofreadModeUnitItem({
   proofreader,
   specialCharInsertRequest,
   onSpecialCharUse,
+  onSpecialCharInserted,
 }: Props) {
   const proofRef = useRef<HTMLTextAreaElement>(null);
   const hasProofreadText = !!unitProofreadText(unit);
@@ -89,22 +91,33 @@ export default function ProofreadModeUnitItem({
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+    const text = unitProofreadText(unit) ?? "";
     const next =
-      textarea.value.substring(0, start) + char + textarea.value.substring(end);
+      text.substring(0, start) + char + text.substring(end);
     // 校对文本与校对状态完全独立：输入文本不得切换 isProofread。
     onModifyUnit?.(unitId(unit), {
       proofreadText: next,
     });
     setTimeout(() => {
+      if (document.activeElement !== textarea) return;
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
-      textarea.focus();
     }, 0);
   }
 
   useEffect(() => {
-    if (!isFocused || enableReadOnly || !specialCharInsertRequest) return;
+    if (
+      !isFocused ||
+      enableReadOnly ||
+      !specialCharInsertRequest ||
+      specialCharInsertRequest.targetUnitId !== unitId(unit)
+    ) {
+      return;
+    }
     insertChar(specialCharInsertRequest.char);
-    onSpecialCharUse?.(specialCharInsertRequest.char);
+    onSpecialCharInserted?.(
+      specialCharInsertRequest.id,
+      specialCharInsertRequest.char,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialCharInsertRequest?.id]);
 
