@@ -1,0 +1,16 @@
+const POINTER_DRAG_THRESHOLD = 4;
+const TOUCH_DRAG_THRESHOLD = 8;
+
+export function dragThreshold(pointerType: string) {
+  return pointerType === "touch"
+    ? TOUCH_DRAG_THRESHOLD
+    : POINTER_DRAG_THRESHOLD;
+}
+
+export function exceedsDragThreshold(
+  pointerType: string,
+  deltaX: number,
+  deltaY: number,
+) {
+  return Math.hypot(deltaX, deltaY) > dragThreshold(pointerType);
+}

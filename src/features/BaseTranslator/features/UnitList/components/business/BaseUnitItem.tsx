@@ -13,7 +13,8 @@ import UnitContributorTooltip, {
 type Props = {
   unit: UnitInfo;
   isFocused: boolean;
-  onSelect?: (unitId: string) => void;
+  onIndexActivate?: (unitId: string) => void;
+  canToggleBubble?: boolean;
   onIndexPointerDown?: (
     event: ReactPointerEvent<HTMLButtonElement>,
     unitId: string,
@@ -30,7 +31,8 @@ type Props = {
 export default function BaseUnitItem({
   unit,
   isFocused,
-  onSelect,
+  onIndexActivate,
+  canToggleBubble = false,
   onIndexPointerDown,
   isDragging = false,
   isDragDimmed = false,
@@ -54,11 +56,16 @@ export default function BaseUnitItem({
   }, [isFocused]);
 
   const canReorder = onIndexPointerDown !== undefined;
-  const indexTitle = canReorder
-    ? "拖动序号调整顺序"
-    : enableReadOnly
-      ? "只读模式下不可调整顺序"
-      : "点击选择 Unit";
+  const indexTitle = canToggleBubble
+    ? canReorder
+      ? "轻触切换气泡状态，拖动序号调整顺序"
+      : "轻触切换气泡状态"
+    : canReorder
+      ? "拖动序号调整顺序"
+      : enableReadOnly
+        ? "点击选择 Unit；只读模式下不可调整顺序"
+        : "点击选择 Unit";
+  const activateIndex = () => onIndexActivate?.(unitId(unit));
 
   return (
     <div
@@ -104,13 +111,14 @@ export default function BaseUnitItem({
         onClick={
           canReorder
             ? (event) => {
-                if (event.detail === 0) onSelect?.(unitId(unit));
+                if (event.detail === 0) activateIndex();
               }
-            : () => onSelect?.(unitId(unit))
+            : activateIndex
         }
         onContextMenu={(event) => event.preventDefault()}
         title={indexTitle}
         aria-label={`Unit ${unitIndex(unit) + 1}：${indexTitle}`}
+        aria-pressed={canToggleBubble ? isBubble : undefined}
         className={clsx(
           "w-8 shrink-0 flex items-center justify-center select-none touch-none",
           "font-mono text-xs font-bold tracking-tighter transition-colors duration-150",

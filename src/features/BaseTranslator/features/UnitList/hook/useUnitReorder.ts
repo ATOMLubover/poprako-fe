@@ -12,8 +12,8 @@ import {
   unitId,
   type UnitInfo,
 } from "@/types/unit";
+import { exceedsDragThreshold } from "./dragThreshold";
 
-const DRAG_THRESHOLD = 4;
 const AUTO_SCROLL_EDGE = 32;
 const MAX_AUTO_SCROLL_SPEED = 12;
 
@@ -21,7 +21,7 @@ type Args = {
   units: UnitInfo[];
   listRef: RefObject<HTMLDivElement | null>;
   enabled: boolean;
-  onFocusUnit?: (unitId: string) => void;
+  onActivateUnit?: (unitId: string) => void;
   onReorderUnit?: (unitId: string, targetIndex: number) => void;
 };
 
@@ -45,7 +45,7 @@ export function useUnitReorder({
   units,
   listRef,
   enabled,
-  onFocusUnit,
+  onActivateUnit,
   onReorderUnit,
 }: Args) {
   const [previewOrder, setPreviewOrder] = useState<string[] | null>(null);
@@ -53,14 +53,14 @@ export function useUnitReorder({
 
   const unitsRef = useRef(units);
   const enabledRef = useRef(enabled);
-  const onFocusUnitRef = useRef(onFocusUnit);
+  const onActivateUnitRef = useRef(onActivateUnit);
   const onReorderUnitRef = useRef(onReorderUnit);
   const dragRef = useRef<DragSession | null>(null);
   const autoScrollFrameRef = useRef<number | null>(null);
 
   unitsRef.current = units;
   enabledRef.current = enabled;
-  onFocusUnitRef.current = onFocusUnit;
+  onActivateUnitRef.current = onActivateUnit;
   onReorderUnitRef.current = onReorderUnit;
 
   const stopAutoScroll = useCallback(() => {
@@ -69,7 +69,7 @@ export function useUnitReorder({
     autoScrollFrameRef.current = null;
   }, []);
 
-  const finishDrag = useCallback((commit: boolean, focus: boolean) => {
+  const finishDrag = useCallback((commit: boolean, activate: boolean) => {
     const session = dragRef.current;
     if (!session) return;
 
@@ -82,8 +82,8 @@ export function useUnitReorder({
       session.captureTarget.releasePointerCapture(session.pointerId);
     }
 
-    if (focus) {
-      onFocusUnitRef.current?.(session.unitId);
+    if (activate) {
+      onActivateUnitRef.current?.(session.unitId);
       return;
     }
     if (!commit || !session.didDrag) return;
@@ -171,7 +171,7 @@ export function useUnitReorder({
     if (!session.didDrag) {
       const deltaX = event.clientX - session.startX;
       const deltaY = event.clientY - session.startY;
-      if (Math.hypot(deltaX, deltaY) <= DRAG_THRESHOLD) return;
+      if (!exceedsDragThreshold(event.pointerType, deltaX, deltaY)) return;
 
       session.didDrag = true;
       setDraggingUnitId(session.unitId);

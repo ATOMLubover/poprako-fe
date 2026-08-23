@@ -20,6 +20,8 @@ type Props = {
   unit: UnitInfo;
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
+  onIndexActivate?: (unitId: string) => void;
+  canToggleBubble?: boolean;
   onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
   onIndexPointerDown?: (
     event: ReactPointerEvent<HTMLButtonElement>,
@@ -41,6 +43,8 @@ export default function TranslateModeUnitItem({
   unit,
   isFocused,
   onSelect,
+  onIndexActivate,
+  canToggleBubble,
   onModifyUnit,
   onIndexPointerDown,
   isDragging,
@@ -107,7 +111,8 @@ export default function TranslateModeUnitItem({
     <BaseUnitItem
       unit={unit}
       isFocused={isFocused}
-      onSelect={onSelect}
+      onIndexActivate={onIndexActivate}
+      canToggleBubble={canToggleBubble}
       onIndexPointerDown={onIndexPointerDown}
       isDragging={isDragging}
       isDragDimmed={isDragDimmed}
