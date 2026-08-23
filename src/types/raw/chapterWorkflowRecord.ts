@@ -51,7 +51,10 @@ export type RawChapterWorkflowRecordEvent =
   | {
       kind: "translation_exported";
       data: {
-        format: ChapterWorkflowRecordTranslationFormat;
+        formats: {
+          label_plus: boolean;
+          poprako: boolean;
+        };
       };
     }
   | {
@@ -129,7 +132,12 @@ export function unwrapRawChapterWorkflowRecordEvent(
     case "translation_exported":
       return {
         kind: event.kind,
-        data: { format: event.data.format },
+        data: {
+          formats: {
+            labelPlus: event.data.formats.label_plus,
+            poprako: event.data.formats.poprako,
+          },
+        },
       };
     case "stage_transitioned":
       return {

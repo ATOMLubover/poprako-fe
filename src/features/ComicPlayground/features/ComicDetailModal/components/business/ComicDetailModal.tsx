@@ -55,7 +55,6 @@ export default function ComicDetailModal({
   onReservePageUpload,
   onJoinChapterRole,
   onExportChapter,
-  onExportChapterLp,
   onImportChapter,
   onArchiveComic,
   onDeleteComic,
@@ -238,7 +237,6 @@ export default function ComicDetailModal({
     activeMember,
     canUploadRawPages,
     onExportChapter,
-    onExportChapterLp,
     onImportChapter,
     reloadCurrentPages,
     reloadLoadedChapters,
@@ -395,9 +393,7 @@ export default function ComicDetailModal({
           : undefined
       }
       onExport={
-        onExportChapter && onExportChapterLp
-          ? () => setPendingConfirmAction("export-data")
-          : undefined
+        onExportChapter ? () => setPendingConfirmAction("export-data") : undefined
       }
       onImportFileChange={
         onImportChapter ? handleImportFileChange : undefined
