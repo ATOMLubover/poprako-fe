@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import BaseTranslator from "@/features/BaseTranslator";
-import type { TerminologyDataSource } from "@/features/BaseTranslator";
+import type {
+  TerminologyDataSource,
+  UnitSearchTransformDataSource,
+} from "@/features/BaseTranslator";
 import type { Project } from "@/types/project";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 import type { Page } from "@/types/page";
@@ -11,7 +14,9 @@ import {
   listUnits,
   saveUnits,
   listPages,
+  searchChapterUnits,
   completeChapterStage,
+  transformChapterUnits,
 } from "../../api/translator";
 import { listAssignmentsByChapter } from "@/api/assignment";
 import { getUser } from "@/api/user";
@@ -198,14 +203,10 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     return () => { cancelled = true; };
   }, [chapterId]);
 
-  const handleLoadUnits = useCallback(
+  const handleFetchUnits = useCallback(
     async (pageId: string) => {
       const result = await listUnits(pageId);
-      if (!result.success) {
-        console.error("[WebTranslator] 加载单页单位失败", { pageId, error: result.error });
-        showToast(result.error, "error");
-        return [];
-      }
+      if (!result.success) return result;
 
       setState((prev) => {
         if (prev.status !== "ready") return prev;
@@ -227,9 +228,29 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         };
       });
 
-      return [...result.data.units].sort((lhs, rhs) => lhs.index - rhs.index);
+      return {
+        success: true as const,
+        data: [...result.data.units].sort((lhs, rhs) => lhs.index - rhs.index),
+      };
     },
-    [showToast],
+    [],
+  );
+
+  const handleLoadUnits = useCallback(
+    async (pageId: string) => {
+      const result = await handleFetchUnits(pageId);
+      if (!result.success) {
+        console.error("[WebTranslator] 加载单页单位失败", {
+          pageId,
+          error: result.error,
+        });
+        showToast(result.error, "error");
+        return [];
+      }
+
+      return result.data;
+    },
+    [handleFetchUnits, showToast],
   );
 
   const handleSaveUnits = useCallback(
@@ -288,6 +309,12 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     };
   }, [comicId]);
 
+  const unitSearchTransform = useMemo<UnitSearchTransformDataSource>(() => ({
+    search: (args) => searchChapterUnits(chapterId, args),
+    transform: (args) => transformChapterUnits(chapterId, args),
+    reloadPage: handleFetchUnits,
+  }), [chapterId, handleFetchUnits]);
+
   if (state.status === "loading") {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -331,6 +358,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       canTranslate={state.canTranslate}
       canProofread={state.canProofread}
       terminology={terminology}
+      unitSearchTransform={unitSearchTransform}
       startPageId={startPageId}
       startMode={startMode}
     />

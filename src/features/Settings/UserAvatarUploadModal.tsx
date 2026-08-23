@@ -155,8 +155,8 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
         onClose={handleRequestClose}
         closeOnEscape={false}
         footer={(
-          <div className="flex justify-end">
-            <AppDialogAction grow={false} onClick={handleRequestClose}>
+          <div className="flex">
+            <AppDialogAction onClick={handleRequestClose}>
               关闭
             </AppDialogAction>
           </div>
@@ -235,7 +235,9 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
       {showExitWarning && (
         <ConfirmDialog
           title="头像上传尚未完成"
-          description="当前正在上传并记录头像。现在退出可能导致未完成确认，请继续等待或确认退出。"
+          description={
+            "当前正在上传并记录头像。现在退出可能导致未完成确认，请继续等待或确认退出。"
+          }
           confirmLabel="确认退出"
           cancelLabel="继续等待"
           onConfirm={() => {

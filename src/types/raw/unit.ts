@@ -6,6 +6,8 @@ import type {
   UnitPatchOp,
   Patch,
 } from "@/features/BaseTranslator/types/type";
+import type { UnitSearchMatch } from
+  "@/features/BaseTranslator/types/unitSearchTransform";
 
 export type RawUnitInfo = {
   id: string;
@@ -46,6 +48,26 @@ export function unwrapRawUnitInfo(raw: RawUnitInfo): UnitInfo {
     updatedAt: raw.updated_at,
   } as UnitInfo;
 }
+
+export function unwrapRawUnitSearchMatch(raw: RawUnitInfo): UnitSearchMatch {
+  return {
+    pageId: raw.page_id,
+    unit: unwrapRawUnitInfo(raw),
+  };
+}
+
+export type RawUnitTextPart = "translated_text" | "proofread_text";
+
+export type RawTransformChapterUnitsArgs = {
+  part: RawUnitTextPart;
+  units: Array<{
+    unit_id: string;
+    transforms: Array<{
+      origin: string;
+      target: string;
+    }>;
+  }>;
+};
 
 export type ListPageUnitsResult = {
   totalUnitCount: number;

@@ -12,7 +12,7 @@ import type {
 type ShowToast = (message: string, type: ToastType) => void;
 
 export type PendingAction =
-  | { type: "navigate"; newIndex: number }
+  | { type: "navigate"; newIndex: number; targetUnitId?: string }
   | { type: "exit" };
 
 type Args = {
@@ -21,7 +21,7 @@ type Args = {
   onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
   onExit: () => void;
   showToast: ShowToast;
-  loadPage: (index: number) => Promise<void>;
+  loadPage: (index: number, targetUnitId?: string) => Promise<void>;
   setUnitBuf: (units: UnitInfo[]) => void;
 };
 
@@ -258,7 +258,7 @@ export function useUnitPersistence({
     setUnitBuf(normalizedUnits);
   }, []);
 
-  const flushIfDirty = useCallback(async () => {
+  const flushIfDirty = useCallback(async (showSuccess = true) => {
     if (isSaving.current) return;
     const diff = buildUnitDiff(unitBufRef.current, baselineUnitsRef.current);
     if (diff.ops.length === 0) return;
@@ -278,7 +278,7 @@ export function useUnitPersistence({
         unitBufRef.current = result.units;
         setUnitBuf(result.units);
       }
-      showToast("保存成功", "success");
+      if (showSuccess) showToast("保存成功", "success");
     } catch (err) {
       const summary = `ops:${diff.ops.length}`;
       console.error(`[BaseTranslator] 保存失败 pageId=${getPageId()} diff=${summary}`, err);
@@ -291,15 +291,15 @@ export function useUnitPersistence({
   }, [getPageId, onReloadUnits, onSaveUnits, setUnitBuf, showToast]);
 
   const handleNavigate = useCallback(
-    async (newIndex: number) => {
+    async (newIndex: number, targetUnitId?: string) => {
       if (isNavigating.current) return;
       isNavigating.current = true;
       setPendingAction(null);
       try {
         await flushIfDirty();
-        await loadPage(newIndex);
+        await loadPage(newIndex, targetUnitId);
       } catch {
-        setPendingAction({ type: "navigate", newIndex });
+        setPendingAction({ type: "navigate", newIndex, targetUnitId });
       } finally {
         isNavigating.current = false;
       }
@@ -325,7 +325,7 @@ export function useUnitPersistence({
       await flushIfDirty();
 
       if (pendingAction.type === "navigate") {
-        await loadPage(pendingAction.newIndex);
+        await loadPage(pendingAction.newIndex, pendingAction.targetUnitId);
       } else {
         onExit();
       }
@@ -345,7 +345,7 @@ export function useUnitPersistence({
     setPendingAction(null);
 
     if (action.type === "navigate") {
-      void loadPage(action.newIndex);
+      void loadPage(action.newIndex, action.targetUnitId);
       return;
     }
 

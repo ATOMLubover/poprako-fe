@@ -6,6 +6,7 @@ import {
   CaseSensitive,
   Check,
   Loader2,
+  ReplaceAll,
 } from "lucide-react";
 import Paginator from "@/components/ui/Paginator";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -33,6 +34,8 @@ import BaseTranslatorLayout from "@/features/BaseTranslator/layout/BaseTranslato
 import ShortcutPanel from "@/features/BaseTranslator/features/ShortcutPanel";
 import SpecialCharPanel from "@/features/BaseTranslator/features/SpecialCharPanel";
 import TerminologyLookupBar from "@/features/BaseTranslator/features/TerminologyLookup";
+import UnitSearchTransformDialog from
+  "@/features/BaseTranslator/features/UnitSearchTransform";
 import StatusOptionBar from "./StatusOptionBar";
 import { useShortcuts } from "@/features/BaseTranslator/hook/useShortcuts";
 import { useShortcutActions } from "@/features/BaseTranslator/hook/useShortcutActions";
@@ -44,6 +47,10 @@ import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types
 import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { UnitDiff } from "../../types/type";
 import type { TerminologyDataSource } from "../../types/terminology";
+import type {
+  UnitSearchTransformDataSource,
+  UnitTextPart,
+} from "../../types/unitSearchTransform";
 import type { UnitUserResolver } from "../../features/UnitList/hook/unitContributorCache";
 import { useUnitPersistence } from "../../hook/useUnitPersistence";
 import {
@@ -71,6 +78,7 @@ type Props = {
   canTranslate: boolean;
   canProofread: boolean;
   terminology?: TerminologyDataSource;
+  unitSearchTransform?: UnitSearchTransformDataSource;
   // 初始页码索引，默认为 0
   startPageIndex?: number;
   // 初始页 ID，优先级高于 startPageIndex
@@ -90,6 +98,7 @@ export default function BaseTranslator({
   canTranslate,
   canProofread,
   terminology,
+  unitSearchTransform,
   startPageIndex,
   startPageId,
   startMode,
@@ -121,6 +130,8 @@ export default function BaseTranslator({
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
   const [isSpecialCharPanelOpen, setIsSpecialCharPanelOpen] = useState(false);
+  const [isUnitSearchTransformOpen, setIsUnitSearchTransformOpen] =
+    useState(false);
   const [specialCharInsertRequest, setSpecialCharInsertRequest] =
     useState<SpecialCharInsertRequest | undefined>(undefined);
   const [deleteConfirmUnitId, setDeleteConfirmUnitId] = useState<
@@ -133,6 +144,7 @@ export default function BaseTranslator({
   const canvasRef = useRef<CanvasHandle>(null);
   const lastSpecialCharRef = useRef<string | null>(null);
   const relocationSuppressedUnitIdRef = useRef<string | null>(null);
+  const pendingCenteredUnitIdRef = useRef<string | null>(null);
 
   const showToast = useToastStore((s) => s.showToast);
   const { allChars, favoriteChars } = useSpecialChars();
@@ -175,7 +187,7 @@ export default function BaseTranslator({
     setUnitBuf,
   });
 
-  async function loadPage(idx: number) {
+  async function loadPage(idx: number, targetUnitId?: string) {
     const page = project.pages[idx];
     setPageIndex(idx);
     setIsLoadingPage(true);
@@ -188,7 +200,8 @@ export default function BaseTranslator({
       setLoadedUnits(units, setUnitBuf);
       setImageUrl(img);
       relocationSuppressedUnitIdRef.current = null;
-      setFocusedUnitId(undefined);
+      pendingCenteredUnitIdRef.current = targetUnitId ?? null;
+      setFocusedUnitId(targetUnitId);
     } finally {
       setIsLoadingPage(false);
     }
@@ -211,7 +224,9 @@ export default function BaseTranslator({
         initial = startPageIndex;
       }
 
-      loadPage(initial);
+      void loadPage(initial).catch((error) => {
+        console.error("[BaseTranslator] 初始页面加载失败", error);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -361,6 +376,41 @@ export default function BaseTranslator({
     setFocusedUnitId(targetUnitId);
   }
 
+  function handlePageImageLoad() {
+    const targetUnitId = pendingCenteredUnitIdRef.current;
+    if (!targetUnitId) return;
+
+    const unit = unitBufRef.current.find((item) => unitId(item) === targetUnitId);
+    if (!unit) return;
+
+    pendingCenteredUnitIdRef.current = null;
+    const position = unitPosition(unit);
+    canvasRef.current?.centerOn(position.xCoord, position.yCoord);
+  }
+
+  async function handleRefreshCurrentPage() {
+    const currentPageId = project.pages[pageIndex].id;
+    if (!unitSearchTransform) return;
+
+    const result = await unitSearchTransform.reloadPage(currentPageId);
+    if (!result.success) throw new Error(result.error);
+    setLoadedUnits(result.data, setUnitBuf);
+  }
+
+  async function handleSearchResultNavigate(
+    pageId: string,
+    targetUnitId?: string,
+  ) {
+    const targetIndex = project.pages.findIndex((page) => page.id === pageId);
+    if (targetIndex < 0) {
+      console.error("[BaseTranslator] 搜索结果页面不存在", { pageId });
+      showToast("目标页面已不存在，请重新进入翻译器", "error");
+      return;
+    }
+
+    await handleNavigate(targetIndex, targetUnitId);
+  }
+
   function doDeleteUnit(targetUnitId: string) {
     const filteredUnits = unitBufRef.current
       .filter((unit) => unitId(unit) !== targetUnitId);
@@ -439,11 +489,13 @@ export default function BaseTranslator({
       },
     },
     activeShortcuts,
-    isShortcutPanelOpen || isSpecialCharPanelOpen,
+    isShortcutPanelOpen || isSpecialCharPanelOpen || isUnitSearchTransformOpen,
   );
 
   useEffect(() => {
-    if (isShortcutPanelOpen) return;
+    if (isShortcutPanelOpen || isSpecialCharPanelOpen || isUnitSearchTransformOpen) {
+      return;
+    }
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setFocusedUnitId(undefined);
@@ -451,7 +503,7 @@ export default function BaseTranslator({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isShortcutPanelOpen]);
+  }, [isShortcutPanelOpen, isSpecialCharPanelOpen, isUnitSearchTransformOpen]);
 
   const toolboxOptions = readOnly ? [] : [
     {
@@ -464,7 +516,16 @@ export default function BaseTranslator({
       title: "特殊符号面板",
       onClick: () => setIsSpecialCharPanelOpen(true),
     },
+    ...(unitSearchTransform ? [{
+      icon: <ReplaceAll size={20} />,
+      title: "搜索与替换",
+      onClick: () => setIsUnitSearchTransformOpen(true),
+    }] : []),
   ];
+
+  const unitSearchPart: UnitTextPart = view === "translate"
+    ? "translatedText"
+    : "proofreadText";
 
   const completionStage = translatorCompletionStage({
     canTranslate,
@@ -490,6 +551,7 @@ export default function BaseTranslator({
             handleModifyUnit(targetId, { isBubble: !unitIsBubble(unitBufRef.current.find(u => unitId(u) === targetId)!) })
             : undefined
         }
+        onImageLoad={handlePageImageLoad}
         enableReadOnly={!canEditView}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
@@ -614,6 +676,18 @@ export default function BaseTranslator({
       )}
       {isSpecialCharPanelOpen && (
         <SpecialCharPanel onClose={() => setIsSpecialCharPanelOpen(false)} />
+      )}
+      {isUnitSearchTransformOpen && unitSearchTransform && (
+        <UnitSearchTransformDialog
+          pages={project.pages}
+          part={unitSearchPart}
+          currentPageId={project.pages[pageIndex].id}
+          dataSource={unitSearchTransform}
+          onBeforeSearch={() => flushIfDirty(false)}
+          onRefreshCurrentPage={handleRefreshCurrentPage}
+          onNavigate={handleSearchResultNavigate}
+          onClose={() => setIsUnitSearchTransformOpen(false)}
+        />
       )}
       {pendingAction && (
         <ConfirmDialog

@@ -9,8 +9,11 @@ import {
 import type { Project } from "@/types/project";
 import type { UserInfo } from "@/types/user";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
-import type { TerminologyDataSource } from "@/features/BaseTranslator";
-import { expect, within } from "storybook/test";
+import type {
+  TerminologyDataSource,
+  UnitSearchTransformDataSource,
+} from "@/features/BaseTranslator";
+import { expect, userEvent, within } from "storybook/test";
 
 const DEMO_IMAGE =
   "https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80";
@@ -440,6 +443,50 @@ const mockTerminology: TerminologyDataSource = {
   deleteTerm: async () => ({ success: true, data: undefined }),
 };
 
+function createUnitSearchTransform(
+  unitsByPage: Map<string, UnitInfo[]>,
+): UnitSearchTransformDataSource {
+  return {
+    search: async ({ part, phrase }) => {
+      return {
+        success: true,
+        data: [...unitsByPage.entries()].flatMap(([pageId, units]) =>
+          units.flatMap((unit) => {
+            const text = part === "translatedText"
+              ? unitTranslatedText(unit)
+              : unitProofreadText(unit);
+            return text?.includes(phrase) ? [{ pageId, unit }] : [];
+          }),
+        ),
+      };
+    },
+    transform: async ({ part, origin, target, unitIds }) => {
+      const selectedIds = new Set(unitIds);
+      for (const [pageId, units] of unitsByPage) {
+        unitsByPage.set(pageId, units.map((unit) => {
+          if (!selectedIds.has(unit.id)) return unit;
+
+          if (part === "translatedText") {
+            return {
+              ...unit,
+              translatedText: unitTranslatedText(unit)?.replaceAll(origin, target),
+            };
+          }
+          return {
+            ...unit,
+            proofreadText: unitProofreadText(unit)?.replaceAll(origin, target),
+          };
+        }));
+      }
+      return { success: true, data: undefined };
+    },
+    reloadPage: async (pageId) => ({
+      success: true,
+      data: unitsByPage.get(pageId) ?? [],
+    }),
+  };
+}
+
 function createStoryArgs({
   canTranslate,
   canProofread,
@@ -449,15 +496,26 @@ function createStoryArgs({
   canProofread: boolean;
   units?: UnitInfo[];
 }): BaseTranslatorProps {
+  const unitsByPage = new Map(
+    mockProject.pages.map((page) => [
+      page.id,
+      units.map((unit) => ({
+        ...unit,
+        id: `${page.id}-${unit.id}`,
+      })),
+    ]),
+  );
+
   return {
     project: mockProject,
     canTranslate,
     canProofread,
-    onLoadUnits: async (_pageId: string) => units,
+    onLoadUnits: async (pageId: string) => unitsByPage.get(pageId) ?? [],
     onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
     onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
+    unitSearchTransform: createUnitSearchTransform(unitsByPage),
     onExit: () => {
       console.log("[mock] onExit");
     },
@@ -476,6 +534,29 @@ export const TranslatorOnly: Story = {
     canTranslate: true,
     canProofread: false,
   }),
+};
+
+export const SearchAndTransform: Story = {
+  args: createStoryArgs({
+    canTranslate: true,
+    canProofread: false,
+  }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+
+    await userEvent.click(canvas.getByRole("button", { name: "工具菜单" }));
+    await userEvent.click(page.getByTitle("搜索与替换"));
+    expect(page.getByRole("dialog", { name: "搜索与替换" })).toBeVisible();
+
+    await userEvent.type(page.getByRole("textbox", { name: "查找短语" }), "这");
+    await userEvent.click(page.getByRole("button", { name: "搜索" }));
+    expect(await page.findByText("3 个匹配 Unit")).toBeVisible();
+
+    await userEvent.type(page.getByRole("textbox", { name: "替换短语" }), "那");
+    await userEvent.click(page.getByRole("button", { name: "替换" }));
+    expect(await page.findByText("没有找到匹配内容")).toBeVisible();
+  },
 };
 
 export const EmptyUnits: Story = {

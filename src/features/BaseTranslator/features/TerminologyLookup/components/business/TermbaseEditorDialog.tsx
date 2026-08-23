@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LoaderCircle, Trash2 } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import clsx from "clsx";
 import type { TermbaseInfo } from "@/types/termbase";
 import type { UpdateTermbaseArgs } from "@/features/BaseTranslator/types/terminology";
@@ -90,23 +90,17 @@ export default function TermbaseEditorDialog({
       footer={(
         <div className="flex items-center gap-2">
           {isEditing && onDelete && (
-            <button
+            <AppDialogAction
               type="button"
-              aria-label="删除术语库"
+              tone="danger"
               disabled={isSubmitting}
               onClick={() => setIsConfirmingDelete(true)}
-              className={clsx(
-                "flex size-8 items-center justify-center rounded-md border",
-                "border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600",
-              )}
             >
-              <Trash2 size={13} />
-            </button>
+              删除
+            </AppDialogAction>
           )}
-          <div className="flex-1" />
           <AppDialogAction
             type="button"
-            grow={false}
             disabled={isSubmitting}
             onClick={onClose}
           >
@@ -115,10 +109,8 @@ export default function TermbaseEditorDialog({
           <AppDialogAction
             type="button"
             tone="brand"
-            grow={false}
             disabled={!isValid || isSubmitting}
             onClick={handleSave}
-            className="min-w-18"
           >
             {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
             保存

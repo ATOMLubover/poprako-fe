@@ -133,12 +133,10 @@ export default function AppDialog({
 
 type ActionProps = ComponentProps<"button"> & {
   tone?: "neutral" | "brand" | "danger" | "warning";
-  grow?: boolean;
 };
 
 export function AppDialogAction({
   tone = "neutral",
-  grow = true,
   className,
   ...props
 }: ActionProps) {
@@ -148,8 +146,7 @@ export function AppDialogAction({
       className={clsx(
         "flex h-8 items-center justify-center gap-1 rounded-lg border px-3",
         "text-xs font-semibold transition-all duration-200 active:scale-[0.98]",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        grow && "flex-1",
+        "flex-1 disabled:cursor-not-allowed disabled:opacity-50",
         tone === "neutral" && [
           "border-slate-100 bg-slate-50 text-slate-400",
           "hover:bg-slate-100 hover:text-slate-500",
