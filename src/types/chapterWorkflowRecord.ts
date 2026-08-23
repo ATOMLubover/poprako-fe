@@ -1,5 +1,10 @@
 export type ChapterWorkflowRecordTranslationFormat = "label_plus" | "poprako";
 
+export type ChapterWorkflowRecordExportFormats = {
+  labelPlus: boolean;
+  poprako: boolean;
+};
+
 export type ChapterWorkflowRecordStage =
   | "raw_provide"
   | "translate"
@@ -61,7 +66,7 @@ export type ChapterWorkflowRecordEvent =
   | {
       kind: "translation_exported";
       data: {
-        format: ChapterWorkflowRecordTranslationFormat;
+        formats: ChapterWorkflowRecordExportFormats;
       };
     }
   | {

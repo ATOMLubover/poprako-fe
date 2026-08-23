@@ -329,7 +329,7 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
       actorUserId: "u-aki",
       event: {
         kind: "translation_exported",
-        data: { format: "label_plus" },
+        data: { formats: { labelPlus: true, poprako: true } },
       },
       createdAt: now - 1_000 * 60 * 18,
     },

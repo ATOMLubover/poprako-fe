@@ -35,7 +35,6 @@ type Args = {
   activeMember: MemberInfo | null;
   canUploadRawPages: boolean;
   onExportChapter?: ComicDetailModalProps["onExportChapter"];
-  onExportChapterLp?: ComicDetailModalProps["onExportChapterLp"];
   onImportChapter?: ComicDetailModalProps["onImportChapter"];
   reloadCurrentPages: () => Promise<void>;
   reloadLoadedChapters: () => Promise<unknown>;
@@ -122,7 +121,6 @@ export function useComicDetailExport({
   activeMember,
   canUploadRawPages,
   onExportChapter,
-  onExportChapterLp,
   onImportChapter,
   reloadCurrentPages,
   reloadLoadedChapters,
@@ -243,7 +241,7 @@ export function useComicDetailExport({
 
   const handleExportData = useCallback(async (opts?: { includeImages?: boolean }) => {
     const includeImages = opts?.includeImages ?? true;
-    if (!selectedChapterId || !onExportChapter || !onExportChapterLp) return;
+    if (!selectedChapterId || !onExportChapter) return;
     if (isExportingData) return;
 
     const abortController = new AbortController();
@@ -254,22 +252,18 @@ export function useComicDetailExport({
     try {
       setExportProgressStep("正在读取翻校数据", "正在请求 PRK 与 LP 导出内容。", 10);
 
-      const [prkExportResult, lpExportResult] = await Promise.all([
-        onExportChapter(selectedChapterId, { signal: abortController.signal }),
-        onExportChapterLp(selectedChapterId, { signal: abortController.signal }),
-      ]);
+      const exportResult = await onExportChapter(selectedChapterId, {
+        signal: abortController.signal,
+      });
 
       assertExportNotAborted();
 
-      if (!prkExportResult.success) {
-        showToast(prkExportResult.error, "error");
+      if (!exportResult.success) {
+        showToast(exportResult.error, "error");
         return;
       }
 
-      if (!lpExportResult.success) {
-        showToast(lpExportResult.error, "error");
-        return;
-      }
+      const { labelPlus, poprako } = exportResult.data;
 
       onWorkflowRecordsChanged?.();
 
@@ -278,14 +272,14 @@ export function useComicDetailExport({
 
       if (includeImages) {
         const imageFolder = zip.folder("images");
-        const totalPages = prkExportResult.data.pages.length;
+        const totalPages = poprako.pages.length;
         const imageUrlsByPageId = new Map(
           pages.map((page) => [page.id, page.imageUrl]),
         );
         let completedPages = 0;
 
         const pagesWithAssets = await Promise.all(
-          prkExportResult.data.pages.map(async (page) => {
+          poprako.pages.map(async (page) => {
             assertExportNotAborted();
 
             const imageUrl = imageUrlsByPageId.get(page.pageId) ?? "";
@@ -342,7 +336,7 @@ export function useComicDetailExport({
         ).length;
 
         const payload = {
-          ...prkExportResult.data,
+          ...poprako,
           exportedAt: new Date().toISOString(),
           skippedImageCount: skippedImages,
           pages: pagesWithAssets.map(({ sourceImageUrl: _, ...page }) => page),
@@ -354,7 +348,7 @@ export function useComicDetailExport({
           "translation.prk.json",
           JSON.stringify(
             {
-              ...prkExportResult.data,
+              ...poprako,
               exportedAt: new Date().toISOString(),
             },
             null,
@@ -363,7 +357,7 @@ export function useComicDetailExport({
         );
       }
 
-      zip.file("translation.lp.txt", lpExportResult.data);
+      zip.file("translation.lp.txt", labelPlus);
       zip.file("assignments.txt", toAssignmentText());
 
       setExportProgressStep("正在压缩文件", "正在生成 ZIP 文件，请稍候。", 88);
@@ -435,7 +429,6 @@ export function useComicDetailExport({
     fetchImageFileWithRetry,
     isExportingData,
     onExportChapter,
-    onExportChapterLp,
     onWorkflowRecordsChanged,
     pages,
     selectedChapterId,

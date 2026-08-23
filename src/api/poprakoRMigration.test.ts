@@ -449,16 +449,19 @@ describe("poprako-r API migration", () => {
 
     fetchMock = installFetch(Promise.resolve(
       new Response(JSON.stringify({
-        comic_id: "comic_1",
-        chapter_id: "chapter_1",
-        pages: [],
+        label_plus: "text",
+        poprako: {
+          comic_id: "comic_1",
+          chapter_id: "chapter_1",
+          pages: [],
+        },
       }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
     ));
     const exported = await exportChapter("chapter_1");
-    expect(exported.success && exported.data.chapterId).toBe("chapter_1");
+    expect(exported.success && exported.data.poprako.chapterId).toBe("chapter_1");
 
     expect(fetchMock).toHaveBeenCalled();
   });
@@ -501,7 +504,7 @@ describe("poprako-r API migration", () => {
     const exportFetchMock = installFetch(okJson({}));
     await exportChapter("chapter_1");
     expect(lastFetchCall(exportFetchMock).url).toBe(
-      "/api/v1/chapters/chapter_1/translations/export?format=poprako",
+      "/api/v1/chapters/chapter_1/translations/export?format=poprako,label_plus",
     );
   });
 

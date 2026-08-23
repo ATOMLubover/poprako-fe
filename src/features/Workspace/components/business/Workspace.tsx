@@ -25,7 +25,6 @@ import {
   deleteChapter,
   updateChapter,
   exportChapter,
-  exportChapterLp,
   importChapter,
   joinChapter,
   listChapterWorkflowRecords,
@@ -340,13 +339,6 @@ export default function Workspace() {
   const handleExportChapter = useCallback(
     async (chapterId: string, options?: { signal?: AbortSignal }) => {
       return exportChapter(chapterId, options);
-    },
-    [],
-  );
-
-  const handleExportChapterLp = useCallback(
-    async (chapterId: string, options?: { signal?: AbortSignal }) => {
-      return exportChapterLp(chapterId, options);
     },
     [],
   );
@@ -676,7 +668,6 @@ export default function Workspace() {
           onJoinChapterRole={handleJoinChapterRole}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
-          onExportChapterLp={handleExportChapterLp}
           onArchiveComic={handleArchiveComic}
           onDeleteComic={handleDeleteComic}
           onUpdateComic={handleUpdateComic}

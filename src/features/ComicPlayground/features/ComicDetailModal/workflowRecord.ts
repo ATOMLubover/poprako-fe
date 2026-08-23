@@ -1,6 +1,7 @@
 import type {
   ChapterWorkflowRecord,
   ChapterWorkflowRecordEvent,
+  ChapterWorkflowRecordExportFormats,
   ChapterWorkflowRecordOrigin,
   ChapterWorkflowRecordPhase,
   ChapterWorkflowRecordStage,
@@ -70,6 +71,15 @@ function roleLabels(mask: number): string {
 
 function subtitleLabel(value: string): string {
   return value.trim() || "无副标题";
+}
+
+function exportFormatLabel(formats: ChapterWorkflowRecordExportFormats): string {
+  const labels = [
+    formats.poprako ? FORMAT_LABELS.poprako : null,
+    formats.labelPlus ? FORMAT_LABELS.label_plus : null,
+  ].filter((label): label is string => label !== null);
+
+  return labels.join(" 和 ") || "未知";
 }
 
 function stageOriginLabel(
@@ -186,7 +196,7 @@ export function presentWorkflowRecordEvent(
         title: [fixed("翻校数据导出")],
         detail: [
           fixed("以 "),
-          variable(FORMAT_LABELS[event.data.format]),
+          variable(exportFormatLabel(event.data.formats)),
           fixed(" 格式导出"),
         ],
       };

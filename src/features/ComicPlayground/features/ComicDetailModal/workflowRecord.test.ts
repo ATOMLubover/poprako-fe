@@ -67,9 +67,14 @@ describe("formatWorkflowRecordEvent", () => {
     [
       {
         kind: "translation_exported",
-        data: { format: "label_plus" },
+        data: {
+          formats: {
+            labelPlus: true,
+            poprako: true,
+          },
+        },
       },
-      "翻校数据导出：以 LabelPlus 格式导出",
+      "翻校数据导出：以 PopRaKo 和 LabelPlus 格式导出",
     ],
     [
       {

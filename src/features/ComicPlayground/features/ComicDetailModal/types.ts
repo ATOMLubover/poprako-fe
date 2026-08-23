@@ -10,7 +10,7 @@ import type { MemberInfo } from "@/types/member";
 import type { Role } from "@/types/role";
 import type { Result } from "@/types/utils/result";
 import type {
-  ChapterExport,
+  ChapterExports,
   ImportChapterFormat,
   ImportChapterResult,
   ListChapterArgs,
@@ -113,11 +113,7 @@ export type ComicDetailModalProps = {
   onExportChapter?: (
     chapterId: string,
     options?: { signal?: AbortSignal },
-  ) => Promise<Result<ChapterExport>>;
-  onExportChapterLp?: (
-    chapterId: string,
-    options?: { signal?: AbortSignal },
-  ) => Promise<Result<string>>;
+  ) => Promise<Result<ChapterExports>>;
   onArchiveComic?: (comicId: string) => Promise<Result<void>>;
   onDeleteComic?: (comicId: string) => Promise<Result<void>>;
   onUpdateComic?: (args: {
