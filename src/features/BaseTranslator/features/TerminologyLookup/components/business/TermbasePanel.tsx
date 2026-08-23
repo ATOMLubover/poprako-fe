@@ -67,7 +67,7 @@ function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps) {
         </span>
         <span
           className={clsx(
-            "shrink-0 rounded-sm border px-1 py-px",
+            "shrink-0 rounded-md border px-1 py-px",
             "text-[9px] font-medium leading-none",
             termbase.comicId
               ? "border-green-100 bg-green-50 text-stone-600"
@@ -136,9 +136,10 @@ export default function TermbasePanel({
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="搜索术语库名称"
             className={clsx(
-              "h-7 w-full rounded-sm border border-stone-200 bg-stone-50/60",
+              "h-7 w-full rounded-md border border-slate-200 bg-white",
               "pl-7 pr-2.5 text-[11px] text-stone-700 outline-none",
-              "placeholder:text-stone-400 focus:border-stone-300 focus:bg-white",
+              "shadow-sm shadow-slate-100 placeholder:text-stone-400",
+              "focus:border-slate-300",
             )}
           />
         </label>
@@ -148,7 +149,7 @@ export default function TermbasePanel({
           title="新建术语库"
           onClick={onCreate}
           className={clsx(
-            "flex size-7 shrink-0 items-center justify-center rounded-sm border",
+            "flex size-7 shrink-0 items-center justify-center rounded-md border",
             "border-stone-200 bg-white text-stone-500 transition-colors",
             "hover:border-green-100 hover:bg-green-50 hover:text-stone-700",
           )}

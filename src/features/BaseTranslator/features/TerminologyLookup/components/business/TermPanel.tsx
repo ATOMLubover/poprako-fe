@@ -49,7 +49,7 @@ function TermRow({ term, onEdit }: RowProps) {
             <div
               key={`${term.id}:${index}`}
               className={clsx(
-                "rounded-sm border border-green-100 bg-green-50/60 px-1.5 py-px",
+                "rounded-md border border-green-100 bg-green-50/60 px-1.5 py-px",
                 "text-[10px] leading-4 text-primary-text",
               )}
             >
@@ -109,7 +109,7 @@ export default function TermPanel({
         </span>
         <span
           className={clsx(
-            "shrink-0 rounded-sm border px-1 py-px text-[9px] font-medium",
+            "shrink-0 rounded-md border px-1 py-px text-[9px] font-medium",
             termbase.comicId
               ? "border-green-100 bg-green-50 text-stone-600"
               : "border-stone-200 bg-stone-50 text-stone-500",
@@ -124,7 +124,7 @@ export default function TermPanel({
             title="新建术语"
             onClick={onCreate}
             className={clsx(
-              "flex size-7 shrink-0 items-center justify-center rounded-sm border",
+              "flex size-7 shrink-0 items-center justify-center rounded-md border",
               "border-stone-200 bg-white text-stone-500 transition-colors",
               "hover:border-green-100 hover:bg-green-50 hover:text-stone-700",
             )}

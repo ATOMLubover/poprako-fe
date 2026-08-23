@@ -88,28 +88,33 @@ export default function ShortcutPanel({
       className={clsx(
         "fixed inset-0 z-50",
         "flex items-center justify-center",
-        "bg-black/30",
+        "bg-white/60 backdrop-blur-sm",
       )}
       onClick={onClose}
     >
       <div
         className={clsx(
-          "bg-background w-full max-w-3xl",
-          "rounded-lg shadow-lg overflow-hidden",
+          "w-[calc(100%-2rem)] max-w-3xl overflow-hidden rounded-xl bg-white",
+          "border border-(--color-border-green-200) shadow-(--shadow-sm)",
+          "animate-in zoom-in-95 duration-200",
         )}
         onClick={(e) => e.stopPropagation()}
       >
         <div
+          className="h-1 w-full opacity-20"
+          style={{ background: "var(--color-green-500)" }}
+        />
+        <div
           className={clsx(
             "flex justify-between items-center",
-            "px-4 py-2 border-b border-border",
+            "px-5 pb-2 pt-4",
           )}
         >
-          <span className="font-bold text-foreground text-sm">快捷键设置</span>
+          <span className="text-base font-bold text-slate-800">快捷键设置</span>
           <button
             className={clsx(
-              "text-muted-foreground",
-              "hover:text-foreground transition-colors",
+              "flex size-7 items-center justify-center rounded-md text-slate-300",
+              "transition-colors hover:bg-slate-50 hover:text-slate-500",
             )}
             onClick={onClose}
           >
@@ -117,10 +122,10 @@ export default function ShortcutPanel({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="px-6 pb-6 pt-3">
           <div
             className={clsx(
-              "grid grid-cols-2 gap-x-12 gap-y-3",
+              "grid grid-cols-1 gap-x-12 gap-y-3 sm:grid-cols-2",
               "mb-6 pb-3",
               "border-b border-dashed border-border",
             )}
@@ -140,7 +145,11 @@ export default function ShortcutPanel({
             ))}
           </div>
 
-          <div className={clsx("grid grid-cols-2", "gap-x-12 gap-y-4")}>
+          <div
+            className={clsx(
+              "grid grid-cols-1 gap-x-12 gap-y-4 sm:grid-cols-2",
+            )}
+          >
             {configurableShortcuts.map((s, index) => (
               <div
                 key={index}
@@ -153,21 +162,22 @@ export default function ShortcutPanel({
                   onClick={() => setRecordingIndex(index)}
                   className={clsx(
                     "h-7 px-2",
-                    "flex items-center rounded border",
+                    "flex items-center rounded-md border",
                     "text-xs transition-all",
                     "select-none cursor-pointer",
                     recordingIndex === index
                       ? clsx(
-                          "border-primary",
-                          "bg-primary/10",
-                          "text-primary",
-                          "ring-1 ring-primary/20",
+                          "border-green-200",
+                          "bg-green-50",
+                          "text-green-600",
+                          "ring-1 ring-green-100",
                         )
                       : clsx(
-                          "border-border",
-                          "bg-muted/50",
-                          "text-muted-foreground",
-                          "hover:border-border/80",
+                          "border-slate-200",
+                          "bg-white",
+                          "text-slate-500",
+                          "shadow-sm shadow-slate-100",
+                          "hover:border-slate-300",
                         ),
                   )}
                 >

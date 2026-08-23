@@ -505,7 +505,7 @@ export default function ComicDetailModal({
       />
       {memberSelectorRole && (
         <MemberSelectorModal
-          title={`添加${ROLE_TITLE_LABEL[memberSelectorRole]}成员`}
+          title={`添加「${ROLE_TITLE_LABEL[memberSelectorRole]}」成员`}
           chapterId={selectedChapterId}
           role={memberSelectorRole}
           onLoadMembers={onLoadAssignableMembers}

@@ -3,6 +3,7 @@ import { LoaderCircle, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import type { TermbaseInfo } from "@/types/termbase";
 import type { UpdateTermbaseArgs } from "@/features/BaseTranslator/types/terminology";
+import { AppDialogAction } from "@/components/ui/AppDialog";
 import TerminologyDialogFrame from "./TerminologyDialogFrame";
 
 type Props = {
@@ -52,36 +53,28 @@ export default function TermbaseEditorDialog({
         onClose={onClose}
         footer={(
           <div className="flex gap-2">
-            <button
+            <AppDialogAction
               type="button"
               disabled={isSubmitting}
               onClick={() => setIsConfirmingDelete(false)}
-              className={clsx(
-                "h-8 flex-1 rounded-sm border border-stone-200",
-                "text-xs font-medium text-stone-500 hover:bg-stone-50",
-              )}
             >
               返回
-            </button>
-            <button
+            </AppDialogAction>
+            <AppDialogAction
               type="button"
+              tone="danger"
               disabled={isSubmitting}
               onClick={handleDelete}
-              className={clsx(
-                "flex h-8 flex-1 items-center justify-center gap-1 rounded-sm",
-                "border border-red-200 bg-red-50 text-xs font-medium text-red-600",
-                "hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50",
-              )}
             >
               {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
               确认删除
-            </button>
+            </AppDialogAction>
           </div>
         )}
       >
-        <div className="rounded-sm border border-red-100 bg-red-50/60 px-3 py-2.5">
-          <p className="text-xs font-medium text-stone-700">{termbase.name}</p>
-          <p className="mt-1 text-[11px] leading-4 text-red-600">
+        <div className="rounded-md border border-red-100 bg-red-50/60 px-3 py-2.5">
+          <p className="text-sm font-semibold text-slate-700">{termbase.name}</p>
+          <p className="mt-1 text-xs leading-relaxed text-red-500">
             删除后，其中全部术语也会一并删除。
           </p>
         </div>
@@ -103,7 +96,7 @@ export default function TermbaseEditorDialog({
               disabled={isSubmitting}
               onClick={() => setIsConfirmingDelete(true)}
               className={clsx(
-                "flex size-8 items-center justify-center rounded-sm border",
+                "flex size-8 items-center justify-center rounded-md border",
                 "border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600",
               )}
             >
@@ -111,46 +104,45 @@ export default function TermbaseEditorDialog({
             </button>
           )}
           <div className="flex-1" />
-          <button
+          <AppDialogAction
             type="button"
+            grow={false}
             disabled={isSubmitting}
             onClick={onClose}
-            className="h-8 rounded-sm px-3 text-xs font-medium text-stone-500 hover:bg-stone-50"
           >
             取消
-          </button>
-          <button
+          </AppDialogAction>
+          <AppDialogAction
             type="button"
+            tone="brand"
+            grow={false}
             disabled={!isValid || isSubmitting}
             onClick={handleSave}
-            className={clsx(
-              "flex h-8 min-w-18 items-center justify-center gap-1 rounded-sm border",
-              "border-green-100 bg-green-50 px-3 text-xs font-medium text-stone-700",
-              "hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-45",
-            )}
+            className="min-w-18"
           >
             {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
             保存
-          </button>
+          </AppDialogAction>
         </div>
       )}
     >
       <div className="space-y-3">
         <label className="block">
-          <span className="mb-1 block text-[11px] font-medium text-stone-500">名称</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500">名称</span>
           <input
             autoFocus
             value={name}
             disabled={isSubmitting}
             onChange={(event) => setName(event.target.value)}
             className={clsx(
-              "h-8 w-full rounded-sm border border-stone-200 bg-stone-50/50 px-2.5",
-              "text-xs text-stone-700 outline-none focus:border-stone-300 focus:bg-white",
+              "h-8 w-full rounded-md border border-slate-200 bg-white px-2.5",
+              "text-sm text-slate-700 shadow-sm shadow-slate-100 outline-none",
+              "transition-colors focus:border-slate-300",
             )}
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-[11px] font-medium text-stone-500">描述</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500">描述</span>
           <textarea
             rows={3}
             value={description}
@@ -158,9 +150,9 @@ export default function TermbaseEditorDialog({
             onChange={(event) => setDescription(event.target.value)}
             placeholder="选填"
             className={clsx(
-              "w-full resize-none rounded-sm border border-stone-200 bg-stone-50/50 px-2.5 py-2",
-              "text-xs leading-4 text-stone-700 outline-none placeholder:text-stone-300",
-              "focus:border-stone-300 focus:bg-white",
+              "w-full resize-none rounded-md border border-slate-200 bg-white px-2.5 py-2",
+              "text-sm leading-relaxed text-slate-700 shadow-sm shadow-slate-100",
+              "outline-none placeholder:text-slate-300 focus:border-slate-300",
             )}
           />
         </label>

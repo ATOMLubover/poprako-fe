@@ -20,6 +20,7 @@ export type RawUnitInfo = {
   translated_text?: string;
   last_translator_id?: string;
 
+  // 仅表示校对流程状态；与 proofread_text 完全独立，二者不得互相推导或隐式修改。
   is_proofread: boolean;
   proofread_text?: string;
   last_proofreader_id?: string;
@@ -83,6 +84,7 @@ export type RawUnitTranslation = {
 };
 
 export type RawUnitRevision = {
+  // 仅表示校对流程状态；与 proofread_text 完全独立，二者不得互相推导或隐式修改。
   is_proofread: boolean;
   proofread_text?: string;
 };

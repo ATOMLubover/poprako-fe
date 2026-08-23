@@ -81,7 +81,7 @@ export default function InfiniteTerminologyList({
           type="button"
           onClick={onRetry}
           className={clsx(
-            "inline-flex items-center gap-1 rounded-sm border px-2 py-1",
+            "inline-flex items-center gap-1 rounded-md border px-2 py-1",
             "border-stone-200 bg-white text-[11px] font-medium text-stone-600",
             "transition-colors hover:border-stone-300 hover:text-stone-900",
           )}

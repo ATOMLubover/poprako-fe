@@ -1,5 +1,5 @@
-import { createPortal } from "react-dom";
 import clsx from "clsx";
+import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import type { WorkflowStatus } from "@/types/workflow";
 
@@ -91,128 +91,75 @@ export default function TransitionDialog({
     ? transitionTarget(revertTransition)
     : null;
 
-  return createPortal(
-    <div
-      className={clsx(
-        "fixed inset-0 z-[9999] flex items-center justify-center",
-        "bg-white/60 backdrop-blur-sm",
-      )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onCancel();
-      }}
-    >
-      {/* stopPropagation: 防止点击事件沿 React 组件树冒泡到父级 onClick，
-          导致 dialog 刚被 onCancel 关闭又被父级立即重新打开 */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className={clsx(
-          "w-full max-w-xs rounded-sm overflow-hidden",
-          "bg-white",
-          "shadow-(--shadow-sm)",
-        )}
-      >
-        <div
-          className="h-1.5 w-full opacity-20"
-          style={{ background: "var(--color-yellow-500)" }}
-        />
-
-        <div className="px-6 pt-5 pb-4">
-          <h3 className="text-base font-bold text-slate-800 text-center">
-            {roleName}流程
-          </h3>
-
-          <p
-            className={clsx(
-              "mt-2 font-semibold text-sm text-center",
-              STATUS_COLOR[status],
-            )}
-          >
-            当前：{STATUS_LABELS[status]}
-          </p>
-
-          {/* Phase flow */}
-          <div className="mt-4 flex items-center justify-center gap-3">
-            {PHASE_ORDER.map((phase, i) => {
-              const isCurrent = phase === status;
-              const isRevertTarget = phase === revertTarget;
-              const isForwardTarget = phase === forwardTarget;
-
-              return (
-                <span key={phase} className="flex items-center gap-3">
-                  <span
-                    className={clsx(
-                      "inline-block px-2 py-0.5 text-xs",
-                      "transition-colors",
-                      // current phase: border
-                      isCurrent &&
-                        "border-2 border-slate-300 rounded-sm text-slate-600",
-                      // unstyled defaults
-                      !isCurrent &&
-                        !isRevertTarget &&
-                        !isForwardTarget &&
-                        "text-slate-300/70",
-                      // revert target: amber underline
-                      isRevertTarget &&
-                        !isCurrent &&
-                        "text-amber-500 underline decoration-amber-300 underline-offset-2",
-                      // forward target: green underline
-                      isForwardTarget &&
-                        !isCurrent &&
-                        "text-emerald-500 underline decoration-emerald-300 underline-offset-2",
-                    )}
-                  >
-                    {PHASE_LABELS[phase]}
-                  </span>
-
-                  {i < PHASE_ORDER.length - 1 && (
-                    <span className="text-slate-200 text-xs">→</span>
-                  )}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 px-6 pb-5">
-          <button
-            onClick={onCancel}
-            className={clsx(
-              "flex-1 py-2 text-xs font-semibold rounded-sm",
-              "transition-all duration-200 active:scale-[0.98]",
-              "text-slate-400 bg-slate-50 hover:bg-slate-100",
-            )}
-          >
-            取消
-          </button>
-
+  return (
+    <AppDialog
+      title={`${roleName}流程`}
+      tone="warning"
+      size="default"
+      showClose={false}
+      closeOnEscape={false}
+      onClose={onCancel}
+      footer={(
+        <div className="flex items-center gap-2">
+          <AppDialogAction onClick={onCancel}>取消</AppDialogAction>
           {hasRevert && (
-            <button
+            <AppDialogAction
+              tone="warning"
               onClick={() => revertTransition && onConfirm(revertTransition)}
-              className={clsx(
-                "flex-1 py-2 text-xs font-semibold rounded-sm",
-                "transition-all duration-200 active:scale-[0.98]",
-                "bg-amber-50 text-amber-600 hover:bg-amber-100",
-              )}
             >
               回退
-            </button>
+            </AppDialogAction>
           )}
-
           {hasForward && (
-            <button
+            <AppDialogAction
+              tone="brand"
               onClick={() => forwardTransition && onConfirm(forwardTransition)}
-              className={clsx(
-                "flex-1 py-2 text-xs font-semibold rounded-sm",
-                "transition-all duration-200 active:scale-[0.98]",
-                "bg-emerald-50 text-emerald-600 hover:bg-emerald-100",
-              )}
             >
               推进
-            </button>
+            </AppDialogAction>
           )}
         </div>
+      )}
+    >
+      <p
+        className={clsx(
+          "text-center text-sm font-semibold",
+          STATUS_COLOR[status],
+        )}
+      >
+        当前：{STATUS_LABELS[status]}
+      </p>
+
+      <div className="mt-4 flex items-center justify-center gap-3">
+        {PHASE_ORDER.map((phase, index) => {
+          const isCurrent = phase === status;
+          const isRevertTarget = phase === revertTarget;
+          const isForwardTarget = phase === forwardTarget;
+
+          return (
+            <span key={phase} className="flex items-center gap-3">
+              <span
+                className={clsx(
+                  "inline-block rounded-md px-2 py-0.5 text-xs transition-colors",
+                  isCurrent && "border border-slate-200 bg-slate-50 text-slate-600",
+                  !isCurrent && !isRevertTarget && !isForwardTarget &&
+                    "text-slate-300/70",
+                  isRevertTarget && !isCurrent &&
+                    "bg-amber-50 text-amber-600",
+                  isForwardTarget && !isCurrent &&
+                    "bg-green-50 text-green-600",
+                )}
+              >
+                {PHASE_LABELS[phase]}
+              </span>
+
+              {index < PHASE_ORDER.length - 1 && (
+                <span className="text-xs text-slate-200">→</span>
+              )}
+            </span>
+          );
+        })}
       </div>
-    </div>,
-    document.body,
+    </AppDialog>
   );
 }

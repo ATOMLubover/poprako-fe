@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  applyUnitUpdates,
   moveUnitToIndex,
   unitId,
   unitIndex,
@@ -86,5 +87,33 @@ describe("unit contributor ids", () => {
 
     expect(unitTranslatorId(unit)).toBeNull();
     expect(unitProofreaderId(unit)).toBeNull();
+  });
+});
+
+describe("proofreading state", () => {
+  test("keeps the proofreading status when revision text is cleared", () => {
+    const unit = {
+      ...makeUnits()[0],
+      isProofread: true,
+      proofreadText: "revision",
+    };
+
+    expect(applyUnitUpdates(unit, { proofreadText: "" })).toMatchObject({
+      isProofread: true,
+      proofreadText: "",
+    });
+  });
+
+  test("keeps revision text when proofreading status changes", () => {
+    const unit = {
+      ...makeUnits()[0],
+      isProofread: true,
+      proofreadText: "revision",
+    };
+
+    expect(applyUnitUpdates(unit, { isProofread: false })).toMatchObject({
+      isProofread: false,
+      proofreadText: "revision",
+    });
   });
 });

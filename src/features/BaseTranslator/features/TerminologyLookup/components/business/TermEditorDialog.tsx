@@ -10,6 +10,7 @@ import {
 import clsx from "clsx";
 import type { TermInfo } from "@/types/term";
 import type { UpdateTermArgs } from "@/features/BaseTranslator/types/terminology";
+import { AppDialogAction } from "@/components/ui/AppDialog";
 import { moveTermTarget, validateTermTargets } from "../../hook/termForm";
 import TerminologyDialogFrame from "./TerminologyDialogFrame";
 
@@ -75,36 +76,28 @@ export default function TermEditorDialog({
         onClose={onClose}
         footer={(
           <div className="flex gap-2">
-            <button
+            <AppDialogAction
               type="button"
               disabled={isSubmitting}
               onClick={() => setIsConfirmingDelete(false)}
-              className={clsx(
-                "h-8 flex-1 rounded-sm border border-stone-200",
-                "text-xs font-medium text-stone-500 hover:bg-stone-50",
-              )}
             >
               返回
-            </button>
-            <button
+            </AppDialogAction>
+            <AppDialogAction
               type="button"
+              tone="danger"
               disabled={isSubmitting}
               onClick={handleDelete}
-              className={clsx(
-                "flex h-8 flex-1 items-center justify-center gap-1 rounded-sm",
-                "border border-red-200 bg-red-50 text-xs font-medium text-red-600",
-                "hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50",
-              )}
             >
               {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
               确认删除
-            </button>
+            </AppDialogAction>
           </div>
         )}
       >
-        <div className="rounded-sm border border-red-100 bg-red-50/60 px-3 py-2.5">
-          <p className="text-xs font-medium text-stone-700">{term.source}</p>
-          <p className="mt-1 text-[11px] leading-4 text-red-600">
+        <div className="rounded-md border border-red-100 bg-red-50/60 px-3 py-2.5">
+          <p className="text-sm font-semibold text-slate-700">{term.source}</p>
+          <p className="mt-1 text-xs leading-relaxed text-red-500">
             删除后无法恢复该原文和全部译名。
           </p>
         </div>
@@ -126,7 +119,7 @@ export default function TermEditorDialog({
               disabled={isSubmitting}
               onClick={() => setIsConfirmingDelete(true)}
               className={clsx(
-                "flex size-8 items-center justify-center rounded-sm border",
+                "flex size-8 items-center justify-center rounded-md border",
                 "border-red-100 text-red-400 hover:bg-red-50 hover:text-red-600",
               )}
             >
@@ -134,55 +127,54 @@ export default function TermEditorDialog({
             </button>
           )}
           <div className="flex-1" />
-          <button
+          <AppDialogAction
             type="button"
+            grow={false}
             disabled={isSubmitting}
             onClick={onClose}
-            className="h-8 rounded-sm px-3 text-xs font-medium text-stone-500 hover:bg-stone-50"
           >
             取消
-          </button>
-          <button
+          </AppDialogAction>
+          <AppDialogAction
             type="button"
+            tone="brand"
+            grow={false}
             disabled={!isValid || isSubmitting}
             onClick={handleSave}
-            className={clsx(
-              "flex h-8 min-w-18 items-center justify-center gap-1 rounded-sm border",
-              "border-green-100 bg-green-50 px-3 text-xs font-medium text-stone-700",
-              "hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-45",
-            )}
+            className="min-w-18"
           >
             {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
             保存
-          </button>
+          </AppDialogAction>
         </div>
       )}
     >
       <div className="space-y-3">
         <label className="block">
-          <span className="mb-1 block text-[11px] font-medium text-stone-500">原文</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500">原文</span>
           <input
             autoFocus
             value={source}
             disabled={isSubmitting}
             onChange={(event) => setSource(event.target.value)}
             className={clsx(
-              "h-8 w-full rounded-sm border border-stone-200 bg-stone-50/50 px-2.5",
-              "text-xs text-stone-700 outline-none focus:border-stone-300 focus:bg-white",
+              "h-8 w-full rounded-md border border-slate-200 bg-white px-2.5",
+              "text-sm text-slate-700 shadow-sm shadow-slate-100 outline-none",
+              "transition-colors focus:border-slate-300",
             )}
           />
         </label>
 
         <fieldset>
           <div className="mb-1 flex items-center justify-between">
-            <legend className="text-[11px] font-medium text-stone-500">译名</legend>
+            <legend className="text-xs font-medium text-slate-500">译名</legend>
             <button
               type="button"
               disabled={isSubmitting}
               onClick={() => setTargets((current) => [...current, ""])}
               className={clsx(
-                "flex h-6 items-center gap-1 rounded-sm px-1.5",
-                "text-[10px] text-stone-500 hover:bg-green-50 hover:text-stone-700",
+                "flex h-6 items-center gap-1 rounded-md px-1.5",
+                "text-[10px] text-slate-400 hover:bg-green-50 hover:text-green-600",
               )}
             >
               <Plus size={11} />
@@ -199,11 +191,11 @@ export default function TermEditorDialog({
                   onChange={(event) => handleTargetChange(index, event.target.value)}
                   onBlur={() => setHasTouchedTargets(true)}
                   className={clsx(
-                    "h-8 min-w-0 flex-1 rounded-sm border bg-stone-50/50 px-2.5",
-                    "text-xs text-stone-700 outline-none focus:bg-white",
+                    "h-8 min-w-0 flex-1 rounded-md border bg-white px-2.5",
+                    "text-sm text-slate-700 shadow-sm shadow-slate-100 outline-none",
                     visibleTargetError && target.trim().length === 0
                       ? "border-red-200"
-                      : "border-stone-200 focus:border-stone-300",
+                      : "border-slate-200 focus:border-slate-300",
                   )}
                 />
                 <button
@@ -214,7 +206,8 @@ export default function TermEditorDialog({
                     moveTermTarget(current, index, index - 1)
                   ))}
                   className={clsx(
-                    "flex size-7 items-center justify-center text-stone-400",
+                    "flex size-7 items-center justify-center rounded-md text-slate-400",
+                    "hover:bg-slate-50 hover:text-slate-600",
                     "disabled:opacity-20",
                   )}
                 >
@@ -228,7 +221,8 @@ export default function TermEditorDialog({
                     moveTermTarget(current, index, index + 1)
                   ))}
                   className={clsx(
-                    "flex size-7 items-center justify-center text-stone-400",
+                    "flex size-7 items-center justify-center rounded-md text-slate-400",
+                    "hover:bg-slate-50 hover:text-slate-600",
                     "disabled:opacity-20",
                   )}
                 >
@@ -242,8 +236,8 @@ export default function TermEditorDialog({
                     current.filter((_, targetIndex) => targetIndex !== index)
                   ))}
                   className={clsx(
-                    "flex size-7 items-center justify-center text-stone-400",
-                    "hover:text-red-500 disabled:opacity-20",
+                    "flex size-7 items-center justify-center rounded-md text-slate-400",
+                    "hover:bg-red-50 hover:text-red-500 disabled:opacity-20",
                   )}
                 >
                   <X size={13} />
@@ -257,7 +251,7 @@ export default function TermEditorDialog({
         </fieldset>
 
         <label className="block">
-          <span className="mb-1 block text-[11px] font-medium text-stone-500">备注</span>
+          <span className="mb-1 block text-xs font-medium text-slate-500">备注</span>
           <textarea
             rows={2}
             value={comment}
@@ -265,9 +259,9 @@ export default function TermEditorDialog({
             onChange={(event) => setComment(event.target.value)}
             placeholder="选填"
             className={clsx(
-              "w-full resize-none rounded-sm border border-stone-200 bg-stone-50/50 px-2.5 py-2",
-              "text-xs leading-4 text-stone-700 outline-none placeholder:text-stone-300",
-              "focus:border-stone-300 focus:bg-white",
+              "w-full resize-none rounded-md border border-slate-200 bg-white px-2.5 py-2",
+              "text-sm leading-relaxed text-slate-700 shadow-sm shadow-slate-100",
+              "outline-none placeholder:text-slate-300 focus:border-slate-300",
             )}
           />
         </label>

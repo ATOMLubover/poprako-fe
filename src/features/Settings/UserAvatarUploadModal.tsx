@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { Upload, User as UserIcon } from "lucide-react";
 import clsx from "clsx";
+import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 import { confirmUserAvatarUploaded, reserveUserAvatarUpload } from "@/api/user";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hashPageFile } from "@/features/ComicPlayground/features/ComicDetailModal/pageHash";
@@ -146,118 +146,91 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
     }
   };
 
-  return createPortal(
+  return (
     <>
-      <div
-        className={clsx(
-          "fixed inset-0 z-[9999] flex items-center justify-center",
-          "bg-black/15 backdrop-blur-[1px]",
-        )}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) handleRequestClose();
-        }}
-      >
-        <div
-          className={clsx(
-            "w-80 bg-white rounded-sm border border-slate-200",
-            "shadow-md shadow-slate-200/80 px-5 py-4",
-            "flex flex-col gap-4",
-          )}
-        >
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm font-semibold text-slate-600">上传头像</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              仅可上传你自己的头像。上传完成前请勿关闭弹窗。
-            </p>
+      <AppDialog
+        title="上传头像"
+        description="仅可上传你自己的头像。上传完成前请勿关闭弹窗。"
+        size="default"
+        onClose={handleRequestClose}
+        closeOnEscape={false}
+        footer={(
+          <div className="flex justify-end">
+            <AppDialogAction grow={false} onClick={handleRequestClose}>
+              关闭
+            </AppDialogAction>
           </div>
+        )}
+      >
+        <div className="flex items-center justify-center py-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              void handleAvatarFile(file);
+            }}
+          />
 
-          <div className="flex items-center justify-center py-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                event.target.value = "";
-                void handleAvatarFile(file);
-              }}
+          <button
+            type="button"
+            onClick={handleSelectFile}
+            disabled={isUploading}
+            className={clsx(
+              "group/avatar relative size-28 overflow-hidden rounded-full",
+              "border border-slate-200 bg-slate-100 transition-all",
+              isUploading
+                ? "cursor-progress"
+                : "cursor-pointer hover:shadow-sm active:scale-[0.99]",
+            )}
+          >
+            {resolvedAvatarUrl ? (
+              <img
+                src={resolvedAvatarUrl}
+                alt={user.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-slate-300">
+                <UserIcon size={30} />
+              </div>
+            )}
+
+            <div
+              className={clsx(
+                "absolute inset-0 transition-colors",
+                isUploading
+                  ? "bg-black/45"
+                  : "bg-black/0 group-hover/avatar:bg-black/18",
+              )}
             />
 
-            <button
-              type="button"
-              onClick={handleSelectFile}
-              disabled={isUploading}
-              className={clsx(
-                "relative w-28 h-28 rounded-full overflow-hidden",
-                "border border-slate-200 bg-slate-100",
-                "group/avatar transition-all",
-                isUploading
-                  ? "cursor-progress"
-                  : "cursor-pointer hover:shadow-sm active:scale-[0.99]",
-              )}
-            >
-              {resolvedAvatarUrl ? (
-                <img
-                  src={resolvedAvatarUrl}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                  <UserIcon size={30} />
-                </div>
-              )}
-
+            {!isUploading && (
               <div
                 className={clsx(
-                  "absolute inset-0 transition-colors",
-                  isUploading
-                    ? "bg-black/45"
-                    : "bg-black/0 group-hover/avatar:bg-black/18",
+                  "absolute inset-0 flex items-center justify-center",
+                  "opacity-0 transition-opacity group-hover/avatar:opacity-100",
                 )}
-              />
+              >
+                <Upload className="size-5 text-white" strokeWidth={2.5} />
+              </div>
+            )}
 
-              {!isUploading && (
-                <div
-                  className={clsx(
-                    "absolute inset-0 flex items-center justify-center",
-                    "opacity-0 group-hover/avatar:opacity-100 transition-opacity",
-                  )}
-                >
-                  <Upload className="w-5 h-5 text-white" strokeWidth={2.5} />
-                </div>
-              )}
-
-              {isUploading && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[11px] font-bold text-white/95">
-                    {uploadProgress !== null && uploadProgress < 100
-                      ? `${uploadProgress}%`
-                      : "..."}
-                  </span>
-                </div>
-              )}
-            </button>
-          </div>
-
-          <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              onClick={handleRequestClose}
-              className={clsx(
-                "px-3 py-1.5 text-xs font-medium rounded-xs",
-                "text-slate-400 hover:text-slate-600",
-                "border border-slate-200 hover:border-slate-300",
-                "bg-white hover:bg-slate-50",
-                "transition-colors",
-              )}
-            >
-              关闭
-            </button>
-          </div>
+            {isUploading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[11px] font-bold text-white/95">
+                  {uploadProgress !== null && uploadProgress < 100
+                    ? `${uploadProgress}%`
+                    : "..."}
+                </span>
+              </div>
+            )}
+          </button>
         </div>
-      </div>
+      </AppDialog>
 
       {showExitWarning && (
         <ConfirmDialog
@@ -272,7 +245,6 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
           onCancel={() => setShowExitWarning(false)}
         />
       )}
-    </>,
-    document.body,
+    </>
   );
 }
