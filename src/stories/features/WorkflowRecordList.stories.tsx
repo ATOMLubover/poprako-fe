@@ -78,7 +78,7 @@ const ALL_EVENT_RECORDS: ChapterWorkflowRecord[] = [
   }, { actorUserId: "actor_translator", createdAt: NOW }),
   makeRecord("record_9", {
     kind: "translation_exported",
-    data: { format: "label_plus" },
+    data: { formats: { labelPlus: true, poprako: true } },
   }, { actorUserId: "actor_translator", createdAt: NOW - 15 * 60_000 }),
   makeRecord("record_8", {
     kind: "translation_imported",

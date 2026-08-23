@@ -20,7 +20,6 @@ import {
   deleteChapter,
   updateChapter,
   exportChapter,
-  exportChapterLp,
   importChapter,
   joinChapter,
   listChapterWorkflowRecords,
@@ -280,13 +279,6 @@ export default function ComicPlayground() {
     [],
   );
 
-  const handleExportChapterLp = useCallback(
-    async (chapterId: string, options?: { signal?: AbortSignal }) => {
-      return exportChapterLp(chapterId, options);
-    },
-    [],
-  );
-
   const handleImportChapter = useCallback(
     async (args: { chapterId: string; content: string; format: "json" | "lp" }) => {
       return importChapter(args);
@@ -485,7 +477,6 @@ export default function ComicPlayground() {
           onJoinChapterRole={handleJoinChapterRole}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}
-          onExportChapterLp={handleExportChapterLp}
           onArchiveComic={handleArchiveComic}
           onDeleteComic={handleDeleteComic}
           onUpdateComic={handleUpdateComic}

@@ -88,10 +88,80 @@
             }
           },
           "403": {
-            "description": "No permission to create announcements in this team"
+            "description": "No perm to create announcements in this team"
           },
           "404": {
             "description": "Team not found"
+          }
+        }
+      }
+    },
+    "/api/v1/announcements/{announcement_id}": {
+      "put": {
+        "tags": [
+          "announcements"
+        ],
+        "summary": "`PUT /api/v1/announcements/{announcement_id}` — replace editable fields.",
+        "operationId": "update_info",
+        "parameters": [
+          {
+            "name": "announcement_id",
+            "in": "path",
+            "description": "Announcement ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAnnouncementInfoInstr"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Announcement updated"
+          },
+          "403": {
+            "description": "Team admin role required"
+          },
+          "422": {
+            "description": "Announcement not found or path mismatch"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "announcements"
+        ],
+        "summary": "`DELETE /api/v1/announcements/{announcement_id}` — delete an announcement.",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "announcement_id",
+            "in": "path",
+            "description": "Announcement ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Announcement deleted"
+          },
+          "403": {
+            "description": "Team admin role required"
+          },
+          "422": {
+            "description": "Announcement not found"
           }
         }
       }
@@ -125,7 +195,7 @@
             }
           },
           "403": {
-            "description": "No permission to create invitations in this chapter"
+            "description": "No perm to create invitations in this chapter"
           },
           "409": {
             "description": "Invitee is already assigned"
@@ -162,7 +232,7 @@
             }
           },
           "403": {
-            "description": "Role not assignable or no permission"
+            "description": "Role not assignable or no perm"
           },
           "404": {
             "description": "Invitation code not found"
@@ -196,7 +266,7 @@
             "description": "Invitation deleted"
           },
           "403": {
-            "description": "No permission to delete this invitation"
+            "description": "No perm to delete this invitation"
           },
           "404": {
             "description": "Invitation not found"
@@ -287,7 +357,7 @@
             }
           },
           "403": {
-            "description": "No permission to list these assignments"
+            "description": "No perm to list these assignments"
           },
           "422": {
             "description": "Exactly one of chapter_id or owner_id is required"
@@ -324,7 +394,7 @@
             }
           },
           "403": {
-            "description": "Role not assignable or no permission"
+            "description": "Role not assignable or no perm"
           },
           "404": {
             "description": "Chapter not found"
@@ -355,7 +425,7 @@
             "description": "Assignment deleted"
           },
           "403": {
-            "description": "No permission to delete this assignment"
+            "description": "No perm to delete this assignment"
           },
           "404": {
             "description": "Assignment not found"
@@ -480,7 +550,7 @@
             }
           },
           "403": {
-            "description": "No permission to create chapters in this comic"
+            "description": "No perm to create chapters in this comic"
           },
           "404": {
             "description": "Comic not found"
@@ -518,7 +588,7 @@
             }
           },
           "403": {
-            "description": "No permission to view this chapter"
+            "description": "No perm to view this chapter"
           },
           "404": {
             "description": "Chapter not found"
@@ -547,7 +617,7 @@
             "description": "Chapter deleted"
           },
           "403": {
-            "description": "No permission to delete this chapter"
+            "description": "No perm to delete this chapter"
           },
           "404": {
             "description": "Chapter not found"
@@ -586,7 +656,7 @@
             "description": "Chapter updated"
           },
           "403": {
-            "description": "No permission to update this chapter"
+            "description": "No perm to update this chapter"
           },
           "404": {
             "description": "Chapter not found"
@@ -659,7 +729,7 @@
             }
           },
           "403": {
-            "description": "No permission to list invitations in this chapter"
+            "description": "No perm to list invitations in this chapter"
           }
         }
       }
@@ -706,7 +776,7 @@
             "description": "Assignment roles updated"
           },
           "403": {
-            "description": "No permission to update this assignment"
+            "description": "No perm to update this assignment"
           },
           "404": {
             "description": "Assignment not found"
@@ -740,7 +810,7 @@
             "description": "Chapter marked as pinned"
           },
           "403": {
-            "description": "No permission to pin this chapter"
+            "description": "No perm to pin this chapter"
           },
           "404": {
             "description": "Chapter not found"
@@ -781,7 +851,7 @@
             }
           },
           "403": {
-            "description": "No permission to list pages in this chapter"
+            "description": "No perm to list pages in this chapter"
           }
         }
       },
@@ -807,7 +877,7 @@
             "description": "All pages deleted"
           },
           "403": {
-            "description": "No permission to delete pages in this chapter"
+            "description": "No perm to delete pages in this chapter"
           }
         }
       }
@@ -852,7 +922,7 @@
             }
           },
           "403": {
-            "description": "No permission to reserve pages in this chapter"
+            "description": "No perm to reserve pages in this chapter"
           },
           "422": {
             "description": "Invalid authoritative manifest, duplicate page identity, image metadata, or published chapter"
@@ -893,7 +963,7 @@
             "description": "Stage advanced"
           },
           "403": {
-            "description": "No permission to update this chapter's stage"
+            "description": "No perm to update this chapter's stage"
           },
           "422": {
             "description": "Illegal workflow transition"
@@ -907,7 +977,7 @@
           "chapter-port"
         ],
         "summary": "`GET /api/v1/chapters/{chapter_id}/translations/export` — export response body.",
-        "description": "`format=poprako` returns a JSON document (`application/json`); `format=label-plus`\nreturns a LabelPlus text document (`text/plain`).",
+        "description": "`format` selects one or both generated documents as a comma-separated value.",
         "operationId": "export",
         "parameters": [
           {
@@ -922,22 +992,26 @@
           {
             "name": "format",
             "in": "query",
-            "description": "Export format: poprako or label-plus",
+            "description": "Comma-separated export formats: poprako,label_plus",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/TranslationFormat"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "LabelPlus translation export",
+            "description": "Selected translation exports",
             "content": {
-              "text/plain": {}
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportChapterTranslationsVal"
+                }
+              }
             }
           },
           "403": {
-            "description": "No permission to export this chapter"
+            "description": "No perm to export this chapter"
           }
         }
       }
@@ -948,7 +1022,7 @@
           "chapter-port"
         ],
         "summary": "`GET /api/v1/chapters/{chapter_id}/translations/export/download` — export as file download.",
-        "description": "`format=poprako` downloads a JSON document (`application/json`);\n`format=label-plus` downloads a LabelPlus text document (`text/plain`).",
+        "description": "The downloaded JSON contains every document selected by `format`.",
         "operationId": "export_download",
         "parameters": [
           {
@@ -963,22 +1037,26 @@
           {
             "name": "format",
             "in": "query",
-            "description": "Export format: poprako or label-plus",
+            "description": "Comma-separated export formats: poprako,label_plus",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/TranslationFormat"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Translation file download",
+            "description": "Selected translation exports download",
             "content": {
-              "application/json": {}
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportChapterTranslationsVal"
+                }
+              }
             }
           },
           "403": {
-            "description": "No permission to export this chapter"
+            "description": "No perm to export this chapter"
           }
         }
       }
@@ -1023,10 +1101,170 @@
             }
           },
           "403": {
-            "description": "No permission to import into this chapter"
+            "description": "No perm to import into this chapter"
           },
           "422": {
             "description": "Invalid import content for the selected format"
+          }
+        }
+      }
+    },
+    "/api/v1/chapters/{chapter_id}/units/search": {
+      "get": {
+        "tags": [
+          "units"
+        ],
+        "summary": "`GET /api/v1/chapters/{chapter_id}/units/search` — search Unit text.",
+        "operationId": "search_infos",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "description": "Unit text field selected for matching.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UnitTextPart"
+            }
+          },
+          {
+            "name": "phrase",
+            "in": "query",
+            "description": "Case-sensitive literal substring to search.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching Units listed in page order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_Vec_UnitInfoView"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No perm to search Units in this Chapter"
+          },
+          "422": {
+            "description": "Search phrase is too short"
+          }
+        }
+      }
+    },
+    "/api/v1/chapters/{chapter_id}/units/transform": {
+      "post": {
+        "tags": [
+          "units"
+        ],
+        "summary": "`POST /api/v1/chapters/{chapter_id}/units/transform` — transform Unit text.",
+        "operationId": "transform",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformChapterUnitsInstr"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Unit transforms applied"
+          },
+          "403": {
+            "description": "Matching Chapter role required"
+          },
+          "409": {
+            "description": "Serializable conflict; retry the complete request"
+          },
+          "422": {
+            "description": "Invalid or overlapping Unit transform"
+          }
+        }
+      }
+    },
+    "/api/v1/chapters/{chapter_id}/workflow-records": {
+      "get": {
+        "tags": [
+          "chapters"
+        ],
+        "summary": "`GET /api/v1/chapters/{chapter_id}/workflow-records` — list activity records.",
+        "operationId": "list_workflow_record_infos",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Pagination offset (0-based).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of items to return.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chapter workflow records listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_Vec_ChapterWorkflowRecordInfoView"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "No perm to view this chapter"
+          },
+          "404": {
+            "description": "Chapter not found"
           }
         }
       }
@@ -1060,7 +1298,7 @@
             }
           },
           "403": {
-            "description": "No permission to create comics in this workset"
+            "description": "No perm to create comics in this workset"
           },
           "404": {
             "description": "Workset not found"
@@ -1098,7 +1336,7 @@
             }
           },
           "403": {
-            "description": "No permission to view this comic"
+            "description": "No perm to view this comic"
           },
           "404": {
             "description": "Comic not found"
@@ -1137,7 +1375,7 @@
             "description": "Comic updated"
           },
           "403": {
-            "description": "No permission to update this comic"
+            "description": "No perm to update this comic"
           },
           "404": {
             "description": "Comic not found"
@@ -1169,7 +1407,7 @@
             "description": "Comic deleted"
           },
           "403": {
-            "description": "No permission to delete this comic"
+            "description": "No perm to delete this comic"
           },
           "404": {
             "description": "Comic not found"
@@ -1182,7 +1420,7 @@
         "tags": [
           "comics"
         ],
-        "summary": "`POST /api/v1/comics/{comic_id}/archive` — archive and remove one active comic.",
+        "summary": "`POST /api/v1/comics/{comic_id}/archive` — archive one comic and clear its active data.",
         "operationId": "archive",
         "parameters": [
           {
@@ -1207,7 +1445,7 @@
             }
           },
           "403": {
-            "description": "No permission to archive this comic"
+            "description": "No perm to archive this comic"
           },
           "404": {
             "description": "Comic not found"
@@ -1280,7 +1518,7 @@
             }
           },
           "403": {
-            "description": "No permission to list chapters in this comic"
+            "description": "No perm to list chapters in this comic"
           }
         }
       }
@@ -1315,7 +1553,7 @@
             }
           },
           "403": {
-            "description": "No permission to view this comic's pinned chapter"
+            "description": "No perm to view this comic's pinned chapter"
           }
         }
       }
@@ -1353,7 +1591,7 @@
             "description": "Cover upload confirmed"
           },
           "403": {
-            "description": "No permission to modify this comic's cover"
+            "description": "No perm to modify this comic's cover"
           },
           "404": {
             "description": "Comic not found"
@@ -1401,7 +1639,7 @@
             }
           },
           "403": {
-            "description": "No permission to modify this comic's cover"
+            "description": "No perm to modify this comic's cover"
           },
           "404": {
             "description": "Comic not found"
@@ -1478,6 +1716,73 @@
         }
       }
     },
+    "/api/v1/comics/{comic_id}/termbases/import": {
+      "post": {
+        "tags": [
+          "termbase-port"
+        ],
+        "summary": "`POST /api/v1/comics/{comic_id}/termbases/import` — import into a comic scope.",
+        "operationId": "import_comic",
+        "parameters": [
+          {
+            "name": "comic_id",
+            "in": "path",
+            "description": "Comic ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "force_merge",
+            "in": "query",
+            "description": "Merge into a same-name terminology base instead of rejecting it.",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportTermbaseInstr"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Termbase merged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_ImportTermbaseVal"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Termbase imported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_ImportTermbaseVal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Team translator or proofreader required"
+          },
+          "422": {
+            "description": "Invalid document, capacity, or duplicate name"
+          }
+        }
+      }
+    },
     "/api/v1/comments": {
       "post": {
         "tags": [
@@ -1507,7 +1812,7 @@
             }
           },
           "403": {
-            "description": "No permission to comment in this team"
+            "description": "No perm to comment in this team"
           },
           "404": {
             "description": "Team not found"
@@ -1544,7 +1849,7 @@
             }
           },
           "403": {
-            "description": "No permission to create invitations in this team"
+            "description": "No perm to create invitations in this team"
           },
           "409": {
             "description": "Invitee is already a member"
@@ -1575,7 +1880,7 @@
             "description": "Invitation deleted"
           },
           "403": {
-            "description": "No permission to delete this invitation"
+            "description": "No perm to delete this invitation"
           },
           "404": {
             "description": "Invitation not found"
@@ -1616,7 +1921,7 @@
             "description": "Invitation roles updated"
           },
           "403": {
-            "description": "No permission to update this invitation"
+            "description": "No perm to update this invitation"
           },
           "404": {
             "description": "Invitation not found"
@@ -1719,7 +2024,7 @@
             }
           },
           "403": {
-            "description": "No permission to list members in this team"
+            "description": "No perm to list members in this team"
           },
           "422": {
             "description": "Exactly one of owner_id or team_id is required, or owner_id combined with role/fuzzy_nickname"
@@ -1754,7 +2059,7 @@
             }
           },
           "403": {
-            "description": "No permission to create members in this team"
+            "description": "No perm to create members in this team"
           },
           "404": {
             "description": "User or team not found"
@@ -1885,10 +2190,13 @@
             "description": "Member deleted"
           },
           "403": {
-            "description": "No permission to delete this member"
+            "description": "No perm or the team would lose its last admin"
           },
           "404": {
             "description": "Member not found"
+          },
+          "409": {
+            "description": "Serializable conflict; retry the complete request"
           }
         }
       }
@@ -1926,10 +2234,13 @@
             "description": "Member roles updated"
           },
           "403": {
-            "description": "No permission to update this member"
+            "description": "No perm or the team would lose its last admin"
           },
           "404": {
             "description": "Member not found"
+          },
+          "409": {
+            "description": "Serializable conflict; retry the complete request"
           },
           "422": {
             "description": "Path id does not match body id"
@@ -1967,7 +2278,7 @@
             }
           },
           "403": {
-            "description": "No permission to view this page"
+            "description": "No perm to view this page"
           },
           "404": {
             "description": "Page not found"
@@ -2008,7 +2319,7 @@
             "description": "Page image upload confirmed"
           },
           "403": {
-            "description": "No permission to modify this page's image"
+            "description": "No perm to modify this page's image"
           },
           "422": {
             "description": "Page, image identity, storage object, or published chapter is invalid"
@@ -2056,7 +2367,7 @@
             }
           },
           "403": {
-            "description": "No permission to modify this page's image"
+            "description": "No perm to modify this page's image"
           },
           "422": {
             "description": "Page not found, conflicting image metadata, or published chapter"
@@ -2094,7 +2405,7 @@
             }
           },
           "403": {
-            "description": "No permission to list units in this page"
+            "description": "No perm to list units in this page"
           },
           "404": {
             "description": "Page not found"
@@ -2138,7 +2449,10 @@
             "description": "Unit edits saved"
           },
           "403": {
-            "description": "No permission to save units in this page"
+            "description": "No perm to save units in this page"
+          },
+          "409": {
+            "description": "Serializable conflict; retry the complete request"
           },
           "422": {
             "description": "Invalid Unit edit"
@@ -2395,7 +2709,7 @@
             "description": "Team updated"
           },
           "403": {
-            "description": "No permission to update this team"
+            "description": "No perm to update this team"
           },
           "404": {
             "description": "Team not found"
@@ -2427,7 +2741,7 @@
             "description": "Team deleted"
           },
           "403": {
-            "description": "No permission to delete this team"
+            "description": "No perm to delete this team"
           },
           "404": {
             "description": "Team not found"
@@ -2500,7 +2814,7 @@
             }
           },
           "403": {
-            "description": "No permission to list announcements in this team"
+            "description": "No perm to list announcements in this team"
           }
         }
       }
@@ -2538,7 +2852,7 @@
             "description": "Avatar upload confirmed"
           },
           "403": {
-            "description": "No permission to modify this team's avatar"
+            "description": "No perm to modify this team's avatar"
           },
           "404": {
             "description": "Team not found"
@@ -2586,7 +2900,7 @@
             }
           },
           "403": {
-            "description": "No permission to modify this team's avatar"
+            "description": "No perm to modify this team's avatar"
           },
           "404": {
             "description": "Team not found"
@@ -2599,7 +2913,7 @@
         "tags": [
           "comics"
         ],
-        "summary": "`GET /api/v1/teams/{team_id}/comic-archives/export` — export retained archive month slots.",
+        "summary": "`GET /api/v1/teams/{team_id}/comic-archives/export` — export archive month slots.",
         "operationId": "export_archives",
         "parameters": [
           {
@@ -2614,7 +2928,7 @@
           {
             "name": "month",
             "in": "query",
-            "description": "UTC month slots in `YYYY-MM` format to filter retained archives by.",
+            "description": "UTC month slots in `YYYY-MM` format to filter archives by.",
             "required": false,
             "schema": {
               "type": "array",
@@ -2636,10 +2950,10 @@
             }
           },
           "403": {
-            "description": "No permission to export this team's archives"
+            "description": "No perm to export this team's archives"
           },
           "422": {
-            "description": "Invalid or expired month selection"
+            "description": "Invalid month selection"
           }
         }
       }
@@ -2709,7 +3023,38 @@
             }
           },
           "403": {
-            "description": "No permission to list comments in this team"
+            "description": "No perm to list comments in this team"
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{team_id}/mark-self-online": {
+      "put": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "`PUT /api/v1/teams/{team_id}/mark-self-online` — refresh own lease.",
+        "operationId": "mark_self_online",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "description": "Team ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Online lease refreshed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Team membership required"
           }
         }
       }
@@ -2788,7 +3133,45 @@
             }
           },
           "403": {
-            "description": "No permission to list invitations in this team"
+            "description": "No perm to list invitations in this team"
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{team_id}/online-users": {
+      "get": {
+        "tags": [
+          "teams"
+        ],
+        "summary": "`GET /api/v1/teams/{team_id}/online-users` — list active team users.",
+        "operationId": "list_online_user_ids",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "description": "Team ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Online user IDs listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_Vec_String"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Team membership required"
           }
         }
       }
@@ -2859,6 +3242,73 @@
         }
       }
     },
+    "/api/v1/teams/{team_id}/termbases/import": {
+      "post": {
+        "tags": [
+          "termbase-port"
+        ],
+        "summary": "`POST /api/v1/teams/{team_id}/termbases/import` — import into a team scope.",
+        "operationId": "import_team",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "description": "Team ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "force_merge",
+            "in": "query",
+            "description": "Merge into a same-name terminology base instead of rejecting it.",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportTermbaseInstr"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Termbase merged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_ImportTermbaseVal"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Termbase imported",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpBody_ImportTermbaseVal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Team translator or proofreader required"
+          },
+          "422": {
+            "description": "Invalid document, capacity, or duplicate name"
+          }
+        }
+      }
+    },
     "/api/v1/teams/{team_id}/worksets": {
       "get": {
         "tags": [
@@ -2914,7 +3364,7 @@
             "description": "Authentication required"
           },
           "403": {
-            "description": "No permission to list worksets in this team"
+            "description": "No perm to list worksets in this team"
           }
         }
       }
@@ -3055,6 +3505,82 @@
           },
           "403": {
             "description": "Team proofreader role required"
+          },
+          "422": {
+            "description": "Termbase not found"
+          }
+        }
+      }
+    },
+    "/api/v1/termbases/{termbase_id}/export": {
+      "get": {
+        "tags": [
+          "termbase-port"
+        ],
+        "summary": "`GET /api/v1/termbases/{termbase_id}/export` — export native JSON.",
+        "operationId": "export",
+        "parameters": [
+          {
+            "name": "termbase_id",
+            "in": "path",
+            "description": "Termbase ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Native terminology-base export",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportTermbaseVal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Team membership required"
+          },
+          "422": {
+            "description": "Termbase not found"
+          }
+        }
+      }
+    },
+    "/api/v1/termbases/{termbase_id}/export/download": {
+      "get": {
+        "tags": [
+          "termbase-port"
+        ],
+        "summary": "`GET /api/v1/termbases/{termbase_id}/export/download` — download native JSON.",
+        "operationId": "export_download",
+        "parameters": [
+          {
+            "name": "termbase_id",
+            "in": "path",
+            "description": "Termbase ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Native terminology-base download",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportTermbaseVal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Team membership required"
           },
           "422": {
             "description": "Termbase not found"
@@ -3399,10 +3925,13 @@
             "description": "User deleted"
           },
           "403": {
-            "description": "Cannot delete another user's account"
+            "description": "Cannot delete another user or the last admin of a team"
           },
           "404": {
             "description": "User not found"
+          },
+          "409": {
+            "description": "Serializable conflict; retry the complete request"
           }
         }
       }
@@ -3563,7 +4092,7 @@
             "description": "Authentication required"
           },
           "403": {
-            "description": "No permission to create worksets in this team"
+            "description": "No perm to create worksets in this team"
           },
           "404": {
             "description": "Team not found"
@@ -3604,7 +4133,7 @@
             "description": "Authentication required"
           },
           "403": {
-            "description": "No permission to view this workset"
+            "description": "No perm to view this workset"
           },
           "404": {
             "description": "Workset not found"
@@ -3643,7 +4172,7 @@
             "description": "Workset updated"
           },
           "403": {
-            "description": "No permission to update this workset"
+            "description": "No perm to update this workset"
           },
           "404": {
             "description": "Workset not found"
@@ -3675,7 +4204,7 @@
             "description": "Workset deleted"
           },
           "403": {
-            "description": "No permission to delete this workset"
+            "description": "No perm to delete this workset"
           },
           "404": {
             "description": "Workset not found"
@@ -3689,7 +4218,7 @@
           "comics"
         ],
         "summary": "`GET /api/v1/worksets/{workset_id}/comics` — list comics in a workset.",
-        "description": "Lists active comics in a workset with optional title and workflow-stage filters. `incl` embeds related rows and `with` populates parallel derived rows.",
+        "description": "Lists active and archived comics in a workset with optional title, lifecycle, and workflow-stage filters. `incl` embeds related rows and `with` populates parallel derived rows.",
         "operationId": "list_infos",
         "parameters": [
           {
@@ -3719,6 +4248,15 @@
               "type": "integer",
               "format": "int32",
               "minimum": 0
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Lifecycle state filter. Omit to list both active and archived comics.",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ComicStatus"
             }
           },
           {
@@ -3780,7 +4318,7 @@
             }
           },
           "403": {
-            "description": "No permission to list comics in this workset"
+            "description": "No perm to list comics in this workset"
           },
           "422": {
             "description": "Invalid query option combination or workflow-stage filter"
@@ -3850,12 +4388,12 @@
       },
       "ArchiveComicVal": {
         "type": "object",
-        "description": "Value returned after an active comic has been archived atomically.",
+        "description": "Value returned after a comic has been archived atomically.",
         "required": [
-          "archived_comic_id"
+          "archived_id"
         ],
         "properties": {
-          "archived_comic_id": {
+          "archived_id": {
             "type": "string",
             "description": "Identifier of the archived comic."
           }
@@ -4104,6 +4642,459 @@
           }
         }
       },
+      "ChapterStageInstr": {
+        "type": "string",
+        "description": "Input parameters for updating a chapter's workflow stage.\n\nEncodes a single operation on a specific stage, e.g. \"start translating\"\non the `translate` stage. The use case layer validates that the\ntransition is legal for the current stage phase before applying it.",
+        "enum": [
+          "raw_provide",
+          "translate",
+          "proofread",
+          "typeset_redraw",
+          "review",
+          "publish"
+        ]
+      },
+      "ChapterStageOperInstr": {
+        "type": "string",
+        "description": "Operation accepted by the workflow-stage JSON body.",
+        "enum": [
+          "advance",
+          "revert"
+        ]
+      },
+      "ChapterTranslationFormatInstr": {
+        "type": "string",
+        "description": "Translation format used by chapter translation HTTP inputs.",
+        "enum": [
+          "label_plus",
+          "poprako"
+        ]
+      },
+      "ChapterTranslationPortView": {
+        "type": "object",
+        "description": "JSON document exchanged by the PopRaKo translation port.",
+        "required": [
+          "chapter_id",
+          "chapter_index",
+          "comic_id",
+          "comic_title",
+          "pages"
+        ],
+        "properties": {
+          "chapter_id": {
+            "type": "string",
+            "description": "Chapter identifier from the exporting chapter."
+          },
+          "chapter_index": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Ordinal index of the chapter within its comic."
+          },
+          "chapter_subtitle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Optional subtitle from the exporting chapter."
+          },
+          "comic_id": {
+            "type": "string",
+            "description": "Comic identifier from the exporting comic."
+          },
+          "comic_title": {
+            "type": "string",
+            "description": "Comic title from the exporting comic."
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageTranslationPortView"
+            },
+            "description": "Pages and their translation units."
+          }
+        }
+      },
+      "ChapterWorkflowRecordEventView": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "A chapter and its initial creator assignment were created.",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "chapter_created"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A chapter subtitle changed.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "A chapter subtitle changed.",
+                "required": [
+                  "previous_subtitle",
+                  "next_subtitle"
+                ],
+                "properties": {
+                  "next_subtitle": {
+                    "type": "string",
+                    "description": "Subtitle after the update."
+                  },
+                  "previous_subtitle": {
+                    "type": "string",
+                    "description": "Subtitle before the update."
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "chapter_subtitle_updated"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A chapter became the pinned chapter for its comic.",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "chapter_pinned"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A chapter stopped being the pinned chapter for its comic.",
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "chapter_unpinned"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A user received a chapter assignment.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "A user received a chapter assignment.",
+                "required": [
+                  "subject_user_id",
+                  "roles"
+                ],
+                "properties": {
+                  "roles": {
+                    "$ref": "#/components/schemas/RoleMask",
+                    "description": "Initial assignment roles."
+                  },
+                  "subject_user_id": {
+                    "type": "string",
+                    "description": "User receiving the assignment."
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "assignment_created"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "An existing chapter assignment changed roles.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "An existing chapter assignment changed roles.",
+                "required": [
+                  "subject_user_id",
+                  "previous_roles",
+                  "next_roles"
+                ],
+                "properties": {
+                  "next_roles": {
+                    "$ref": "#/components/schemas/RoleMask",
+                    "description": "Roles after the update."
+                  },
+                  "previous_roles": {
+                    "$ref": "#/components/schemas/RoleMask",
+                    "description": "Roles before the update."
+                  },
+                  "subject_user_id": {
+                    "type": "string",
+                    "description": "User whose roles changed."
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "assignment_roles_updated"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A chapter assignment was deleted.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "A chapter assignment was deleted.",
+                "required": [
+                  "subject_user_id",
+                  "previous_roles"
+                ],
+                "properties": {
+                  "previous_roles": {
+                    "$ref": "#/components/schemas/RoleMask",
+                    "description": "Roles before deletion."
+                  },
+                  "subject_user_id": {
+                    "type": "string",
+                    "description": "User whose assignment was removed."
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "assignment_deleted"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Translation content was imported into a chapter.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "Translation content was imported into a chapter.",
+                "required": [
+                  "format",
+                  "imported_page_count",
+                  "imported_unit_count"
+                ],
+                "properties": {
+                  "format": {
+                    "$ref": "#/components/schemas/ChapterWorkflowRecordTranslationFormatView",
+                    "description": "Imported content format."
+                  },
+                  "imported_page_count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Number of imported pages."
+                  },
+                  "imported_unit_count": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "Number of imported units."
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "translation_imported"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Translation content was successfully exported from a chapter.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "Translation content was successfully exported from a chapter.",
+                "required": [
+                  "formats"
+                ],
+                "properties": {
+                  "formats": {
+                    "$ref": "#/components/schemas/ExportFormatSpec",
+                    "description": "Generated content formats."
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "translation_exported"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A chapter workflow stage changed phase.",
+            "required": [
+              "data",
+              "kind"
+            ],
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "A chapter workflow stage changed phase.",
+                "required": [
+                  "stage",
+                  "previous_phase",
+                  "next_phase",
+                  "origin"
+                ],
+                "properties": {
+                  "next_phase": {
+                    "$ref": "#/components/schemas/ChapterWorkflowRecordStagePhaseView",
+                    "description": "Phase after the transition."
+                  },
+                  "origin": {
+                    "$ref": "#/components/schemas/ChapterWorkflowRecordOriginView",
+                    "description": "Action that originated the transition."
+                  },
+                  "previous_phase": {
+                    "$ref": "#/components/schemas/ChapterWorkflowRecordStagePhaseView",
+                    "description": "Phase before the transition."
+                  },
+                  "stage": {
+                    "$ref": "#/components/schemas/ChapterWorkflowRecordStageView",
+                    "description": "Changed workflow stage."
+                  }
+                }
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "stage_transitioned"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "Strongly typed workflow event exposed to clients as a discriminated union."
+      },
+      "ChapterWorkflowRecordInfoView": {
+        "type": "object",
+        "description": "API representation of one immutable chapter workflow record.",
+        "required": [
+          "id",
+          "chapter_id",
+          "event",
+          "created_at"
+        ],
+        "properties": {
+          "actor_user_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "User that caused the record, absent for system work."
+          },
+          "chapter_id": {
+            "type": "string",
+            "description": "Chapter that owns this record."
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Record creation time in Unix milliseconds."
+          },
+          "event": {
+            "$ref": "#/components/schemas/ChapterWorkflowRecordEventView",
+            "description": "Strongly typed, language-neutral event data for client-side rendering."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique workflow record identifier."
+          }
+        }
+      },
+      "ChapterWorkflowRecordOriginView": {
+        "type": "string",
+        "description": "Operation source used by a workflow record event.",
+        "enum": [
+          "manual",
+          "unit_edit",
+          "translation_import",
+          "translation_export",
+          "raw_provide_check"
+        ]
+      },
+      "ChapterWorkflowRecordStagePhaseView": {
+        "type": "string",
+        "description": "Workflow-stage phase used by a workflow record event.",
+        "enum": [
+          "pending",
+          "active",
+          "completed"
+        ]
+      },
+      "ChapterWorkflowRecordStageView": {
+        "type": "string",
+        "description": "Workflow stage used by a workflow record event.",
+        "enum": [
+          "raw_provide",
+          "translate",
+          "proofread",
+          "typeset_redraw",
+          "review",
+          "publish"
+        ]
+      },
+      "ChapterWorkflowRecordTranslationFormatView": {
+        "type": "string",
+        "description": "Translation format used by a workflow record event.",
+        "enum": [
+          "label_plus",
+          "poprako"
+        ]
+      },
       "ComicInclOpt": {
         "type": "string",
         "description": "Incl opts for comic info queries.\n\nEach opt embeds additional related data into the returned\n[`ComicInfoView`]. Dotted opts implicitly pull in the segments before the\ndot (e.g. `workset.team` also embeds `workset`).",
@@ -4125,10 +5116,19 @@
           "chapter_count",
           "creator_id",
           "last_active_at",
+          "is_archived",
           "created_at",
           "updated_at"
         ],
         "properties": {
+          "archived_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Timestamp when the comic was archived, when applicable."
+          },
           "author": {
             "type": "string",
             "description": "Comic author name."
@@ -4188,6 +5188,10 @@
             "format": "int32",
             "description": "Ordinal position of the comic within its workset."
           },
+          "is_archived": {
+            "type": "boolean",
+            "description": "Whether this comic has been archived and is no longer writable."
+          },
           "last_active_at": {
             "type": "integer",
             "format": "int64",
@@ -4229,6 +5233,14 @@
             "description": "Parent workset identifier this comic belongs to."
           }
         }
+      },
+      "ComicStatus": {
+        "type": "string",
+        "description": "Lifecycle state used to filter comics in management lists.",
+        "enum": [
+          "active",
+          "archived"
+        ]
       },
       "ComicWithOpt": {
         "type": "string",
@@ -4734,47 +5746,27 @@
           }
         }
       },
-      "ExportChapterTranslationVal": {
+      "ExportChapterTranslationsVal": {
         "type": "object",
-        "description": "JSON-safe export object for one translated chapter.",
-        "required": [
-          "chapter_id",
-          "chapter_index",
-          "comic_id",
-          "comic_title",
-          "pages"
-        ],
+        "description": "Translation documents generated together by one chapter export.",
         "properties": {
-          "chapter_id": {
-            "type": "string",
-            "description": "Chapter identifier."
-          },
-          "chapter_index": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Ordinal index of the chapter within its comic."
-          },
-          "chapter_subtitle": {
+          "label_plus": {
             "type": [
               "string",
               "null"
             ],
-            "description": "Optional subtitle for the chapter; absent when not set."
+            "description": "LabelPlus text, absent when that format was not selected."
           },
-          "comic_id": {
-            "type": "string",
-            "description": "Identifier of the comic this chapter belongs to."
-          },
-          "comic_title": {
-            "type": "string",
-            "description": "Title of the comic this chapter belongs to."
-          },
-          "pages": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PageTranslationExportView"
-            },
-            "description": "Translated pages contained in this chapter."
+          "poprako": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ChapterTranslationPortView",
+                "description": "Native PopRaKo document, absent when that format was not selected."
+              }
+            ]
           }
         }
       },
@@ -4789,6 +5781,52 @@
         },
         "propertyNames": {
           "type": "string"
+        }
+      },
+      "ExportFormatSpec": {
+        "type": "object",
+        "description": "Formats generated together by one chapter translation export.",
+        "required": [
+          "label_plus",
+          "poprako"
+        ],
+        "properties": {
+          "label_plus": {
+            "type": "boolean",
+            "description": "Whether to generate LabelPlus text."
+          },
+          "poprako": {
+            "type": "boolean",
+            "description": "Whether to generate the native PopRaKo document."
+          }
+        }
+      },
+      "ExportTermbaseVal": {
+        "type": "object",
+        "description": "Native portable terminology-base export document.",
+        "required": [
+          "name",
+          "terms"
+        ],
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Optional terminology-base description."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the exported terminology base."
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TermbaseTermView"
+            },
+            "description": "Portable terminology entries ordered deterministically."
+          }
         }
       },
       "HttpBody_ArchiveComicVal": {
@@ -4808,12 +5846,12 @@
           },
           "data": {
             "type": "object",
-            "description": "Value returned after an active comic has been archived atomically.",
+            "description": "Value returned after a comic has been archived atomically.",
             "required": [
-              "archived_comic_id"
+              "archived_id"
             ],
             "properties": {
-              "archived_comic_id": {
+              "archived_id": {
                 "type": "string",
                 "description": "Identifier of the archived comic."
               }
@@ -5046,10 +6084,19 @@
               "chapter_count",
               "creator_id",
               "last_active_at",
+              "is_archived",
               "created_at",
               "updated_at"
             ],
             "properties": {
+              "archived_at": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "int64",
+                "description": "Timestamp when the comic was archived, when applicable."
+              },
               "author": {
                 "type": "string",
                 "description": "Comic author name."
@@ -5108,6 +6155,10 @@
                 "type": "integer",
                 "format": "int32",
                 "description": "Ordinal position of the comic within its workset."
+              },
+              "is_archived": {
+                "type": "boolean",
+                "description": "Whether this comic has been archived and is no longer writable."
               },
               "last_active_at": {
                 "type": "integer",
@@ -5468,67 +6519,6 @@
           }
         }
       },
-      "HttpBody_ExportChapterTranslationVal": {
-        "type": "object",
-        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
-        "required": [
-          "code",
-          "data"
-        ],
-        "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Application-level success code, 0 for normal success.",
-            "example": 0,
-            "minimum": 0
-          },
-          "data": {
-            "type": "object",
-            "description": "JSON-safe export object for one translated chapter.",
-            "required": [
-              "chapter_id",
-              "chapter_index",
-              "comic_id",
-              "comic_title",
-              "pages"
-            ],
-            "properties": {
-              "chapter_id": {
-                "type": "string",
-                "description": "Chapter identifier."
-              },
-              "chapter_index": {
-                "type": "integer",
-                "format": "int32",
-                "description": "Ordinal index of the chapter within its comic."
-              },
-              "chapter_subtitle": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "Optional subtitle for the chapter; absent when not set."
-              },
-              "comic_id": {
-                "type": "string",
-                "description": "Identifier of the comic this chapter belongs to."
-              },
-              "comic_title": {
-                "type": "string",
-                "description": "Title of the comic this chapter belongs to."
-              },
-              "pages": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/PageTranslationExportView"
-                },
-                "description": "Translated pages contained in this chapter."
-              }
-            }
-          }
-        }
-      },
       "HttpBody_ExportComicArchivesVal": {
         "type": "object",
         "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
@@ -5591,6 +6581,53 @@
                 "type": "integer",
                 "format": "int32",
                 "description": "Number of translation units that were imported."
+              }
+            }
+          }
+        }
+      },
+      "HttpBody_ImportTermbaseVal": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "object",
+            "description": "Result of importing one native terminology-base document.",
+            "required": [
+              "id",
+              "created",
+              "created_term_count",
+              "merged_term_count"
+            ],
+            "properties": {
+              "created": {
+                "type": "boolean",
+                "description": "Whether this import created a new terminology base."
+              },
+              "created_term_count": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Number of new terminology entries created."
+              },
+              "id": {
+                "type": "string",
+                "description": "Identifier of the created or merged terminology base."
+              },
+              "merged_term_count": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Number of existing terminology entries merged."
               }
             }
           }
@@ -5967,8 +7004,6 @@
               "id",
               "chapter_id",
               "index",
-              "image_hash",
-              "ext",
               "total_unit_count",
               "translated_unit_count",
               "proofread_unit_count",
@@ -5986,16 +7021,30 @@
                 "description": "Timestamp of creation, in Unix milliseconds."
               },
               "ext": {
-                "$ref": "#/components/schemas/ImageExt",
-                "description": "File format."
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ImageExt",
+                    "description": "File format, if one exists."
+                  }
+                ]
               },
               "id": {
                 "type": "string",
                 "description": "Unique page identifier."
               },
               "image_hash": {
-                "$ref": "#/components/schemas/ImageHash",
-                "description": "Content hash of the page image."
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ImageHash",
+                    "description": "Content hash of the page image, if one exists."
+                  }
+                ]
               },
               "image_thumbnail_url": {
                 "type": [
@@ -6911,6 +7960,62 @@
           }
         }
       },
+      "HttpBody_Vec_ChapterWorkflowRecordInfoView": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "API representation of one immutable chapter workflow record.",
+              "required": [
+                "id",
+                "chapter_id",
+                "event",
+                "created_at"
+              ],
+              "properties": {
+                "actor_user_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "User that caused the record, absent for system work."
+                },
+                "chapter_id": {
+                  "type": "string",
+                  "description": "Chapter that owns this record."
+                },
+                "created_at": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Record creation time in Unix milliseconds."
+                },
+                "event": {
+                  "$ref": "#/components/schemas/ChapterWorkflowRecordEventView",
+                  "description": "Strongly typed, language-neutral event data for client-side rendering."
+                },
+                "id": {
+                  "type": "string",
+                  "description": "Unique workflow record identifier."
+                }
+              }
+            }
+          }
+        }
+      },
       "HttpBody_Vec_CommentInfoView": {
         "type": "object",
         "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
@@ -7155,8 +8260,6 @@
                 "id",
                 "chapter_id",
                 "index",
-                "image_hash",
-                "ext",
                 "total_unit_count",
                 "translated_unit_count",
                 "proofread_unit_count",
@@ -7174,16 +8277,30 @@
                   "description": "Timestamp of creation, in Unix milliseconds."
                 },
                 "ext": {
-                  "$ref": "#/components/schemas/ImageExt",
-                  "description": "File format."
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImageExt",
+                      "description": "File format, if one exists."
+                    }
+                  ]
                 },
                 "id": {
                   "type": "string",
                   "description": "Unique page identifier."
                 },
                 "image_hash": {
-                  "$ref": "#/components/schemas/ImageHash",
-                  "description": "Content hash of the page image."
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImageHash",
+                      "description": "Content hash of the page image, if one exists."
+                    }
+                  ]
                 },
                 "image_thumbnail_url": {
                   "type": [
@@ -7225,6 +8342,29 @@
                   "description": "Timestamp of last update, in Unix milliseconds."
                 }
               }
+            }
+          }
+        }
+      },
+      "HttpBody_Vec_String": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         }
@@ -7509,6 +8649,106 @@
           }
         }
       },
+      "HttpBody_Vec_UnitInfoView": {
+        "type": "object",
+        "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
+        "required": [
+          "code",
+          "data"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Application-level success code, 0 for normal success.",
+            "example": 0,
+            "minimum": 0
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Presentation-ready visible Unit information.",
+              "required": [
+                "id",
+                "page_id",
+                "is_bubble",
+                "is_proofread",
+                "x_coord",
+                "y_coord",
+                "created_at",
+                "updated_at"
+              ],
+              "properties": {
+                "created_at": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Creation time as Unix milliseconds."
+                },
+                "id": {
+                  "type": "string",
+                  "description": "Permanent Unit ID."
+                },
+                "is_bubble": {
+                  "type": "boolean",
+                  "description": "Whether the Unit identifies a speech bubble."
+                },
+                "is_proofread": {
+                  "type": "boolean",
+                  "description": "Whether the current revision is approved."
+                },
+                "last_proofreader_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "ID of the proofreader who last assigned revision content."
+                },
+                "last_translator_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "ID of the translator who last assigned translation content."
+                },
+                "page_id": {
+                  "type": "string",
+                  "description": "Owning Page ID."
+                },
+                "proofread_text": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Current proofread text."
+                },
+                "translated_text": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Current translated text."
+                },
+                "updated_at": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Last update time as Unix milliseconds."
+                },
+                "x_coord": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Horizontal page-relative coordinate."
+                },
+                "y_coord": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Vertical page-relative coordinate."
+                }
+              }
+            }
+          }
+        }
+      },
       "HttpBody_Vec_WorksetInfoView": {
         "type": "object",
         "description": "Success response body wrapping a usecase value.\n\nSerializes as the standard JSON success envelope. HTTP metadata such as\nstatus code, extra headers, and `Set-Cookie` values are not part of the JSON\nbody.",
@@ -7738,7 +8978,7 @@
             "description": "Raw translation content string."
           },
           "format": {
-            "$ref": "#/components/schemas/TranslationFormat",
+            "$ref": "#/components/schemas/ChapterTranslationFormatInstr",
             "description": "The translation format (e.g., JSON, SRT)."
           }
         }
@@ -7760,6 +9000,92 @@
             "type": "integer",
             "format": "int32",
             "description": "Number of translation units that were imported."
+          }
+        }
+      },
+      "ImportTermInstr": {
+        "type": "object",
+        "description": "One portable terminology entry supplied by an import request.",
+        "required": [
+          "source",
+          "targets"
+        ],
+        "properties": {
+          "comment": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Optional annotation or usage note."
+          },
+          "source": {
+            "type": "string",
+            "description": "Source-language term or phrase."
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Target-language translations."
+          }
+        }
+      },
+      "ImportTermbaseInstr": {
+        "type": "object",
+        "description": "Native terminology-base document supplied to an import endpoint.",
+        "required": [
+          "name",
+          "terms"
+        ],
+        "properties": {
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Optional terminology-base description."
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the terminology base."
+          },
+          "terms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportTermInstr"
+            },
+            "description": "Portable terminology entries to import."
+          }
+        }
+      },
+      "ImportTermbaseVal": {
+        "type": "object",
+        "description": "Result of importing one native terminology-base document.",
+        "required": [
+          "id",
+          "created",
+          "created_term_count",
+          "merged_term_count"
+        ],
+        "properties": {
+          "created": {
+            "type": "boolean",
+            "description": "Whether this import created a new terminology base."
+          },
+          "created_term_count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of new terminology entries created."
+          },
+          "id": {
+            "type": "string",
+            "description": "Identifier of the created or merged terminology base."
+          },
+          "merged_term_count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of existing terminology entries merged."
           }
         }
       },
@@ -8251,8 +9577,6 @@
           "id",
           "chapter_id",
           "index",
-          "image_hash",
-          "ext",
           "total_unit_count",
           "translated_unit_count",
           "proofread_unit_count",
@@ -8270,16 +9594,30 @@
             "description": "Timestamp of creation, in Unix milliseconds."
           },
           "ext": {
-            "$ref": "#/components/schemas/ImageExt",
-            "description": "File format."
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ImageExt",
+                "description": "File format, if one exists."
+              }
+            ]
           },
           "id": {
             "type": "string",
             "description": "Unique page identifier."
           },
           "image_hash": {
-            "$ref": "#/components/schemas/ImageHash",
-            "description": "Content hash of the page image."
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ImageHash",
+                "description": "Content hash of the page image, if one exists."
+              }
+            ]
           },
           "image_thumbnail_url": {
             "type": [
@@ -8322,9 +9660,9 @@
           }
         }
       },
-      "PageTranslationExportView": {
+      "PageTranslationPortView": {
         "type": "object",
-        "description": "JSON-safe export object for one page.",
+        "description": "Page object exchanged by the PopRaKo translation port.",
         "required": [
           "page_id",
           "page_index",
@@ -8333,7 +9671,7 @@
         "properties": {
           "page_id": {
             "type": "string",
-            "description": "Page identifier."
+            "description": "Page identifier from the exporting chapter."
           },
           "page_index": {
             "type": "integer",
@@ -8343,9 +9681,9 @@
           "units": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UnitTranslationExportView"
+              "$ref": "#/components/schemas/UnitTranslationPortView"
             },
-            "description": "Translation units belonging to this page."
+            "description": "Units belonging to this page."
           }
         }
       },
@@ -8627,42 +9965,22 @@
       "RoleField": {
         "type": "integer",
         "format": "int32",
-        "description": "A singular role permission flag represented as a bit position.\n\nEach role is a single bit value:\n\n| Value | Name          | Description             |\n|-------|---------------|-------------------------|\n| 1     | `RAW_PROVIDER` | Raw provider            |\n| 2     | `TRANSLATOR`   | Translator              |\n| 4     | `PROOFREADER`  | Proofreader             |\n| 8     | `TYPESETTER`   | Typesetter              |\n| 16    | `REDRAWER`     | Redrawer                |\n| 32    | `REVIEWER`     | Reviewer                |\n| 64    | `PUBLISHER`    | Publisher               |\n| 128   | `ADMIN`        | Admin                   |\n| 256   | `BOT`          | Bot                     |\n\nOnly a **single** valid bit is accepted; composite values are rejected.",
+        "description": "A singular role perm flag represented as a bit position.\n\nEach role is a single bit value:\n\n| Value | Name          | Description             |\n|-------|---------------|-------------------------|\n| 1     | `RAW_PROVIDER` | Raw provider            |\n| 2     | `TRANSLATOR`   | Translator              |\n| 4     | `PROOFREADER`  | Proofreader             |\n| 8     | `TYPESETTER`   | Typesetter              |\n| 16    | `REDRAWER`     | Redrawer                |\n| 32    | `REVIEWER`     | Reviewer                |\n| 64    | `PUBLISHER`    | Publisher               |\n| 128   | `ADMIN`        | Admin                   |\n| 256   | `BOT`          | Bot                     |\n\nOnly a **single** valid bit is accepted; composite values are rejected.",
         "example": 2,
         "minimum": 0
       },
       "RoleMask": {
         "type": "integer",
         "format": "int32",
-        "description": "A composite bitmask combining multiple role permission flags.\n\nBits are OR-ed together from the following role values:\n\n| Value | Name          | Description             |\n|-------|---------------|-------------------------|\n| 1     | `RAW_PROVIDER` | Raw provider            |\n| 2     | `TRANSLATOR`   | Translator              |\n| 4     | `PROOFREADER`  | Proofreader             |\n| 8     | `TYPESETTER`   | Typesetter              |\n| 16    | `REDRAWER`     | Redrawer                |\n| 32    | `REVIEWER`     | Reviewer                |\n| 64    | `PUBLISHER`    | Publisher               |\n| 128   | `ADMIN`        | Admin                   |\n| 256   | `BOT`          | Bot                     |\n\n**Examples:** `1` = RAW_PROVIDER, `6` = TRANSLATOR | PROOFREADER, `255` = all roles except BOT.",
+        "description": "A composite bitmask combining multiple role perm flags.\n\nBits are OR-ed together from the following role values:\n\n| Value | Name          | Description             |\n|-------|---------------|-------------------------|\n| 1     | `RAW_PROVIDER` | Raw provider            |\n| 2     | `TRANSLATOR`   | Translator              |\n| 4     | `PROOFREADER`  | Proofreader             |\n| 8     | `TYPESETTER`   | Typesetter              |\n| 16    | `REDRAWER`     | Redrawer                |\n| 32    | `REVIEWER`     | Reviewer                |\n| 64    | `PUBLISHER`    | Publisher               |\n| 128   | `ADMIN`        | Admin                   |\n| 256   | `BOT`          | Bot                     |\n\n**Examples:** `1` = RAW_PROVIDER, `6` = TRANSLATOR | PROOFREADER, `255` = all roles except BOT.",
         "example": 34,
         "minimum": 0
-      },
-      "Stage": {
-        "type": "string",
-        "description": "Stage in the chapter production pipeline.",
-        "enum": [
-          "raw-provide",
-          "translate",
-          "proofread",
-          "typeset-redraw",
-          "review",
-          "publish"
-        ]
       },
       "StageMask": {
         "type": "integer",
         "format": "int32",
         "description": "A composite bitmask storing the phase of all 6 workflow stages.\n\nEach stage occupies 2 bits (4 possible states matching\n[`StagePhaseField`]), ordered from low bits:\n\n| Stage | Bits | Field |\n|:---:|:---:|:---:|\n| RawProvide | 0–1 | `StagePhaseField` |\n| Translate | 2–3 | `StagePhaseField` |\n| Proofread | 4–5 | `StagePhaseField` |\n| TypesetRedraw | 6–7 | `StagePhaseField` |\n| Review | 8–9 | `StagePhaseField` |\n| Publish | 10–11 | `StagePhaseField` |",
         "minimum": 0
-      },
-      "StageOper": {
-        "type": "string",
-        "description": "Operation applied to a workflow stage.",
-        "enum": [
-          "advance",
-          "revert"
-        ]
       },
       "SystemMailInfoView": {
         "type": "object",
@@ -8864,13 +10182,55 @@
           }
         }
       },
-      "TranslationFormat": {
-        "type": "string",
-        "description": "Translation format used by a chapter port.\n\nDetermines the tooling and schema for the chapter's translation files.",
-        "enum": [
-          "label-plus",
-          "poprako"
-        ]
+      "TermbaseTermView": {
+        "type": "object",
+        "description": "Portable terminology-entry content without persistence metadata.",
+        "required": [
+          "source",
+          "targets"
+        ],
+        "properties": {
+          "comment": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Optional annotation or usage note."
+          },
+          "source": {
+            "type": "string",
+            "description": "Source-language term or phrase."
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Target-language translations."
+          }
+        }
+      },
+      "TransformChapterUnitsInstr": {
+        "type": "object",
+        "description": "Input parameters for transforming selected Units under one Chapter.",
+        "required": [
+          "part",
+          "units"
+        ],
+        "properties": {
+          "part": {
+            "$ref": "#/components/schemas/UnitTextPart",
+            "description": "Unit text field selected for transformation."
+          },
+          "units": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnitTransformInstr"
+            },
+            "description": "Selected Units and their literal transforms."
+          }
+        },
+        "additionalProperties": false
       },
       "UnitCoordInstr": {
         "type": "object",
@@ -9145,9 +10505,72 @@
         },
         "additionalProperties": false
       },
-      "UnitTranslationExportView": {
+      "UnitTextPart": {
+        "type": "string",
+        "description": "Text field selected by a Unit search or transform request.",
+        "enum": [
+          "translated_text",
+          "proofread_text"
+        ]
+      },
+      "UnitTextTransformInstr": {
         "type": "object",
-        "description": "JSON-safe export object for one page unit.",
+        "description": "One literal text transform supplied by the client.",
+        "required": [
+          "origin",
+          "target"
+        ],
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Literal text selected in the original value."
+          },
+          "target": {
+            "type": "string",
+            "description": "Literal text inserted for each selected match."
+          }
+        },
+        "additionalProperties": false
+      },
+      "UnitTransformInstr": {
+        "type": "object",
+        "description": "Text transforms supplied for one permanent Unit.",
+        "required": [
+          "unit_id",
+          "transforms"
+        ],
+        "properties": {
+          "transforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnitTextTransformInstr"
+            },
+            "description": "Literal transforms evaluated against the same original text."
+          },
+          "unit_id": {
+            "type": "string",
+            "description": "Permanent target Unit ID."
+          }
+        },
+        "additionalProperties": false
+      },
+      "UnitTranslationInstr": {
+        "type": "object",
+        "description": "Translation assignment accepted from the client.",
+        "required": [
+          "translated_text"
+        ],
+        "properties": {
+          "translated_text": {
+            "type": "string",
+            "description": "Replacement translated text."
+          }
+        },
+        "additionalProperties": false
+      },
+      "UnitTranslationPortView": {
+        "type": "object",
+        "description": "Unit object exchanged by the PopRaKo translation port.",
         "required": [
           "unit_id",
           "unit_index",
@@ -9169,7 +10592,7 @@
           },
           "page_id": {
             "type": "string",
-            "description": "Parent page identifier the unit belongs to."
+            "description": "Parent page identifier from the exporting chapter."
           },
           "page_index": {
             "type": "integer",
@@ -9188,7 +10611,7 @@
               "string",
               "null"
             ],
-            "description": "Identifier of the proofreader user, or [`None`]."
+            "description": "Identifier of the proofreader user, or [`None`]. This is export metadata."
           },
           "translated_text": {
             "type": [
@@ -9202,11 +10625,11 @@
               "string",
               "null"
             ],
-            "description": "Identifier of the translator user, or [`None`]."
+            "description": "Identifier of the translator user, or [`None`]. This is export metadata."
           },
           "unit_id": {
             "type": "string",
-            "description": "Unique unit identifier for the exported unit."
+            "description": "Unit identifier from the exporting chapter."
           },
           "unit_index": {
             "type": "integer",
@@ -9225,19 +10648,28 @@
           }
         }
       },
-      "UnitTranslationInstr": {
+      "UpdateAnnouncementInfoInstr": {
         "type": "object",
-        "description": "Translation assignment accepted from the client.",
+        "description": "Input parameters for replacing an announcement's editable fields.",
         "required": [
-          "translated_text"
+          "id",
+          "title",
+          "content"
         ],
         "properties": {
-          "translated_text": {
+          "content": {
             "type": "string",
-            "description": "Replacement translated text."
+            "description": "Updated announcement body content."
+          },
+          "id": {
+            "type": "string",
+            "description": "Announcement identifier to update."
+          },
+          "title": {
+            "type": "string",
+            "description": "Updated announcement title."
           }
-        },
-        "additionalProperties": false
+        }
       },
       "UpdateAssignmentRolesInstr": {
         "type": "object",
@@ -9284,7 +10716,7 @@
       },
       "UpdateChapterStageInstr": {
         "type": "object",
-        "description": "Input parameters for updating a chapter's workflow stage.\n\nEncodes a single operation on a specific stage, e.g. \"start translating\"\non the `translate` stage. The use case layer validates that the\ntransition is legal for the current stage phase before applying it.",
+        "description": "Input parameters for applying one chapter workflow-stage operation.",
         "required": [
           "id",
           "stage",
@@ -9296,11 +10728,11 @@
             "description": "Chapter identifier to update."
           },
           "oper": {
-            "$ref": "#/components/schemas/StageOper",
+            "$ref": "#/components/schemas/ChapterStageOperInstr",
             "description": "Operation to apply to the target stage (e.g. start, finish, revert)."
           },
           "stage": {
-            "$ref": "#/components/schemas/Stage",
+            "$ref": "#/components/schemas/ChapterStageInstr",
             "description": "Workflow stage to operate on."
           }
         }
@@ -9702,6 +11134,10 @@
     {
       "name": "comments",
       "description": "Comment endpoints"
+    },
+    {
+      "name": "termbase-port",
+      "description": "Terminology-base import/export endpoints"
     }
   ]
 }

@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import {
   exportChapter,
-  exportChapterLp,
   getChapter,
   importChapter,
   listChapterWorkflowRecords,
@@ -201,7 +200,12 @@ describe("chapter API", () => {
         actor_user_id: "user_2",
         event: {
           kind: "translation_exported",
-          data: { format: "poprako" },
+          data: {
+            formats: {
+              label_plus: true,
+              poprako: true,
+            },
+          },
         },
         created_at: 2,
       },
@@ -319,7 +323,12 @@ describe("chapter API", () => {
           actorUserId: "user_2",
           event: {
             kind: "translation_exported",
-            data: { format: "poprako" },
+            data: {
+              formats: {
+                labelPlus: true,
+                poprako: true,
+              },
+            },
           },
           createdAt: 2,
         },
@@ -378,34 +387,43 @@ describe("chapter API", () => {
       format: "label_plus",
     });
 
-    const poprakoExportFetch = installFetch(Promise.resolve(
+    const exportFetch = installFetch(Promise.resolve(
       new Response(JSON.stringify({
-        comic_id: "comic_1",
-        comic_title: "Comic",
-        chapter_id: "chapter_1",
-        chapter_index: 0,
-        chapter_subtitle: "Chapter",
-        pages: [],
+        label_plus: "text",
+        poprako: {
+          comic_id: "comic_1",
+          comic_title: "Comic",
+          chapter_id: "chapter_1",
+          chapter_index: 0,
+          chapter_subtitle: "Chapter",
+          pages: [],
+        },
       }), { status: 200 }),
     ));
-    await exportChapter("chapter_1");
-    expect(lastFetchCall(poprakoExportFetch).url).toBe(
-      "/api/v1/chapters/chapter_1/translations/export?format=poprako",
+    const exportResult = await exportChapter("chapter_1");
+    expect(lastFetchCall(exportFetch).url).toBe(
+      "/api/v1/chapters/chapter_1/translations/export?format=poprako,label_plus",
     );
-
-    const labelPlusExportFetch = installFetch(Promise.resolve(
-      new Response("text", { status: 200 }),
-    ));
-    await exportChapterLp("chapter_1");
-    expect(lastFetchCall(labelPlusExportFetch).url).toBe(
-      "/api/v1/chapters/chapter_1/translations/export?format=label_plus",
-    );
+    expect(exportResult).toEqual({
+      success: true,
+      data: {
+        labelPlus: "text",
+        poprako: {
+          comicId: "comic_1",
+          comicTitle: "Comic",
+          chapterId: "chapter_1",
+          chapterIndex: 0,
+          chapterSubtitle: "Chapter",
+          pages: [],
+        },
+      },
+    });
+    expect(exportFetch).toHaveBeenCalledTimes(1);
 
     const serializedCalls = JSON.stringify([
       ...stageFetch.mock.calls,
       ...importFetch.mock.calls,
-      ...poprakoExportFetch.mock.calls,
-      ...labelPlusExportFetch.mock.calls,
+      ...exportFetch.mock.calls,
     ]);
     expect(serializedCalls).not.toContain("raw-provide");
     expect(serializedCalls).not.toContain("typeset-redraw");

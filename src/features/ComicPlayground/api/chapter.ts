@@ -20,6 +20,8 @@ import type {
   RawUpdateChapterStageArgs,
   ChapterExport,
   RawChapterExport,
+  ChapterExports,
+  RawChapterExports,
   ImportChapterArgs,
   RawImportChapterArgs,
   ImportChapterResult,
@@ -210,12 +212,12 @@ function unwrapRawChapterExport(raw: RawChapterExport): ChapterExport {
 export async function exportChapter(
   chapterId: string,
   options?: ExportRequestOptions,
-): Promise<Result<ChapterExport>> {
+): Promise<Result<ChapterExports>> {
   const token = useAppStore.getState().getAccessToken();
 
   try {
     const response = await fetch(
-      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=poprako`,
+      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=poprako,label_plus`,
       {
         method: "GET",
         headers: token
@@ -235,73 +237,32 @@ export async function exportChapter(
         const body = JSON.parse(rawText) as { message?: string };
         return {
           success: false,
-          error: body.message || response.statusText || "导出 PRK 失败",
+          error: body.message || response.statusText || "导出翻校数据失败",
         };
       } catch {
         return {
           success: false,
-          error: rawText || response.statusText || "导出 PRK 失败",
+          error: rawText || response.statusText || "导出翻校数据失败",
         };
       }
     }
 
-    const body = JSON.parse(rawText) as RawChapterExport;
-    if (!body) {
-      return { success: false, error: "导出 PRK 失败" };
+    const body = JSON.parse(rawText) as RawChapterExports;
+    if (!body.poprako || body.label_plus === null) {
+      return { success: false, error: "导出翻校数据响应不完整" };
     }
 
-    return { success: true, data: unwrapRawChapterExport(body) };
-  } catch (err) {
     return {
-      success: false,
-      error: err instanceof Error ? err.message : "导出 PRK 失败",
-    };
-  }
-}
-
-export async function exportChapterLp(
-  chapterId: string,
-  options?: ExportRequestOptions,
-): Promise<Result<string>> {
-  const token = useAppStore.getState().getAccessToken();
-
-  try {
-    const response = await fetch(
-      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=label_plus`,
-      {
-      method: "GET",
-        headers: token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
-        credentials: "omit",
-        signal: options?.signal,
+      success: true,
+      data: {
+        labelPlus: body.label_plus,
+        poprako: unwrapRawChapterExport(body.poprako),
       },
-    );
-
-    const rawText = await response.text();
-
-    if (!response.ok) {
-      try {
-        const body = JSON.parse(rawText) as { message?: string };
-        return {
-          success: false,
-          error: body.message || response.statusText || "导出 LP 失败",
-        };
-      } catch {
-        return {
-          success: false,
-          error: rawText || response.statusText || "导出 LP 失败",
-        };
-      }
-    }
-
-    return { success: true, data: rawText };
+    };
   } catch (err) {
     return {
       success: false,
-      error: err instanceof Error ? err.message : "导出 LP 失败",
+      error: err instanceof Error ? err.message : "导出翻校数据失败",
     };
   }
 }

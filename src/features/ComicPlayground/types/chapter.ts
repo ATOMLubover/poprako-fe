@@ -144,6 +144,16 @@ export type RawChapterExport = {
   pages: RawChapterExportPage[];
 };
 
+export type ChapterExports = {
+  labelPlus: string;
+  poprako: ChapterExport;
+};
+
+export type RawChapterExports = {
+  label_plus: string | null;
+  poprako: RawChapterExport | null;
+};
+
 export type ImportChapterFormat = "json" | "lp";
 
 export type RawImportChapterFormat = "poprako" | "label_plus";
