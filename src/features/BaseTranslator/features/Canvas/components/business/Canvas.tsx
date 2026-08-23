@@ -34,6 +34,7 @@ type Props = {
   onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
   onDeleteUnit?: (unitId: string) => void;
   onToggleBubble?: (unitId: string) => void;
+  onImageLoad?: () => void;
   enableReadOnly?: boolean;
   proofreadPreviewVisibility?: ProofreadPreviewVisibility;
 };
@@ -51,6 +52,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     onAddUnit,
     onDeleteUnit,
     onToggleBubble,
+    onImageLoad,
     enableReadOnly = false,
     proofreadPreviewVisibility = "visible",
   }: Props,
@@ -168,6 +170,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
               src={imageSrc}
               alt=""
               draggable={false}
+              onLoad={onImageLoad}
               className="select-none shadow-md"
               style={{
                 maxWidth: containerSize.w * 0.9,

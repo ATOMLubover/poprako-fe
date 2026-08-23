@@ -5,15 +5,24 @@ import type { Result } from "@/types/utils/result";
 import type { RawPageInfo } from "@/types/raw/page";
 import { unwrapRawPageInfo } from "@/types/raw/page";
 import {
+  unwrapRawUnitSearchMatch,
   unwrapRawListPageUnitsResult,
   wrapUnitDiff,
   type RawListPageUnitsResult,
+  type RawTransformChapterUnitsArgs,
   type RawUnitEdit,
+  type RawUnitInfo,
 } from "@/types/raw/unit";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 import type {
   TranslatorCompletionStage,
 } from "@/features/BaseTranslator/types/access";
+import type {
+  SearchUnitsArgs,
+  TransformUnitsArgs,
+  UnitSearchMatch,
+  UnitTextPart,
+} from "@/features/BaseTranslator/types/unitSearchTransform";
 
 export type ListPageUnitsResult = {
   units: UnitInfo[];
@@ -78,6 +87,47 @@ export async function completeChapterStage(
 
   return api.post<void, typeof payload>(
     `/chapters/${chapterId}/stage/advance`,
+    payload,
+  );
+}
+
+function wrapUnitTextPart(part: UnitTextPart) {
+  return part === "translatedText" ? "translated_text" : "proofread_text";
+}
+
+export async function searchChapterUnits(
+  chapterId: string,
+  args: SearchUnitsArgs,
+): Promise<Result<UnitSearchMatch[]>> {
+  const result = await api.get<RawUnitInfo[]>(
+    `/chapters/${chapterId}/units/search`,
+    {
+      part: wrapUnitTextPart(args.part),
+      phrase: args.phrase,
+    },
+  );
+  if (!result.success) return result;
+
+  return {
+    success: true,
+    data: result.data.map(unwrapRawUnitSearchMatch),
+  };
+}
+
+export async function transformChapterUnits(
+  chapterId: string,
+  args: TransformUnitsArgs,
+): Promise<Result<void>> {
+  const payload: RawTransformChapterUnitsArgs = {
+    part: wrapUnitTextPart(args.part),
+    units: args.unitIds.map((unitId) => ({
+      unit_id: unitId,
+      transforms: [{ origin: args.origin, target: args.target }],
+    })),
+  };
+
+  return api.post<void, RawTransformChapterUnitsArgs>(
+    `/chapters/${chapterId}/units/transform`,
     payload,
   );
 }

@@ -27,8 +27,8 @@ export default function ExportProgressDialog({
       showClose={false}
       closeOnBackdrop={false}
       footer={(
-        <div className="flex justify-end">
-          <AppDialogAction grow={false} onClick={onCancel}>
+        <div className="flex">
+          <AppDialogAction onClick={onCancel}>
             取消下载
           </AppDialogAction>
         </div>
