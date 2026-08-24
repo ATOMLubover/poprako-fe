@@ -534,6 +534,25 @@ export const TranslatorOnly: Story = {
     canTranslate: true,
     canProofread: false,
   }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", {
+      name: "切换到只读模式",
+    }));
+    expect(await canvas.findAllByRole("textbox", {
+      name: "翻译与校对差异",
+    })).toHaveLength(mockUnits.length);
+
+    await userEvent.click(canvas.getByRole("button", {
+      name: "切换到翻译模式",
+    }));
+    expect(canvas.queryByRole("textbox", {
+      name: "翻译与校对差异",
+    })).toBeNull();
+    expect(canvas.getByRole("button", {
+      name: "切换到只读模式",
+    })).toBeVisible();
+  },
 };
 
 export const SearchAndTransform: Story = {
@@ -586,6 +605,20 @@ export const ReadOnlyWithoutTerminology: Story = {
     terminology: mockTerminology,
   },
   play: async ({ canvasElement }) => {
-    expect(within(canvasElement).queryByTestId("terminology-lookup")).toBeNull();
+    const canvas = within(canvasElement);
+    expect(canvas.queryByTestId("terminology-lookup")).toBeNull();
+    expect(await canvas.findAllByRole("textbox", {
+      name: "翻译与校对差异",
+    })).toHaveLength(mockUnits.length);
+
+    await userEvent.click(canvas.getByRole("button", {
+      name: "切换到标准 Unit 视图",
+    }));
+    expect(canvas.queryByRole("textbox", {
+      name: "翻译与校对差异",
+    })).toBeNull();
+    expect(canvas.getByRole("button", {
+      name: "切换到 Diff Unit 视图",
+    })).toBeVisible();
   },
 };

@@ -44,6 +44,10 @@ import { useRelocationPreference } from
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
+import {
+  DEFAULT_READ_ONLY_UNIT_VIEW,
+  type ReadOnlyUnitView,
+} from "@/features/BaseTranslator/types/readOnlyUnitView";
 import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { UnitDiff } from "../../types/type";
 import type { TerminologyDataSource } from "../../types/terminology";
@@ -86,6 +90,20 @@ type Props = {
   startMode?: TranslatorMode;
 };
 
+type TranslatorViewState = {
+  entryMode: TranslatorMode;
+  view: TranslatorMode;
+  readOnlyUnitView: ReadOnlyUnitView;
+};
+
+function initialViewState(entryMode: TranslatorMode): TranslatorViewState {
+  return {
+    entryMode,
+    view: entryMode,
+    readOnlyUnitView: DEFAULT_READ_ONLY_UNIT_VIEW,
+  };
+}
+
 export default function BaseTranslator({
   project,
   onLoadUnits,
@@ -112,15 +130,28 @@ export default function BaseTranslator({
     () => availableTranslatorModes({ canTranslate, canProofread }),
     [canProofread, canTranslate],
   );
-  const [mode] = useState<TranslatorMode>(() =>
-    initialTranslatorMode(availableModes, startMode),
+  const mode = useMemo(
+    () => initialTranslatorMode(availableModes, startMode),
+    [availableModes, startMode],
   );
-  const [view, setView] = useState<TranslatorMode>(mode);
+  const [storedViewState, setViewState] = useState<TranslatorViewState>(() =>
+    initialViewState(mode),
+  );
+  const viewState = storedViewState.entryMode === mode
+    ? storedViewState
+    : initialViewState(mode);
+  if (storedViewState !== viewState) {
+    setViewState(viewState);
+  }
+  const { view, readOnlyUnitView } = viewState;
   const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
     useState<ProofreadPreviewVisibility>("visible");
 
-  const readOnly = mode === "readOnly";
-  const canSwitchView = mode === "proofread" && canTranslate;
+  const readOnly = view === "readOnly";
+  const canSwitchView = mode !== "readOnly" && availableModes.length > 1;
+  const nextView = availableModes[
+    (availableModes.indexOf(view) + 1) % availableModes.length
+  ];
   const canEditView = !readOnly && (
     view === "translate" ? canTranslate : canProofread
   );
@@ -448,7 +479,27 @@ export default function BaseTranslator({
 
   function handleSwitchView() {
     if (!canSwitchView) return;
-    setView((current) => current === "proofread" ? "translate" : "proofread");
+    setViewState((current) => {
+      const currentIndex = availableModes.indexOf(current.view);
+      const next = availableModes[(currentIndex + 1) % availableModes.length];
+      return {
+        entryMode: mode,
+        view: next,
+        readOnlyUnitView: next === "readOnly"
+          ? DEFAULT_READ_ONLY_UNIT_VIEW
+          : current.readOnlyUnitView,
+      };
+    });
+  }
+
+  function handleSwitchReadOnlyUnitView() {
+    if (!readOnly) return;
+    setViewState((current) => ({
+      ...current,
+      readOnlyUnitView: current.readOnlyUnitView === "diff"
+        ? "standard"
+        : "diff",
+    }));
   }
 
   useShortcutActions(
@@ -621,13 +672,16 @@ export default function BaseTranslator({
       <div className="flex items-center border-b-2 border-stone-200 shrink-0 bg-stone-50">
         <div className="flex-1 min-w-0">
           <StatusOptionBar
-            currMode={mode}
+            currMode={view}
             view={view}
+            nextView={nextView}
             canSwitchView={canSwitchView}
+            readOnlyUnitView={readOnlyUnitView}
             isRelocationEnabled={isRelocationEnabled}
             isUnitCreationEnabled={isUnitCreationEnabled}
             proofreadPreviewVisibility={proofreadPreviewVisibility}
             onSwitchView={handleSwitchView}
+            onSwitchReadOnlyUnitView={handleSwitchReadOnlyUnitView}
             onRelocationClick={toggleRelocation}
             onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
             onToggleProofreadPreviewClick={() =>
@@ -650,6 +704,7 @@ export default function BaseTranslator({
           units={unitBuf}
           focusedUnitId={focusedUnitId}
           mode={view}
+          readOnlyUnitView={readOnlyUnitView}
           onFocusUnit={handleFocusUnit}
           onModifyUnit={canEditView ? handleModifyUnit : undefined}
           onReorderUnit={canEditView ? handleReorderUnit : undefined}

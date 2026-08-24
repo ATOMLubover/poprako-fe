@@ -20,13 +20,11 @@ export function availableTranslatorModes({
   canTranslate,
   canProofread,
 }: TranslatorCapabilities): TranslatorMode[] {
-  const modes: TranslatorMode[] = [];
-
-  // 校对优先：同时拥有翻译和校对身份时，进入的是校对模式；翻译仅作为可切换视图。
-  if (canProofread) modes.push("proofread");
-  else if (canTranslate) modes.push("translate");
-
-  return modes.length > 0 ? modes : ["readOnly"];
+  // 校对优先：翻校进入校对模式，并可切换到翻译模式。
+  if (canTranslate && canProofread) return ["proofread", "translate"];
+  if (canProofread) return ["proofread"];
+  if (canTranslate) return ["translate", "readOnly"];
+  return ["readOnly"];
 }
 
 export function initialTranslatorMode(
