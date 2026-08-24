@@ -26,55 +26,31 @@ const WORKFLOW_STEPS = [
     label: "图",
     field: "assignedRawProviderAt" as const,
     getStatus: uploadWorkflowStatus,
-    getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "completed" ? ch.uploadedAt : undefined,
   },
   {
     label: "翻",
     field: "assignedTranslatorAt" as const,
     getStatus: translateWorkflowStatus,
-    getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "ongoing"
-        ? ch.translatingAt
-        : s === "completed"
-          ? ch.translatedAt
-          : undefined,
   },
   {
     label: "校",
     field: "assignedProofreaderAt" as const,
     getStatus: proofreadWorkflowStatus,
-    getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "ongoing"
-        ? ch.proofreadingAt
-        : s === "completed"
-          ? ch.proofreadAt
-          : undefined,
   },
   {
     label: "嵌",
     field: "assignedTypesetterAt" as const,
     getStatus: typesetWorkflowStatus,
-    getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "ongoing"
-        ? ch.typesettingAt
-        : s === "completed"
-          ? ch.typesetAt
-          : undefined,
   },
   {
     label: "监",
     field: "assignedReviewerAt" as const,
     getStatus: reviewWorkflowStatus,
-    getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "completed" ? ch.reviewedAt : undefined,
   },
   {
     label: "传",
     field: "assignedPublisherAt" as const,
     getStatus: publishWorkflowStatus,
-    getTime: (ch: ChapterInfo, s: WorkflowStatus) =>
-      s === "completed" ? ch.publishedAt : undefined,
   },
 ];
 
@@ -286,7 +262,6 @@ export default function ComicProgressItem({
               {hoveredStep === step.label && chapter && (
                 <WorkflowStepDropdown
                   status={status}
-                  time={step.getTime(chapter, status)}
                   names={names}
                 />
               )}
@@ -329,7 +304,6 @@ export default function ComicProgressItem({
               <div className="flex flex-col gap-1.5 text-xs whitespace-nowrap">
                 {WORKFLOW_STEPS.map((step) => {
                   const status = step.getStatus(chapter);
-                  const time = step.getTime(chapter, status);
                   const matched = assignments.filter(
                     (a) => a[step.field] != null,
                   );
@@ -344,10 +318,6 @@ export default function ComicProgressItem({
                           {ROLE_NAMES[step.label]}：
                         </span>
                         <span className="italic">{STATUS_LABELS[status]}</span>
-                        <span className="font-bold"> 时间：</span>
-                        <span className="italic">
-                          {time ? formatDate(time) : "—"}
-                        </span>
                       </div>
                       <div className="text-stone-400 italic">
                         {names.length > 0 ? names.join("、") : "—"}
