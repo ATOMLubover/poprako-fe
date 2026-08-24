@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import clsx from "clsx";
 import { useState } from "react";
 import UnitList from "@/features/BaseTranslator/features/UnitList";
 import {
@@ -7,6 +8,8 @@ import {
   type UnitInfo,
 } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
+import type { ReadOnlyUnitView } from
+  "@/features/BaseTranslator/types/readOnlyUnitView";
 import type { UserInfo } from "@/types/user";
 import type { Result } from "@/types/utils/result";
 
@@ -108,9 +111,11 @@ const initialUnits: UnitInfo[] = [
     isBubble: false,
     xCoord: 0,
     yCoord: 0.2,
-    isProofread: false,
-    translatedText: "（远处传来的螺旋桨轰鸣声）",
+    isProofread: true,
+    translatedText: "请把这一句多余的话删掉。",
     translatorId: "missing-user",
+    proofreadText: "请把多余的话删掉。",
+    proofreaderId: "proofreader-1",
   },
   {
     id: "4",
@@ -118,9 +123,11 @@ const initialUnits: UnitInfo[] = [
     isBubble: true,
     xCoord: 0,
     yCoord: 0.3,
-    isProofread: false,
-    translatedText: "这一行没有校对文本且未选中，校对框已隐藏。",
+    isProofread: true,
+    translatedText: "我们明天见。",
     translatorId: "translator-2",
+    proofreadText: "我们明天在车站见。",
+    proofreaderId: "proofreader-1",
   },
   {
     id: "5",
@@ -128,9 +135,11 @@ const initialUnits: UnitInfo[] = [
     isBubble: true,
     xCoord: 0,
     yCoord: 0.4,
-    isProofread: false,
-    translatedText: "",
+    isProofread: true,
+    translatedText: "天气很好。",
     translatorId: "translator-2",
+    proofreadText: "天气不错。",
+    proofreaderId: "proofreader-1",
   },
   ...Array.from({ length: 7 }, (_, offset): UnitInfo => {
     const index = offset + 5;
@@ -146,18 +155,61 @@ const initialUnits: UnitInfo[] = [
   }),
 ];
 
+const diffShowcaseUnits: UnitInfo[] = [
+  {
+    id: "diff-delete",
+    index: 0,
+    isBubble: true,
+    xCoord: 0,
+    yCoord: 0,
+    isProofread: true,
+    translatedText: "我真的很好。",
+    translatorId: "translator-1",
+    proofreadText: "我很好。",
+    proofreaderId: "proofreader-1",
+  },
+  {
+    id: "diff-insert",
+    index: 1,
+    isBubble: true,
+    xCoord: 0,
+    yCoord: 0.1,
+    isProofread: true,
+    translatedText: "我很好。",
+    translatorId: "translator-1",
+    proofreadText: "我今天很好。",
+    proofreaderId: "proofreader-1",
+  },
+  {
+    id: "diff-replace",
+    index: 2,
+    isBubble: true,
+    xCoord: 0,
+    yCoord: 0.2,
+    isProofread: true,
+    translatedText: "天气很好。",
+    translatorId: "translator-2",
+    proofreadText: "天气不错。",
+    proofreaderId: "proofreader-1",
+  },
+];
+
 type UnitListWrapperProps = {
   initialMode: TranslatorMode;
   readOnly?: boolean;
+  initialUnitInfos?: UnitInfo[];
 };
 
 function UnitListWrapper({
   initialMode,
   readOnly = false,
+  initialUnitInfos = initialUnits,
 }: UnitListWrapperProps) {
   const [mode, setMode] = useState<TranslatorMode>(initialMode);
+  const [readOnlyUnitView, setReadOnlyUnitView] =
+    useState<ReadOnlyUnitView>("diff");
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>("2");
-  const [units, setUnits] = useState<UnitInfo[]>(initialUnits);
+  const [units, setUnits] = useState<UnitInfo[]>(initialUnitInfos);
 
   const handleModifyUnit = (unitId: string, updates: UnitEdit) => {
     setUnits((prev) =>
@@ -170,37 +222,79 @@ function UnitListWrapper({
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-50 font-sans antialiased">
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm shrink-0">
+    <div
+      className={clsx(
+        "flex h-screen w-full flex-col bg-gray-50 font-sans antialiased",
+      )}
+    >
+      <header
+        className={clsx(
+          "flex shrink-0 items-center justify-between border-b bg-white",
+          "border-gray-200 px-6 py-4 shadow-sm",
+        )}
+      >
         <div>
           <h1 className="text-lg font-bold text-gray-800">UnitList 交互演示</h1>
           <p className="text-xs text-gray-500 mt-0.5">
             {readOnly
               ? "只读模式 · 点击序号仍可聚焦"
-              : "拖动序号排序 · 轻触序号切换气泡状态 · 支持输入和模式切换"}
+              : "拖动序号排序 · 轻触序号切换气泡状态 · "
+                + "支持输入和模式切换"}
           </p>
         </div>
         <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
-          <button
-            onClick={() => setMode("translate")}
-            className={`px-4 py-1.5 text-sm font-medium transition-all rounded-md ${
-              mode === "translate"
-                ? "bg-white text-gray-800 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            翻译模式
-          </button>
-          <button
-            onClick={() => setMode("proofread")}
-            className={`px-4 py-1.5 text-sm font-medium transition-all rounded-md ${
-              mode === "proofread"
-                ? "bg-white text-gray-800 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            校对模式
-          </button>
+          {readOnly && (
+            <>
+              <button
+                onClick={() => setReadOnlyUnitView("diff")}
+                className={clsx(
+                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                  readOnlyUnitView === "diff"
+                    ? "bg-white text-gray-800 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700",
+                )}
+              >
+                Diff 视图
+              </button>
+              <button
+                onClick={() => setReadOnlyUnitView("standard")}
+                className={clsx(
+                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                  readOnlyUnitView === "standard"
+                    ? "bg-white text-gray-800 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700",
+                )}
+              >
+                标准视图
+              </button>
+            </>
+          )}
+          {!readOnly && (
+            <>
+              <button
+                onClick={() => setMode("translate")}
+                className={clsx(
+                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                  mode === "translate"
+                    ? "bg-white text-gray-800 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700",
+                )}
+              >
+                翻译模式
+              </button>
+              <button
+                onClick={() => setMode("proofread")}
+                className={clsx(
+                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                  mode === "proofread"
+                    ? "bg-white text-gray-800 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700",
+                )}
+              >
+                校对模式
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -214,6 +308,7 @@ function UnitListWrapper({
           units={units}
           focusedUnitId={focusedUnitId}
           mode={mode}
+          readOnlyUnitView={readOnlyUnitView}
           onFocusUnit={setFocusedUnitId}
           onModifyUnit={readOnly ? undefined : handleModifyUnit}
           onReorderUnit={readOnly ? undefined : handleReorderUnit}
@@ -234,5 +329,12 @@ export const ProofreadMode: Story = {
 };
 
 export const ReadOnly: Story = {
-  render: () => <UnitListWrapper initialMode="proofread" readOnly />,
+  name: "只读 Diff（删除 / 被替换 / 替换 / 新增）",
+  render: () => (
+    <UnitListWrapper
+      initialMode="readOnly"
+      initialUnitInfos={diffShowcaseUnits}
+      readOnly
+    />
+  ),
 };

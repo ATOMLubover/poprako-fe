@@ -4,6 +4,8 @@ import { Tooltip } from "radix-ui";
 import { useEffect, useRef } from "react";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import type { TranslatorMode } from "@/types/translatorMode";
+import type { ReadOnlyUnitView } from
+  "@/features/BaseTranslator/types/readOnlyUnitView";
 import {
   unitId,
   unitIsBubble,
@@ -18,6 +20,7 @@ import { useUnitContributors } from "../../hook/useUnitContributors";
 import type { UnitUserResolver } from "../../hook/unitContributorCache";
 import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
+import ReadOnlyDiffUnitItem from "./ReadOnlyDiffUnitItem";
 
 export type SpecialCharInsertRequest = {
   id: number;
@@ -29,6 +32,7 @@ type Props = {
   units: UnitInfo[];
   focusedUnitId?: string;
   mode: TranslatorMode;
+  readOnlyUnitView: ReadOnlyUnitView;
   onFocusUnit?: (unitId: string) => void;
   // 在 units 长度为 0 时，不存在这个字段
   onModifyUnit?: (unitId: string, unit: UnitEdit) => void;
@@ -44,6 +48,7 @@ export default function UnitList({
   units,
   focusedUnitId,
   mode,
+  readOnlyUnitView,
   onFocusUnit,
   onModifyUnit,
   onReorderUnit,
@@ -85,8 +90,7 @@ export default function UnitList({
     }
   }, [focusedUnitId]);
 
-  const ItemComponent =
-    mode === "translate" ? TranslateModeUnitItem : ProofreadModeUnitItem;
+  const showReadOnlyDiff = mode === "readOnly" && readOnlyUnitView === "diff";
 
   const { showToast } = useToastStore();
   const allUnitsProofread = units.length > 0 && units.every(unitIsProofread);
@@ -109,32 +113,44 @@ export default function UnitList({
             draggingUnitId && "select-none",
           )}
         >
-          {orderedUnits.map((unit) => (
-            <ItemComponent
-              key={unitId(unit)}
-              unit={unit}
-              isFocused={focusedUnitId === unitId(unit)}
-              onSelect={onFocusUnit}
-              onIndexActivate={activateIndex}
-              canToggleBubble={canToggleBubble}
-              onModifyUnit={onModifyUnit}
-              onIndexPointerDown={
-                canReorder ? handleIndexPointerDown : undefined
-              }
-              isDragging={draggingUnitId === unitId(unit)}
-              isDragDimmed={
-                draggingUnitId !== null && draggingUnitId !== unitId(unit)
-              }
-              showDropIndicator={draggingUnitId === unitId(unit)}
-              translator={getContributor(unitTranslatorId(unit))}
-              proofreader={getContributor(unitProofreaderId(unit))}
-              dataUnitId={unitId(unit)}
-              enableReadOnly={enableReadOnly}
-              specialCharInsertRequest={specialCharInsertRequest}
-              onSpecialCharUse={onSpecialCharUse}
-              onSpecialCharInserted={onSpecialCharInserted}
-            />
-          ))}
+          {orderedUnits.map((unit) => {
+            const commonProps = {
+              unit,
+              isFocused: focusedUnitId === unitId(unit),
+              onSelect: onFocusUnit,
+              onIndexActivate: activateIndex,
+              translator: getContributor(unitTranslatorId(unit)),
+              proofreader: getContributor(unitProofreaderId(unit)),
+              dataUnitId: unitId(unit),
+            };
+            if (showReadOnlyDiff) {
+              return <ReadOnlyDiffUnitItem key={unitId(unit)} {...commonProps} />;
+            }
+
+            const ItemComponent = mode === "translate"
+              ? TranslateModeUnitItem
+              : ProofreadModeUnitItem;
+            return (
+              <ItemComponent
+                key={unitId(unit)}
+                {...commonProps}
+                canToggleBubble={canToggleBubble}
+                onModifyUnit={onModifyUnit}
+                onIndexPointerDown={
+                  canReorder ? handleIndexPointerDown : undefined
+                }
+                isDragging={draggingUnitId === unitId(unit)}
+                isDragDimmed={
+                  draggingUnitId !== null && draggingUnitId !== unitId(unit)
+                }
+                showDropIndicator={draggingUnitId === unitId(unit)}
+                enableReadOnly={enableReadOnly}
+                specialCharInsertRequest={specialCharInsertRequest}
+                onSpecialCharUse={onSpecialCharUse}
+                onSpecialCharInserted={onSpecialCharInserted}
+              />
+            );
+          })}
         </div>
         {mode === "proofread" && !enableReadOnly && (
           <button

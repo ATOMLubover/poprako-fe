@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import StatusOptionBar from "@/features/BaseTranslator/components/business/StatusOptionBar";
+import { DEFAULT_READ_ONLY_UNIT_VIEW } from
+  "@/features/BaseTranslator/types/readOnlyUnitView";
 import type { TranslatorMode } from "@/types/translatorMode";
 
 const meta: Meta<typeof StatusOptionBar> = {
@@ -17,31 +19,52 @@ type Story = StoryObj<typeof StatusOptionBar>;
 
 function InteractiveWrapper({
   initialMode,
-  canSwitchView,
+  availableModes,
 }: {
   initialMode: TranslatorMode;
-  canSwitchView: boolean;
+  availableModes: TranslatorMode[];
 }) {
   const [view, setView] = useState<TranslatorMode>(initialMode);
+  const [readOnlyUnitView, setReadOnlyUnitView] = useState(
+    DEFAULT_READ_ONLY_UNIT_VIEW,
+  );
   const [relocation, setRelocation] = useState(false);
   const [previewVisibility, setPreviewVisibility] = useState<
     "visible" | "dimmed"
   >("visible");
 
   function switchView() {
-    setView((current) => current === "proofread" ? "translate" : "proofread");
+    setView((current) => {
+      const currentIndex = availableModes.indexOf(current);
+      const next = availableModes[(currentIndex + 1) % availableModes.length];
+      if (next === "readOnly") {
+        setReadOnlyUnitView(DEFAULT_READ_ONLY_UNIT_VIEW);
+      }
+      return next;
+    });
   }
+
+  const nextView = availableModes[
+    (availableModes.indexOf(view) + 1) % availableModes.length
+  ];
 
   return (
     <div className="w-64 border border-border rounded">
       <StatusOptionBar
-        currMode={initialMode}
+        currMode={view}
         view={view}
-        canSwitchView={canSwitchView}
+        nextView={nextView}
+        canSwitchView={availableModes.length > 1}
+        readOnlyUnitView={readOnlyUnitView}
         isRelocationEnabled={relocation}
         isUnitCreationEnabled={true}
         proofreadPreviewVisibility={previewVisibility}
         onSwitchView={switchView}
+        onSwitchReadOnlyUnitView={() =>
+          setReadOnlyUnitView((current) =>
+            current === "diff" ? "standard" : "diff",
+          )
+        }
         onRelocationClick={() => setRelocation((v) => !v)}
         onUnitCreationClick={() => console.log("unit creation toggled")}
         onToggleProofreadPreviewClick={() =>
@@ -55,11 +78,11 @@ function InteractiveWrapper({
 }
 
 export const TranslateMode: Story = {
-  name: "非校对用户（翻译模式，无循环按钮）",
+  name: "纯翻译（可切换只读模式）",
   render: () => (
     <InteractiveWrapper
       initialMode="translate"
-      canSwitchView={false}
+      availableModes={["translate", "readOnly"]}
     />
   ),
 };
@@ -69,7 +92,7 @@ export const ProofreadModeWithTranslationView: Story = {
   render: () => (
     <InteractiveWrapper
       initialMode="proofread"
-      canSwitchView
+      availableModes={["proofread", "translate"]}
     />
   ),
 };
@@ -79,7 +102,7 @@ export const ProofreadMode: Story = {
   render: () => (
     <InteractiveWrapper
       initialMode="proofread"
-      canSwitchView={false}
+      availableModes={["proofread"]}
     />
   ),
 };
@@ -89,7 +112,7 @@ export const ReadOnlyActive: Story = {
   render: () => (
     <InteractiveWrapper
       initialMode="readOnly"
-      canSwitchView={false}
+      availableModes={["readOnly"]}
     />
   ),
 };

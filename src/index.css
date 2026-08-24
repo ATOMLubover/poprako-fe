@@ -2,9 +2,19 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: "JetBrains Mono Nerd Font";
+  src: url("/JetBrainsMonoNerdFont-Regular-v1.2-BFvZ-qyt.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: "JetBrains Mono Nerd Font", "JetBrains Mono", monospace;
+  --font-mono: "JetBrains Mono Nerd Font", "JetBrains Mono", monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -98,6 +108,15 @@
   --color-red-50: #fdf2f2;
   --color-red-100: #fbe5e5;
   --color-border-red-200: #fce8e8;
+  /* Translator diff colors: distinct but restrained for long-form proofreading. */
+  --color-diff-delete-text: #9f6262;
+  --color-diff-delete-bg: #f0d2d2;
+  --color-diff-replaced-text: #6f6a64;
+  --color-diff-replaced-bg: #dfdcd8;
+  --color-diff-replacement-text: #704b2c;
+  --color-diff-replacement-bg: #efd1ac;
+  --color-diff-insert-text: #3f5c45;
+  --color-diff-insert-bg: #d7e7d3;
   --shadow-green-lg: 0 10px 25px rgba(136, 176, 75, 0.4);
   --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.04);
   --shadow-green-hover: 0 8px 20px rgba(136, 176, 75, 0.15);
@@ -156,6 +175,7 @@
   html,
   body {
     @apply bg-background text-foreground;
+    font-family: "JetBrains Mono Nerd Font", "JetBrains Mono", monospace;
     overflow-x: hidden;
   }
 }

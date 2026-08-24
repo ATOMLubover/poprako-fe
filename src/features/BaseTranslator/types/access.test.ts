@@ -21,7 +21,7 @@ describe("translator assignment access", () => {
     expect(availableTranslatorModes({
       canTranslate: true,
       canProofread: false,
-    })).toEqual(["translate"]);
+    })).toEqual(["translate", "readOnly"]);
     expect(availableTranslatorModes({
       canTranslate: false,
       canProofread: true,
@@ -29,7 +29,7 @@ describe("translator assignment access", () => {
     expect(availableTranslatorModes({
       canTranslate: true,
       canProofread: true,
-    })).toEqual(["proofread"]);
+    })).toEqual(["proofread", "translate"]);
   });
 
   test("locks the mode selected at entry and prioritizes proofreading", () => {
