@@ -177,7 +177,7 @@ function UnitListWrapper({
           <p className="text-xs text-gray-500 mt-0.5">
             {readOnly
               ? "只读模式 · 点击序号仍可聚焦"
-              : "拖动序号排序 · 点击序号聚焦 · 支持输入和模式切换"}
+              : "拖动序号排序 · 轻触序号切换气泡状态 · 支持输入和模式切换"}
           </p>
         </div>
         <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">

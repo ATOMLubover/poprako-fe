@@ -6,6 +6,7 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import type { TranslatorMode } from "@/types/translatorMode";
 import {
   unitId,
+  unitIsBubble,
   unitIsProofread,
   unitProofreaderId,
   unitTranslatorId,
@@ -54,12 +55,21 @@ export default function UnitList({
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const canReorder = !enableReadOnly && onReorderUnit !== undefined;
+  const canToggleBubble = !enableReadOnly && onModifyUnit !== undefined;
+  const activateIndex = (targetUnitId: string) => {
+    const targetUnit = units.find((unit) => unitId(unit) === targetUnitId);
+    if (canToggleBubble && targetUnit) {
+      onModifyUnit(targetUnitId, { isBubble: !unitIsBubble(targetUnit) });
+      return;
+    }
+    onFocusUnit?.(targetUnitId);
+  };
   const { orderedUnits, draggingUnitId, handleIndexPointerDown } =
     useUnitReorder({
       units,
       listRef,
       enabled: canReorder,
-      onFocusUnit,
+      onActivateUnit: activateIndex,
       onReorderUnit,
     });
   const getContributor = useUnitContributors({ units, onResolveUser });
@@ -105,6 +115,8 @@ export default function UnitList({
               unit={unit}
               isFocused={focusedUnitId === unitId(unit)}
               onSelect={onFocusUnit}
+              onIndexActivate={activateIndex}
+              canToggleBubble={canToggleBubble}
               onModifyUnit={onModifyUnit}
               onIndexPointerDown={
                 canReorder ? handleIndexPointerDown : undefined
