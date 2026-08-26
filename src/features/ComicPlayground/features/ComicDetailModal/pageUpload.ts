@@ -6,6 +6,7 @@ import {
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
 import type { PageInfo, ReservedPage, UploadProgressCallbacks } from "@/types";
+import { isReportedValidationError, toApiRequestError } from "@/api/util";
 import { getFileExtension } from "./utils";
 import { hashPageFile } from "./pageHash";
 import {
@@ -35,12 +36,18 @@ type RuntimeTask = {
 
 type QueueEntry = {
   task: RuntimeTask;
-  resolve: (succeeded: boolean) => void;
+  resolve: (outcome: TaskOutcome) => void;
+};
+
+type TaskOutcome = {
+  succeeded: boolean;
+  reportedValidationError: boolean;
 };
 
 export type PageUploadBatchSummary = {
   succeeded: number;
   failed: number;
+  reportedValidationFailures: number;
 };
 
 export type StartPageUploadResult = {
@@ -133,9 +140,6 @@ function imageIdentity(imageHash: string, extension: string): string {
 function validateFile(file: File): string {
   const extension = getFileExtension(file);
   if (!extension) throw new Error("请选择带后缀的图片文件");
-  if (file.size < 1 || file.size > 20 * 1024 * 1024) {
-    throw new Error("图片大小必须在 1 至 20 MiB 之间");
-  }
   return extension;
 }
 
@@ -201,7 +205,7 @@ async function reserveRetrySlot(
       newByteLen: task.file.size,
       extension: task.extension,
     });
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) throw toApiRequestError(result);
     return result.data.slot;
   });
 }
@@ -214,12 +218,12 @@ async function reserveInitialPage(task: RuntimeTask): Promise<ReservedPage> {
       newByteLen: task.file.size,
       extension: task.extension,
     });
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) throw toApiRequestError(result);
     return result.data;
   });
 }
 
-async function executeTask(task: RuntimeTask): Promise<boolean> {
+async function executeTask(task: RuntimeTask): Promise<TaskOutcome> {
   try {
     if (task.cancelled) throw new Error("上传已取消");
 
@@ -236,7 +240,7 @@ async function executeTask(task: RuntimeTask): Promise<boolean> {
 
     if (slot === null) {
       succeedTask(task);
-      return true;
+      return { succeeded: true, reportedValidationError: false };
     }
 
     for (let attempt = 1; attempt <= PUT_ATTEMPTS; attempt += 1) {
@@ -272,14 +276,14 @@ async function executeTask(task: RuntimeTask): Promise<boolean> {
 
         await retryMarkUploaded(task, slot.imageVersion);
         succeedTask(task);
-        return true;
+        return { succeeded: true, reportedValidationError: false };
       }
 
       if (
         attempt >= PUT_ATTEMPTS ||
         !canRetryPut(uploadResult.httpStatus, uploadResult.failureKind)
       ) {
-        throw new Error(uploadResult.error);
+        throw toApiRequestError(uploadResult);
       }
 
       await sleep(2 ** (attempt - 1) * 1000);
@@ -290,14 +294,17 @@ async function executeTask(task: RuntimeTask): Promise<boolean> {
 
       if (slot === null) {
         succeedTask(task);
-        return true;
+        return { succeeded: true, reportedValidationError: false };
       }
     }
 
     throw new Error("上传失败");
   } catch (error) {
     failTask(task, error);
-    return false;
+    return {
+      succeeded: false,
+      reportedValidationError: isReportedValidationError(error),
+    };
   }
 }
 
@@ -319,7 +326,7 @@ function pumpQueue(): void {
   }
 }
 
-function enqueueTask(task: RuntimeTask): Promise<boolean> {
+function enqueueTask(task: RuntimeTask): Promise<TaskOutcome> {
   patchPageUploadTask(task.taskId, {
     status: "queued",
     progress: 0,
@@ -332,11 +339,14 @@ function enqueueTask(task: RuntimeTask): Promise<boolean> {
   });
 }
 
-function completionSummary(results: boolean[]): PageUploadBatchSummary {
-  const succeeded = results.filter(Boolean).length;
+function completionSummary(results: TaskOutcome[]): PageUploadBatchSummary {
+  const succeeded = results.filter((result) => result.succeeded).length;
   return {
     succeeded,
     failed: results.length - succeeded,
+    reportedValidationFailures: results.filter(
+      (result) => result.reportedValidationError,
+    ).length,
   };
 }
 
@@ -407,7 +417,7 @@ export async function startChapterPageUpload(
   try {
     return await serializeChapterReserve(chapterId, async () => {
       const pagesResult = await listPages({ chapterId });
-      if (!pagesResult.success) throw new Error(pagesResult.error);
+      if (!pagesResult.success) throw toApiRequestError(pagesResult);
 
       const manifest = existingManifest(pagesResult.data);
       const pagesByIdentity = new Map<string, ExistingManifestEntry[]>();
@@ -461,7 +471,7 @@ export async function startChapterPageUpload(
           })),
         ],
       });
-      if (!reserveResult.success) throw new Error(reserveResult.error);
+      if (!reserveResult.success) throw toApiRequestError(reserveResult);
 
       if (
         reserveResult.data.pages.length !==
@@ -570,8 +580,8 @@ export async function startPageReupload(
     batchId,
     reservedCount: 1,
     skippedCount: 0,
-    completion: enqueueTask(runtimeTask).then((succeeded) =>
-      completionSummary([succeeded]),
+    completion: enqueueTask(runtimeTask).then((outcome) =>
+      completionSummary([outcome]),
     ),
   };
 }
@@ -588,7 +598,7 @@ export function cancelAllPageUploads(): void {
   for (const entry of queue.splice(0)) {
     entry.task.cancelled = true;
     entry.task.abortController.abort();
-    entry.resolve(false);
+    entry.resolve({ succeeded: false, reportedValidationError: false });
   }
 
   for (const task of activeTasks.values()) {

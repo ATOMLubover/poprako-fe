@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useToastStore } from "@/components/ui/NotificationToast";
+import { showLocalApiFailure } from "@/api/util";
 import { useActiveTeam } from "@/hooks/useActiveTeam";
 import { useAppStore } from "@/store/app";
 import ComicList from "@/features/ComcList/components/business/ComicList";
@@ -91,8 +92,8 @@ export default function ComicPlayground() {
       offset: number,
       limit: number,
       mode: "translator" | "reviewer",
-    ): Promise<ComicInfo[] | string> => {
-      if (!activeWorksetId) return [];
+    ): Promise<Result<ComicInfo[]>> => {
+      if (!activeWorksetId) return { success: true, data: [] };
       const result = await listComics({
         worksetId: activeWorksetId,
         withs: mode === "reviewer"
@@ -103,9 +104,7 @@ export default function ComicPlayground() {
         offset,
         limit,
       });
-      if (!result.success) return result.error;
-
-      return result.data;
+      return result;
     },
     [activeFuzzyTitle, activeStages, activeWorksetId],
   );
@@ -317,7 +316,7 @@ export default function ComicPlayground() {
       const result = await updateComic(selectedComic.id, args);
       if (!result.success) {
         console.error("[ComicPlayground] 更新漫画信息失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return result;
       }
       showToast("漫画信息已更新", "success");
@@ -332,7 +331,7 @@ export default function ComicPlayground() {
       const result = await updateChapter(chapterId, { subtitle });
       if (!result.success) {
         console.error("[ComicPlayground] 更新章节信息失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return result;
       }
       showToast("章节信息已更新", "success");
@@ -346,7 +345,7 @@ export default function ComicPlayground() {
       const result = await updateWorkset(id, args);
       if (!result.success) {
         console.error("[ComicPlayground] 更新作品集失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return result;
       }
       showToast("作品集信息已更新", "success");
@@ -411,7 +410,7 @@ export default function ComicPlayground() {
     const result = await createComic(args);
     if (!result.success) {
       console.error("[ComicPlayground] 创建漫画失败:", result.error);
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
     } else {
       await loadWorksets();
       setComicListRefreshKey((k) => k + 1);

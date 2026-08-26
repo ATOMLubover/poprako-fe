@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type { TermInfo } from "@/types/term";
 import type { TermbaseInfo } from "@/types/termbase";
 import type { TerminologyDataSource } from "@/features/BaseTranslator/types/terminology";
+import type { ResultFailure } from "@/types/utils/result";
 import { usePaginatedList } from "../../hook/usePaginatedList";
 import { useLongPress } from "@/hooks/useLongPress";
 import InfiniteTerminologyList from "./InfiniteTerminologyList";
@@ -17,7 +18,7 @@ type Props = {
   revision: number;
   onCreate: () => void;
   onEdit: (term: TermInfo) => void;
-  onError: (error: string) => void;
+  onError: (error: ResultFailure) => void;
 };
 
 type RowProps = {

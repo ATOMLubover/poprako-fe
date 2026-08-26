@@ -97,7 +97,11 @@ describe("page upload coordinator", () => {
     const started = await startChapterPageUpload("chapter-1", [file("001.png")]);
     const summary = await started.completion;
 
-    expect(summary).toEqual({ succeeded: 1, failed: 0 });
+    expect(summary).toEqual({
+      succeeded: 1,
+      failed: 0,
+      reportedValidationFailures: 0,
+    });
     expect(fetchMock).not.toHaveBeenCalled();
     expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
@@ -113,6 +117,55 @@ describe("page upload coordinator", () => {
           extension: "png",
         },
       ],
+    });
+  });
+
+  test("sends oversized files to backend validation instead of rejecting locally", async () => {
+    const oversizedFile = file("oversized.png");
+    const oversizedByteLength = 21 * 1024 * 1024;
+    Object.defineProperty(oversizedFile, "size", { value: oversizedByteLength });
+    hashMocks.hashPageFile.mockResolvedValue({ imageHash: "oversized-hash" });
+    apiMocks.reserveChapterPages.mockResolvedValue({
+      success: true,
+      data: {
+        pages: [{
+          ...slot("page-1"),
+          imageHash: "oversized-hash",
+          slot: null,
+        }],
+      },
+    });
+
+    await startChapterPageUpload("chapter-1", [oversizedFile]);
+
+    expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
+      chapterId: "chapter-1",
+      pages: [{
+        imageHash: "oversized-hash",
+        newByteLen: oversizedByteLength,
+        extension: "png",
+      }],
+    });
+  });
+
+  test("marks backend 422 failures as already reported", async () => {
+    hashMocks.hashPageFile.mockResolvedValue({ imageHash: "page-hash" });
+    apiMocks.reserveExistingPageUpload.mockResolvedValue({
+      success: false,
+      error: "后端文件大小限制",
+      httpStatus: 422,
+    });
+
+    const started = await startPageReupload(
+      "chapter-1",
+      "page-1",
+      file("001.png"),
+    );
+
+    await expect(started.completion).resolves.toEqual({
+      succeeded: 0,
+      failed: 1,
+      reportedValidationFailures: 1,
     });
   });
 
@@ -145,7 +198,11 @@ describe("page upload coordinator", () => {
     const started = await startChapterPageUpload("chapter-1", [file("001.png")]);
     const summary = await started.completion;
 
-    expect(summary).toEqual({ succeeded: 1, failed: 0 });
+    expect(summary).toEqual({
+      succeeded: 1,
+      failed: 0,
+      reportedValidationFailures: 0,
+    });
     expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
       pages: [
@@ -196,7 +253,11 @@ describe("page upload coordinator", () => {
     const started = await startChapterPageUpload("chapter-1", [file("001.png")]);
     const summary = await started.completion;
 
-    expect(summary).toEqual({ succeeded: 0, failed: 0 });
+    expect(summary).toEqual({
+      succeeded: 0,
+      failed: 0,
+      reportedValidationFailures: 0,
+    });
     expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
       pages: [
@@ -247,7 +308,11 @@ describe("page upload coordinator", () => {
     const started = await startChapterPageUpload("chapter-1", files);
     const summary = await started.completion;
 
-    expect(summary).toEqual({ succeeded: 2, failed: 1 });
+    expect(summary).toEqual({
+      succeeded: 2,
+      failed: 1,
+      reportedValidationFailures: 0,
+    });
     expect(apiMocks.uploadToPresignedUrl).toHaveBeenCalledTimes(3);
     expect(apiMocks.reserveExistingPageUpload).not.toHaveBeenCalled();
     expect(apiMocks.updatePage).toHaveBeenCalledTimes(2);
@@ -299,7 +364,11 @@ describe("page upload coordinator", () => {
     await vi.advanceTimersByTimeAsync(2000);
     const summary = await started.completion;
 
-    expect(summary).toEqual({ succeeded: 1, failed: 0 });
+    expect(summary).toEqual({
+      succeeded: 1,
+      failed: 0,
+      reportedValidationFailures: 0,
+    });
     expect(apiMocks.uploadToPresignedUrl).toHaveBeenCalledTimes(3);
     expect(apiMocks.reserveExistingPageUpload).toHaveBeenCalledTimes(2);
     expect(apiMocks.reserveExistingPageUpload).toHaveBeenCalledWith({
@@ -328,7 +397,11 @@ describe("page upload coordinator", () => {
     await vi.advanceTimersByTimeAsync(2000);
     const summary = await started.completion;
 
-    expect(summary).toEqual({ succeeded: 1, failed: 0 });
+    expect(summary).toEqual({
+      succeeded: 1,
+      failed: 0,
+      reportedValidationFailures: 0,
+    });
     expect(apiMocks.updatePage).toHaveBeenCalledTimes(3);
     expect(
       Object.values(getPageUploadTaskState().tasks).some(
@@ -354,7 +427,11 @@ describe("page upload coordinator", () => {
     );
     const summary = await started.completion;
 
-    expect(summary).toEqual({ succeeded: 1, failed: 0 });
+    expect(summary).toEqual({
+      succeeded: 1,
+      failed: 0,
+      reportedValidationFailures: 0,
+    });
     expect(apiMocks.uploadToPresignedUrl).not.toHaveBeenCalled();
     expect(apiMocks.updatePage).not.toHaveBeenCalled();
   });

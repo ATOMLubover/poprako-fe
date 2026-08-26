@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type { TeamConfig } from "../../types/types";
 import { joinMember } from "@/api/member";
 import { confirmTeamAvatarUploaded, reserveTeamAvatarUpload } from "@/api/team";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hashPageFile } from "@/features/ComicPlayground/features/ComicDetailModal/pageHash";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
@@ -194,7 +195,7 @@ function TeamList({
       showToast("成功加入汉化组", "success");
       onJoin();
     } else {
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
     }
   };
 
@@ -398,7 +399,7 @@ export default function TeamOption({
         extension,
       });
       if (!reserveRes.success) {
-        showToast(reserveRes.error, "error");
+        showLocalApiFailure(reserveRes, showToast);
         return;
       }
 
@@ -415,7 +416,7 @@ export default function TeamOption({
         (percent) => setAvatarUploadProgress(percent),
       );
       if (!uploadRes.success) {
-        showToast(uploadRes.error, "error");
+        showLocalApiFailure(uploadRes, showToast);
         return;
       }
 
@@ -424,7 +425,7 @@ export default function TeamOption({
         slot.imageVersion,
       );
       if (!confirmRes.success) {
-        showToast(confirmRes.error, "error");
+        showLocalApiFailure(confirmRes, showToast);
         return;
       }
 
@@ -437,7 +438,7 @@ export default function TeamOption({
       showToast("团队头像上传成功", "success");
     } catch (err) {
       console.error("[TeamOption] 上传团队头像异常:", err);
-      showToast(err instanceof Error ? err.message : "团队头像上传失败", "error");
+      showLocalCaughtError(err, showToast, "团队头像上传失败", true);
     } finally {
       setIsUploadingAvatar(false);
       setAvatarUploadProgress(null);

@@ -6,6 +6,7 @@ import type { Result } from "@/types/utils/result";
 import type { Role } from "@/types/role";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { showLocalApiFailure } from "@/api/util";
 import { useAppStore } from "@/store/app";
 import PageList from "@/features/PageList/components/business/PageList";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -272,7 +273,7 @@ export default function ComicDetailModal({
     const res = await onTransiteWorkflow(selectedChapterId, transition);
     if (!res.success) {
       console.error("[ComicDetailModal] 推进流程失败:", res);
-      showToast("操作失败", "error");
+      showLocalApiFailure(res, showToast, "操作失败");
       return res;
     }
 
@@ -297,7 +298,7 @@ export default function ComicDetailModal({
 
     if (!res.success) {
       console.error("[ComicDetailModal] 删除漫画失败:", res);
-      showToast(res.error, "error");
+      showLocalApiFailure(res, showToast);
       return;
     }
 
@@ -313,7 +314,7 @@ export default function ComicDetailModal({
 
     if (!res.success) {
       console.error("[ComicDetailModal] 归档漫画失败:", res);
-      showToast(res.error, "error");
+      showLocalApiFailure(res, showToast);
       return;
     }
 

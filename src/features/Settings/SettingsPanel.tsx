@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FileDown, Globe2, KeyRound, LogOut, Upload } from "lucide-react";
 import clsx from "clsx";
 import { logoutUser } from "@/api/auth";
+import { showLocalCaughtError } from "@/api/util";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { downloadConsoleLogs } from "@/lib/consoleLog";
@@ -54,10 +55,7 @@ export default function SettingsPanel() {
       await logoutUser();
     } catch (error) {
       console.error("Logout error", error);
-      showToast(
-        error instanceof Error ? error.message : "Failed to logout",
-        "error",
-      );
+      showLocalCaughtError(error, showToast, "Failed to logout", true);
     } finally {
       cancelAllPageUploads();
       setAccessToken(null);

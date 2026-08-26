@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { showLocalCaughtError } from "@/api/util";
 import { normalizeUnitIndexes, unitId, type UnitInfo } from "@/types/unit";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type {
@@ -282,7 +283,7 @@ export function useUnitPersistence({
     } catch (err) {
       const summary = `ops:${diff.ops.length}`;
       console.error(`[BaseTranslator] 保存失败 pageId=${getPageId()} diff=${summary}`, err);
-      showToast("保存失败，请重试", "error");
+      showLocalCaughtError(err, showToast, "保存失败，请重试");
       throw err;
     } finally {
       isSaving.current = false;

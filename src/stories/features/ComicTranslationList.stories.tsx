@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import ComicTranslationList from "../../features/ComcList/components/business/ComicTranslationList";
 import type { ComicInfo } from "@/types/comic";
 import type { ComicTranslationListItem } from "@/features/ComcList/types/types";
+import type { Result } from "@/types/utils/result";
 
 const meta: Meta<typeof ComicTranslationList> = {
   title: "features/ComicTranslationList",
@@ -40,12 +41,15 @@ function makePagedLoader(allComics: ComicInfo[], delay = 800) {
   return async (
     offset: number,
     limit: number,
-  ): Promise<ComicTranslationListItem[] | string> => {
+  ): Promise<Result<ComicTranslationListItem[]>> => {
     await new Promise((resolve) => setTimeout(resolve, delay));
-    return allComics.slice(offset, offset + limit).map((comicInfo) => ({
-      comicInfo,
-      chapter: comicInfo.pinnedChapter,
-    }));
+    return {
+      success: true,
+      data: allComics.slice(offset, offset + limit).map((comicInfo) => ({
+        comicInfo,
+        chapter: comicInfo.pinnedChapter,
+      })),
+    };
   };
 }
 
@@ -59,7 +63,7 @@ export const EmptyState: Story = {
   args: {
     onLoadComics: async (_offset: number, _limit: number) => {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      return [];
+      return { success: true, data: [] };
     },
   },
 };
@@ -68,7 +72,7 @@ export const ErrorState: Story = {
   args: {
     onLoadComics: async (_offset: number, _limit: number) => {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      return "服务器错误，请稍后重试";
+      return { success: false, error: "服务器错误，请稍后重试" };
     },
   },
 };

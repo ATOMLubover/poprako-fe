@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { ChapterInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
 import type { ToastType } from "@/components/ui/NotificationToast";
@@ -63,7 +64,7 @@ export function useComicDetailChapters({
 
           if (!res.success) {
             console.error("[ComicDetailModal] 加载章节失败:", res);
-            showToast("加载章节失败", "error");
+            showLocalApiFailure(res, showToast, "加载章节失败");
             return;
           }
 
@@ -107,7 +108,7 @@ export function useComicDetailChapters({
         }
       } catch (err) {
         console.error("[ComicDetailModal] 加载章节异常:", err);
-        showToast("加载章节失败", "error");
+        showLocalCaughtError(err, showToast, "加载章节失败");
       } finally {
         if (!cancelled) {
           setIsChaptersLoading(false);
@@ -132,13 +133,15 @@ export function useComicDetailChapters({
     })
       .then((res) => {
         if (!res.success) {
-          showToast("加载更多章节失败", "error");
+          showLocalApiFailure(res, showToast, "加载更多章节失败");
           return;
         }
         setChapters((prev) => [...prev, ...res.data]);
         setChaptersHasMore(res.data.length === CHAPTERS_LIMIT);
       })
-      .catch(() => showToast("加载更多章节失败", "error"))
+      .catch((error) => {
+        showLocalCaughtError(error, showToast, "加载更多章节失败");
+      })
       .finally(() => setIsChaptersLoading(false));
   }, [chapters.length, chaptersHasMore, comicId, isChaptersLoading, onLoadChapters, showToast]);
 
@@ -151,7 +154,7 @@ export function useComicDetailChapters({
 
     if (!res.success) {
       console.error("[ComicDetailModal] 刷新章节失败:", res);
-      showToast("刷新章节失败", "error");
+      showLocalApiFailure(res, showToast, "刷新章节失败");
       return null;
     }
 
@@ -205,7 +208,7 @@ export function useComicDetailChapters({
 
       const res = await onDeleteChapter(chapterId);
       if (!res.success) {
-        showToast("删除失败", "error");
+        showLocalApiFailure(res, showToast, "删除失败");
         return;
       }
 
@@ -220,7 +223,7 @@ export function useComicDetailChapters({
           setSelectedChapterId(pickFallbackChapterId(reloaded.data));
           return;
         }
-        showToast("刷新章节失败", "error");
+        showLocalApiFailure(reloaded, showToast, "刷新章节失败");
       }
 
       setChapters((prev) => prev.filter((chapter) => chapter.id !== chapterId));

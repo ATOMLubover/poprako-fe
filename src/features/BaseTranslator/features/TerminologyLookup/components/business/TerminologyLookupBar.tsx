@@ -2,6 +2,8 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import clsx from "clsx";
 import { useToastStore } from "@/components/ui/NotificationToast";
+import { showLocalApiFailure } from "@/api/util";
+import type { ResultFailure } from "@/types/utils/result";
 import type { TermbaseInfo } from "@/types/termbase";
 import type { TermInfo } from "@/types/term";
 import type {
@@ -81,14 +83,18 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
-  const handleError = useCallback((error: string) => {
-    console.error("[TerminologyLookup] 加载术语数据失败", { error });
-    showToast(error, "error");
+  const handleError = useCallback((failure: ResultFailure) => {
+    console.error("[TerminologyLookup] 加载术语数据失败", {
+      error: failure.error,
+    });
+    showLocalApiFailure(failure, showToast);
   }, [showToast]);
 
-  const handleMutationError = (action: string, error: string) => {
-    console.error(`[TerminologyLookup] ${action}失败`, { error });
-    showToast(error, "error");
+  const handleMutationError = (action: string, failure: ResultFailure) => {
+    console.error(`[TerminologyLookup] ${action}失败`, {
+      error: failure.error,
+    });
+    showLocalApiFailure(failure, showToast);
     return false;
   };
 
@@ -98,7 +104,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
   ) => {
     if (!termbase) {
       const result = await dataSource.createTermbase(args);
-      if (!result.success) return handleMutationError("创建术语库", result.error);
+      if (!result.success) return handleMutationError("创建术语库", result);
       setTermbaseQuery("");
       setTermbaseRevision((revision) => revision + 1);
       showToast("术语库已创建", "success");
@@ -106,7 +112,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     }
 
     const result = await dataSource.updateTermbase(termbase.id, args);
-    if (!result.success) return handleMutationError("更新术语库", result.error);
+    if (!result.success) return handleMutationError("更新术语库", result);
     setSelectedTermbase((current) => current?.id === termbase.id
       ? { ...current, ...args, description: args.description ?? "" }
       : current);
@@ -117,7 +123,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
 
   const handleDeleteTermbase = async (termbase: TermbaseInfo) => {
     const result = await dataSource.deleteTermbase(termbase.id);
-    if (!result.success) return handleMutationError("删除术语库", result.error);
+    if (!result.success) return handleMutationError("删除术语库", result);
     if (selectedTermbase?.id === termbase.id) {
       setSelectedTermbase(undefined);
       setSourceQuery("");
@@ -140,7 +146,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
         termbaseId: selectedTermbase.id,
         ...args,
       });
-      if (!result.success) return handleMutationError("创建术语", result.error);
+      if (!result.success) return handleMutationError("创建术语", result);
       setSourceQuery("");
       setSelectedTermbase((current) => current
         ? { ...current, termCount: current.termCount + 1 }
@@ -152,7 +158,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     }
 
     const result = await dataSource.updateTerm(term.id, args);
-    if (!result.success) return handleMutationError("更新术语", result.error);
+    if (!result.success) return handleMutationError("更新术语", result);
     setTermRevision((revision) => revision + 1);
     showToast("术语已更新", "success");
     return true;
@@ -160,7 +166,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
 
   const handleDeleteTerm = async (term: TermInfo) => {
     const result = await dataSource.deleteTerm(term.id);
-    if (!result.success) return handleMutationError("删除术语", result.error);
+    if (!result.success) return handleMutationError("删除术语", result);
     setSelectedTermbase((current) => current
       ? { ...current, termCount: Math.max(0, current.termCount - 1) }
       : current);

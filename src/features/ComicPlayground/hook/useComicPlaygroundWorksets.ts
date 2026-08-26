@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { showLocalApiFailure } from "@/api/util";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
@@ -26,7 +27,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
     const result = await listWorksets({ teamId, offset: 0, limit: 20 });
     if (!result.success) {
       console.error("[ComicPlayground] 加载作品集失败:", result.error);
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
       return;
     }
 
@@ -48,7 +49,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
       const result = await deleteWorkset(worksetId);
       if (!result.success) {
         console.error("[ComicPlayground] 删除作品集失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return;
       }
 
@@ -62,7 +63,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
       const result = await createWorkset(args);
       if (!result.success) {
         console.error("[ComicPlayground] 创建作品集失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
       } else {
         await loadWorksets();
       }

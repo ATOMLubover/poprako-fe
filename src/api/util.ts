@@ -1,6 +1,7 @@
 import { appConfig } from "@/config/config";
+import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useAppStore } from "@/store/app";
-import type { Result } from "@/types/utils/result";
+import type { Result, ResultFailure } from "@/types/utils/result";
 
 type FormatResponse<T> = {
   code: number;
@@ -9,6 +10,73 @@ type FormatResponse<T> = {
 };
 
 const BASE_URL = appConfig.apiBaseUrl;
+
+export class ApiRequestError extends Error {
+  readonly httpStatus?: number;
+
+  constructor(failure: ResultFailure) {
+    super(failure.error);
+    this.name = "ApiRequestError";
+    this.httpStatus = failure.httpStatus;
+  }
+}
+
+export function createHttpFailure(
+  error: string,
+  httpStatus: number,
+): ResultFailure {
+  if (httpStatus === 422) {
+    useToastStore.getState().showToast(error, "error");
+  }
+
+  return { success: false, error, httpStatus };
+}
+
+export function resolveHttpErrorMessage(
+  message: unknown,
+  statusText: string,
+  httpStatus: number,
+): string {
+  if (typeof message === "string" && message.trim().length > 0) return message;
+  if (httpStatus === 422) {
+    console.error("[API] HTTP 422 响应缺少有效 message", { message });
+  }
+  return statusText || `HTTP ${httpStatus}`;
+}
+
+export function toApiRequestError(failure: ResultFailure): ApiRequestError {
+  return new ApiRequestError(failure);
+}
+
+export function isReportedValidationError(error: unknown): boolean {
+  if (error instanceof ApiRequestError) return error.httpStatus === 422;
+  if (typeof error !== "object" || error === null) return false;
+  return "httpStatus" in error && error.httpStatus === 422;
+}
+
+type ErrorNotifier = (message: string, type: "error") => void;
+
+export function showLocalApiFailure(
+  failure: ResultFailure,
+  showToast: ErrorNotifier,
+  fallback = failure.error,
+): void {
+  if (failure.httpStatus === 422) return;
+  showToast(fallback, "error");
+}
+
+export function showLocalCaughtError(
+  error: unknown,
+  showToast: ErrorNotifier,
+  fallback: string,
+  preserveErrorMessage = false,
+): void {
+  if (isReportedValidationError(error)) return;
+  const message = preserveErrorMessage && error instanceof Error
+    ? error.message
+    : fallback;
+  showToast(message, "error");
+}
 
 type QueryParams = Record<
   string,
@@ -106,6 +174,7 @@ async function request<T>(
       return {
         success: false,
         error: response.statusText || `HTTP ${response.status}`,
+        httpStatus: response.status,
       };
     }
 
@@ -126,10 +195,8 @@ async function request<T>(
           durationMs: Math.round(performance.now() - startTime),
         },
       );
-      return {
-        success: false,
-        error: response.statusText || `HTTP ${response.status}`,
-      };
+      const error = response.statusText || `HTTP ${response.status}`;
+      return createHttpFailure(error, response.status);
     }
 
     if (!response.ok) {
@@ -140,10 +207,12 @@ async function request<T>(
           durationMs: Math.round(performance.now() - startTime),
         },
       );
-      return {
-        success: false,
-        error: body.message ?? response.statusText ?? `HTTP ${response.status}`,
-      };
+      const error = resolveHttpErrorMessage(
+        body.message,
+        response.statusText,
+        response.status,
+      );
+      return createHttpFailure(error, response.status);
     }
 
     if (body.code !== 0) {

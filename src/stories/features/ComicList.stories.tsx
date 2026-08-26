@@ -4,6 +4,7 @@ import { expect, within } from "storybook/test";
 import ComicList from "@/features/ComcList/components/business/ComicList";
 import type { ComicInfo } from "@/types/comic";
 import type { WorksetInfo } from "@/types/workset";
+import type { Result } from "@/types/utils/result";
 import type {
   BinaryFilter,
   TripleFilter,
@@ -80,9 +81,9 @@ function makePagedLoader(allComics: ComicInfo[], delay = 800) {
   return async (
     offset: number,
     limit: number,
-  ): Promise<ComicInfo[] | string> => {
+  ): Promise<Result<ComicInfo[]>> => {
     await new Promise((r) => setTimeout(r, delay));
-    return allComics.slice(offset, offset + limit);
+    return { success: true, data: allComics.slice(offset, offset + limit) };
   };
 }
 
@@ -257,7 +258,7 @@ export const EmptyState: Story = {
           onChangeWorkset={() => {}}
           onCreateWorkset={() => {}}
           onDeleteWorkset={() => {}}
-          onLoadComics={async () => []}
+          onLoadComics={async () => ({ success: true, data: [] })}
           onCreateComic={() => {}}
           activeFuzzyTitle={title}
           onChangeFuzzyTitle={setTitle}

@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { showLocalApiFailure } from "@/api/util";
 import { unmaskRoles } from "@/types/role";
 import type { InvitationInfo, CreateInvitationArgs } from "@/types/invitation";
 import type { Result } from "@/types/utils/result";
@@ -151,7 +152,7 @@ export default function MemberInvitorModal({
   const refreshInvitations = useCallback(async () => {
     const result = await onLoadInvitations(0, 100);
     if (!result.success) {
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
       return;
     }
     setPendingInvitations(result.data);
@@ -162,7 +163,7 @@ export default function MemberInvitorModal({
     onLoadInvitations(0, 100).then((result) => {
       if (!alive) return;
       if (!result.success) {
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return;
       }
       setPendingInvitations(result.data);
@@ -192,7 +193,7 @@ export default function MemberInvitorModal({
         roles: roleMaskFromSelected,
       });
       if (!result.success) {
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return;
       }
       setGeneratedCode(result.data);
@@ -207,7 +208,7 @@ export default function MemberInvitorModal({
       if (!onDeleteInvitation) return;
       const result = await onDeleteInvitation(invitationId);
       if (!result.success) {
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return;
       }
       setPendingInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));

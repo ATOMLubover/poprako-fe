@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type { ChapterInfo, UploadProgressCallbacks } from "@/types";
 import type { Result } from "@/types/utils/result";
+import { showLocalApiFailure } from "@/api/util";
 import { assignmentRoles, type AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
 import WorkspaceLayout from "../../layouts/WorkspaceLayout";
@@ -121,7 +122,7 @@ export default function Workspace() {
     setCommentsLoading(false);
     if (!result.success) {
       console.error("[Workspace] 加载留言失败:", result.error);
-      showToast("加载留言失败", "error");
+      showLocalApiFailure(result, showToast, "加载留言失败");
       return;
     }
     setComments([...result.data].reverse());
@@ -139,7 +140,7 @@ export default function Workspace() {
       const result = await createComment({ teamId: selectedTeamId, content });
       if (!result.success) {
         console.error("[Workspace] 发送留言失败:", result.error);
-        showToast("发送留言失败", "error");
+        showLocalApiFailure(result, showToast, "发送留言失败");
         return;
       }
       const newComment: CommentInfo = {
@@ -385,7 +386,7 @@ export default function Workspace() {
       const result = await updateComic(selectedComic.id, args);
       if (!result.success) {
         console.error("[Workspace] 更新漫画信息失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return result;
       }
       showToast("漫画信息已更新", "success");
@@ -400,7 +401,7 @@ export default function Workspace() {
       const result = await updateChapter(chapterId, { subtitle });
       if (!result.success) {
         console.error("[Workspace] 更新章节信息失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return result;
       }
       showToast("章节信息已更新", "success");

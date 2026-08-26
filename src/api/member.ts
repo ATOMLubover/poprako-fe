@@ -1,5 +1,5 @@
 import { unwrapRawMemberInfo, type RawMemberInfo } from "@/types/raw/member";
-import { api } from "./util";
+import { api, toApiRequestError } from "./util";
 import type { Result } from "@/types/utils/result";
 import type { MemberInfo } from "@/types/member";
 
@@ -16,7 +16,7 @@ export async function listMyMembers(args: ListMyMembersArgs) {
     offset: args.offset ?? 0,
     limit: args.limit ?? 20,
   });
-  if (!result.success) throw new Error(result.error);
+  if (!result.success) throw toApiRequestError(result);
   return (result.data ?? []).map(unwrapRawMemberInfo);
 }
 

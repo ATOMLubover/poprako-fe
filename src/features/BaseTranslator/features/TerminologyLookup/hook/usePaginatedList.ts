@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from "react";
-import type { Result } from "@/types/utils/result";
+import type { Result, ResultFailure } from "@/types/utils/result";
 import {
   initialPaginationState,
   paginationReducer,
@@ -10,7 +10,7 @@ type Options<T extends { id: string }> = {
   queryKey: string;
   pageSize: number;
   loadPage: (offset: number, limit: number) => Promise<Result<T[]>>;
-  onError: (error: string) => void;
+  onError: (error: ResultFailure) => void;
 };
 
 export function usePaginatedList<T extends { id: string }>({
@@ -55,7 +55,7 @@ export function usePaginatedList<T extends { id: string }>({
         requestVersion,
         error: result.error,
       });
-      onErrorRef.current(result.error);
+      onErrorRef.current(result);
       return;
     }
 
