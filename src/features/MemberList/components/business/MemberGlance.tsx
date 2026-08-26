@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { useToastStore } from "@/components/ui/NotificationToast";
 import { listMembers, updateMemberRole } from "@/api/member";
 import {
   listInvitations,
@@ -21,7 +20,6 @@ import MemberDetailModal from "./MemberDetailModal";
 export default function MemberGlance() {
   const { activeTeamId, activeMember } = useActiveTeam();
   const onlineUserIds = useOnlineUserIds(activeTeamId);
-  const { showToast } = useToastStore();
   const [fuzzyName, setFuzzyName] = useState("");
   const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
   const [isInvitorOpen, setIsInvitorOpen] = useState(false);
@@ -35,9 +33,9 @@ export default function MemberGlance() {
     activeMember !== null && hasRole(activeMember, "admin");
 
   const handleLoadMembers = useCallback(
-    async (offset: number, limit: number): Promise<MemberInfo[] | string> => {
+    async (offset: number, limit: number): Promise<Result<MemberInfo[]>> => {
       if (!activeTeamId) {
-        return [];
+        return { success: true, data: [] };
       }
 
       const result = await listMembers({
@@ -50,13 +48,12 @@ export default function MemberGlance() {
       });
 
       if (!result.success) {
-        showToast(result.error, "error");
-        return result.error;
+        return result;
       }
 
-      return result.data;
+      return result;
     },
-    [activeRole, activeTeamId, fuzzyName, showToast],
+    [activeRole, activeTeamId, fuzzyName],
   );
 
   const handleLoadInvitations = useCallback(

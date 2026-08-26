@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { MemberInfo } from "@/types/member";
 import { hasRole, type Role } from "@/types/role";
@@ -62,7 +63,7 @@ export function useComicDetailAssignments({
         if (cancelled) return;
         if (!res.success) {
           console.error("[ComicDetailModal] 加载分工失败:", res);
-          showToast("加载分工失败", "error");
+          showLocalApiFailure(res, showToast, "加载分工失败");
           return;
         }
         setAssignments(res.data);
@@ -70,7 +71,7 @@ export function useComicDetailAssignments({
       .catch((err) => {
         if (cancelled) return;
         console.error("[ComicDetailModal] 加载分工异常:", err);
-        showToast("加载分工失败", "error");
+        showLocalCaughtError(err, showToast, "加载分工失败");
       })
       .finally(() => {
         if (!cancelled) setIsAssignmentsLoading(false);
@@ -88,14 +89,14 @@ export function useComicDetailAssignments({
       const refreshed = await onLoadAssignments(selectedChapterId);
       if (!refreshed.success) {
         console.error("[ComicDetailModal] 刷新分工失败:", refreshed);
-        showToast(refreshed.error, "error");
+        showLocalApiFailure(refreshed, showToast);
         return null;
       }
       setAssignments(refreshed.data);
       return refreshed.data;
     } catch (err) {
       console.error("[ComicDetailModal] 刷新分工异常:", err);
-      showToast("刷新分工失败", "error");
+      showLocalCaughtError(err, showToast, "刷新分工失败");
       return null;
     } finally {
       setIsAssignmentsLoading(false);
@@ -192,7 +193,7 @@ export function useComicDetailAssignments({
           const result = await onRemoveAssignment(selectedChapterId, userId, role);
           if (!result.success) {
             console.error("[ComicDetailModal] 移除角色失败:", result);
-            showToast(result.error, "error");
+            showLocalApiFailure(result, showToast);
             if (changed) await reloadAssignments();
             return false;
           }
@@ -204,7 +205,7 @@ export function useComicDetailAssignments({
         return true;
       } catch (err) {
         console.error("[ComicDetailModal] 移除角色异常:", err);
-        showToast("移除角色失败", "error");
+        showLocalCaughtError(err, showToast, "移除角色失败");
         if (changed) await reloadAssignments();
         return false;
       }
@@ -242,7 +243,7 @@ export function useComicDetailAssignments({
       setIsAddingAssignment(false);
 
       if (!result.success) {
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return;
       }
 
@@ -303,7 +304,7 @@ export function useComicDetailAssignments({
         const result = await onJoinChapterRole(selectedChapterId, role);
         if (!result.success) {
           console.error("[ComicDetailModal] 加入章节分工失败:", result);
-          showToast(result.error, "error");
+          showLocalApiFailure(result, showToast);
           return;
         }
 
@@ -312,7 +313,7 @@ export function useComicDetailAssignments({
         showToast("加入分工成功", "success");
       } catch (err) {
         console.error("[ComicDetailModal] 加入章节分工异常:", err);
-        showToast(err instanceof Error ? err.message : "加入分工失败", "error");
+        showLocalCaughtError(err, showToast, "加入分工失败", true);
       } finally {
         setJoiningRoles((prev) => ({ ...prev, [role]: false }));
       }
@@ -345,7 +346,7 @@ export function useComicDetailAssignments({
         if (removed) showToast("退出分工成功", "success");
       } catch (err) {
         console.error("[ComicDetailModal] 退出章节分工异常:", err);
-        showToast(err instanceof Error ? err.message : "退出分工失败", "error");
+        showLocalCaughtError(err, showToast, "退出分工失败", true);
       } finally {
         setLeavingRoles((prev) => ({ ...prev, [role]: false }));
       }

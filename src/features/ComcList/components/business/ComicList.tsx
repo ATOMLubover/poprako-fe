@@ -32,7 +32,7 @@ type Props = {
     offset: number,
     limit: number,
     mode: ViewMode,
-  ) => Promise<ComicInfo[] | string>;
+  ) => Promise<Result<ComicInfo[]>>;
   onComicClick?: (comicInfo: ComicInfo) => void;
   onCreateComic?: () => void;
   onChangeFuzzyTitle: (title: string) => void;
@@ -91,14 +91,17 @@ export default function ComicList({
     async (
       offset: number,
       limit: number,
-    ): Promise<ComicTranslationListItem[] | string> => {
+    ): Promise<Result<ComicTranslationListItem[]>> => {
       const result = await onLoadComics(offset, limit, "translator");
-      if (typeof result === "string") return result;
+      if (!result.success) return result;
 
-      return result.map((comicInfo) => ({
-        comicInfo,
-        chapter: comicInfo.pinnedChapter,
-      }));
+      return {
+        success: true,
+        data: result.data.map((comicInfo) => ({
+          comicInfo,
+          chapter: comicInfo.pinnedChapter,
+        })),
+      };
     },
     [onLoadComics],
   );

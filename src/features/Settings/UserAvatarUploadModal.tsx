@@ -3,6 +3,7 @@ import { Upload, User as UserIcon } from "lucide-react";
 import clsx from "clsx";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 import { confirmUserAvatarUploaded, reserveUserAvatarUpload } from "@/api/user";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hashPageFile } from "@/features/ComicPlayground/features/ComicDetailModal/pageHash";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -96,7 +97,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
         extension,
       });
       if (!reserveRes.success) {
-        showToast(reserveRes.error, "error");
+        showLocalApiFailure(reserveRes, showToast);
         return;
       }
 
@@ -113,7 +114,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
         (percent) => setUploadProgress(percent),
       );
       if (!uploadRes.success) {
-        showToast(uploadRes.error, "error");
+        showLocalApiFailure(uploadRes, showToast);
         return;
       }
 
@@ -122,7 +123,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
         slot.imageVersion,
       );
       if (!confirmRes.success) {
-        showToast(confirmRes.error, "error");
+        showLocalApiFailure(confirmRes, showToast);
         return;
       }
 
@@ -133,13 +134,13 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
 
       const refreshRes = await refreshLoginState();
       if (!refreshRes.success) {
-        showToast(refreshRes.error, "error");
+        showLocalApiFailure(refreshRes, showToast);
       }
 
       showToast("头像上传成功", "success");
     } catch (err) {
       console.error("[UserAvatarUploadModal] 上传头像异常:", err);
-      showToast(err instanceof Error ? err.message : "头像上传失败", "error");
+      showLocalCaughtError(err, showToast, "头像上传失败", true);
     } finally {
       setIsUploading(false);
       setUploadProgress(null);

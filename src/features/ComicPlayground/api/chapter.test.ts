@@ -8,6 +8,7 @@ import {
   updateChapter,
 } from "./chapter";
 import { useAppStore } from "@/store/app";
+import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
 type FetchCall = {
   url: string;
@@ -61,6 +62,7 @@ describe("chapter API", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     useAppStore.getState().setAccessToken(null);
+    useToastStore.getState().hideToast();
   });
 
   test("gets a chapter with auth and unwraps its comic context", async () => {
@@ -428,5 +430,23 @@ describe("chapter API", () => {
     expect(serializedCalls).not.toContain("raw-provide");
     expect(serializedCalls).not.toContain("typeset-redraw");
     expect(serializedCalls).not.toContain("label-plus");
+  });
+
+  test("reports export 422 messages through the shared HTTP failure path", async () => {
+    const showToast = vi.spyOn(useToastStore.getState(), "showToast");
+    installFetch(Promise.resolve(
+      new Response(JSON.stringify({ message: "导出参数无效" }), {
+        status: 422,
+        headers: { "Content-Type": "application/json" },
+      }),
+    ));
+
+    await expect(exportChapter("chapter_1")).resolves.toEqual({
+      success: false,
+      error: "导出参数无效",
+      httpStatus: 422,
+    });
+    expect(showToast).toHaveBeenCalledOnce();
+    expect(showToast).toHaveBeenCalledWith("导出参数无效", "error");
   });
 });

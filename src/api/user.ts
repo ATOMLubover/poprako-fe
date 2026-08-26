@@ -7,7 +7,7 @@ import {
 import type { ReserveUserAvatarResult, UserInfo } from "@/types/user";
 import type { ReserveImageArgs } from "@/types/image";
 import type { Result } from "@/types/utils/result";
-import { api } from "./util";
+import { api, toApiRequestError } from "./util";
 
 type UpdateUserPasswordArgs = {
   currentPassword: string;
@@ -16,7 +16,7 @@ type UpdateUserPasswordArgs = {
 
 export async function getMyUser() {
   const userInfo = await api.get<RawUserInfo>("/users/me");
-  if (!userInfo.success) throw new Error(userInfo.error);
+  if (!userInfo.success) throw toApiRequestError(userInfo);
   return unwrapRawUserInfo(userInfo.data);
 }
 

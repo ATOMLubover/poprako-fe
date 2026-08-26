@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { PageInfo } from "@/types";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { ComicDetailModalProps } from "../types";
@@ -93,7 +94,7 @@ export function useComicDetailPages({
         if (cancelled) return;
         if (!res.success) {
           console.error("[ComicDetailModal] 加载页面失败:", res);
-          showToast("加载页面失败", "error");
+          showLocalApiFailure(res, showToast, "加载页面失败");
           return;
         }
         setServerPages(res.data);
@@ -101,7 +102,7 @@ export function useComicDetailPages({
       .catch((error) => {
         if (cancelled) return;
         console.error("[ComicDetailModal] 加载页面异常:", error);
-        showToast("加载页面失败", "error");
+        showLocalCaughtError(error, showToast, "加载页面失败");
       })
       .finally(() => {
         if (!cancelled) setIsPagesLoading(false);
@@ -142,7 +143,7 @@ export function useComicDetailPages({
     if (!chapterId) return;
     const res = await onLoadPages(chapterId);
     if (!res.success) {
-      showToast(res.error, "error");
+      showLocalApiFailure(res, showToast);
       return;
     }
     setServerPages(res.data);
@@ -225,16 +226,17 @@ export function useComicDetailPages({
         }
 
         void started.completion.then((summary) => {
-          if (summary.failed > 0) {
+          const unreportedFailures = summary.failed - summary.reportedValidationFailures;
+          if (unreportedFailures > 0) {
             showToast(
-              `${summary.failed} 张图片上传失败，可在对应页面重传`,
+              `${unreportedFailures} 张图片上传失败，可在对应页面重传`,
               "error",
             );
           }
         });
       } catch (error) {
         console.error("[ComicDetailModal] 预留页面失败:", error);
-        showToast(error instanceof Error ? error.message : "预留页面失败", "error");
+        showLocalCaughtError(error, showToast, "预留页面失败", true);
       }
     },
     [chapterId, onAddPages, showToast],
@@ -249,7 +251,7 @@ export function useComicDetailPages({
 
     if (!res.success) {
       console.error("[ComicDetailModal] 批量删除页面失败:", res);
-      showToast(res.error, "error");
+      showLocalApiFailure(res, showToast);
       return;
     }
 
@@ -275,11 +277,12 @@ export function useComicDetailPages({
             showToast("重上传成功", "success");
             return;
           }
+          if (summary.reportedValidationFailures > 0) return;
           showToast("重上传失败，请检查对应页面", "error");
         });
       } catch (error) {
         console.error("[ComicDetailModal] 重上传预留失败:", error);
-        showToast(error instanceof Error ? error.message : "重上传失败", "error");
+        showLocalCaughtError(error, showToast, "重上传失败", true);
       }
     },
     [
@@ -298,7 +301,7 @@ export function useComicDetailPages({
     });
 
     if (!res.success) {
-      showToast(res.error, "error");
+      showLocalApiFailure(res, showToast);
       return null;
     }
 

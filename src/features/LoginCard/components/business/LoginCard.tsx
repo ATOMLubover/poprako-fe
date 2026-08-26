@@ -5,6 +5,7 @@ import IconInputRow from "@/components/ui/IconInputRow";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useAppStore } from "@/store/app";
 import { useNavigate } from "react-router-dom";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import { loginUser, registerUser } from "../../api/auth";
 
 type Mode = "login" | "register";
@@ -58,7 +59,7 @@ export default function LoginCard() {
           : await registerUser({ qq, password, name, invitationCode });
 
       if (!result.success) {
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         console.error("[LoginCard] 操作失败：", result.error);
         return;
       }
@@ -68,7 +69,7 @@ export default function LoginCard() {
       showToast(mode === "login" ? "登录成功！" : "注册成功！", "success");
       navigate("/comic-playground", { replace: true });
     } catch (err) {
-      showToast("操作失败，请稍后重试", "error");
+      showLocalCaughtError(err, showToast, "操作失败，请稍后重试");
       console.error("[LoginCard] 操作异常：", err);
     } finally {
       setIsLoading(false);

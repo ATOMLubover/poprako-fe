@@ -4,6 +4,7 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import IconInputRow from "@/components/ui/IconInputRow";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { updateUserPassword } from "@/api/user";
+import { showLocalApiFailure } from "@/api/util";
 
 type Props = {
   userId: string;
@@ -32,7 +33,7 @@ export default function PasswordResetDialog({ userId, onClose }: Props) {
 
     if (!result.success) {
       console.error("Failed to reset password", result.error);
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
       return;
     }
 

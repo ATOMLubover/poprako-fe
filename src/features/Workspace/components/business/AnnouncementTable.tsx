@@ -3,6 +3,7 @@ import { Loader2, Plus, X } from "lucide-react";
 import clsx from "clsx";
 import type { AnnouncementInfo } from "@/types/announcement";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { showLocalApiFailure } from "@/api/util";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import {
@@ -53,7 +54,7 @@ export default function AnnouncementTable({
     setLoading(false);
     if (!result.success) {
       console.error("[AnnouncementTable] 加载公告失败:", result.error);
-      showToast("加载公告失败", "error");
+      showLocalApiFailure(result, showToast, "加载公告失败");
       return;
     }
     setAnnouncements(result.data.slice(0, 3));
@@ -73,7 +74,7 @@ export default function AnnouncementTable({
       });
       if (!result.success) {
         console.error("[AnnouncementTable] 发布公告失败:", result.error);
-        showToast("发布公告失败", "error");
+        showLocalApiFailure(result, showToast, "发布公告失败");
         return result;
       }
       await load();
@@ -116,7 +117,7 @@ export default function AnnouncementTable({
     setIsSaving(false);
     if (!result.success) {
       console.error("[AnnouncementTable] 修改公告失败:", result.error);
-      showToast("修改公告失败", "error");
+      showLocalApiFailure(result, showToast, "修改公告失败");
       return;
     }
 
@@ -141,7 +142,7 @@ export default function AnnouncementTable({
     setIsDeleting(false);
     if (!result.success) {
       console.error("[AnnouncementTable] 删除公告失败:", result.error);
-      showToast("删除公告失败", "error");
+      showLocalApiFailure(result, showToast, "删除公告失败");
       return;
     }
 

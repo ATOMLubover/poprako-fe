@@ -7,13 +7,13 @@ import type { ComicTranslationListItem } from "@/features/ComcList/types/types";
 export async function fetchMyAssignmentComicCards(
   offset: number,
   limit: number,
-): Promise<ComicTranslationListItem[] | string> {
+): Promise<Result<ComicTranslationListItem[]>> {
   const result = await listMyAssignments({
     includes: ["chapter.comic.workset.team"],
     offset,
     limit,
   });
-  if (!result.success) return result.error;
+  if (!result.success) return result;
   const cards: ComicTranslationListItem[] = [];
   for (const assignment of result.data) {
     const chapter = assignment.chapter;
@@ -22,7 +22,7 @@ export async function fetchMyAssignmentComicCards(
       cards.push({ comicInfo, chapter });
     }
   }
-  return cards;
+  return { success: true, data: cards };
 }
 
 export async function fetchComicAssignments(

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { ToastType } from "@/components/ui/NotificationToast";
 import type { ChapterInfo, ComicInfo } from "@/types";
@@ -82,7 +83,7 @@ export function useComicDetailHost({
     restoreComic(urlComicId)
       .then((result) => {
         if (!result.success) {
-          showToast(result.error, "error");
+          showLocalApiFailure(result, showToast);
           if (!cancelled) {
             setComicDetailSearchParams(null, null);
           }
@@ -95,7 +96,7 @@ export function useComicDetailHost({
       })
       .catch((err) => {
         console.error(`[${logPrefix}] 恢复漫画详情失败:`, err);
-        showToast("恢复漫画详情失败", "error");
+        showLocalCaughtError(err, showToast, "恢复漫画详情失败");
         if (!cancelled) {
           setComicDetailSearchParams(null, null);
         }

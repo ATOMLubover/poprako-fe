@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { ChevronRight, Loader2 } from "lucide-react";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 import { useToastStore } from "@/components/ui/NotificationToast";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { Page } from "@/types/page";
 import { unitId } from "@/types/unit";
 import type {
@@ -149,7 +150,7 @@ export default function UnitSearchTransformDialog({
       });
       if (!result.success) {
         console.error("[UnitSearchTransformDialog] 替换失败", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return;
       }
 
@@ -179,7 +180,7 @@ export default function UnitSearchTransformDialog({
       showToast("替换请求已完成", "success");
     } catch (error) {
       console.error("[UnitSearchTransformDialog] 替换请求异常", error);
-      showToast("替换失败，请重试", "error");
+      showLocalCaughtError(error, showToast, "替换失败，请重试");
     } finally {
       setIsTransforming(false);
     }

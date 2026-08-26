@@ -3,12 +3,14 @@ import { LoaderCircle } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
 import MemberCard from "@/features/MemberCard/components/business/MemberCard";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
+import type { Result } from "@/types/utils/result";
 
 type Props = {
   onLoadMembers: (
     offset: number,
     limit: number,
-  ) => Promise<MemberInfo[] | string>;
+  ) => Promise<Result<MemberInfo[]>>;
   onMemberClick?: (member: MemberInfo) => void;
   onlineUserIds?: ReadonlySet<string>;
 };
@@ -34,18 +36,18 @@ export default function EmbeddedMemberList({
     setIsLoading(true);
     try {
       const result = await onLoadMembers(offset, 20);
-      if (typeof result === "string") {
-        console.error("[EmbeddedMemberList] 加载成员列表失败:", result);
-        showToast(result, "error");
+      if (!result.success) {
+        console.error("[EmbeddedMemberList] 加载成员列表失败:", result.error);
+        showLocalApiFailure(result, showToast);
         setHasMore(false);
       } else {
-        if (result.length < 20) setHasMore(false);
-        setMembers((prev) => [...prev, ...result]);
-        setOffset((prev) => prev + result.length);
+        if (result.data.length < 20) setHasMore(false);
+        setMembers((prev) => [...prev, ...result.data]);
+        setOffset((prev) => prev + result.data.length);
       }
     } catch (err) {
       console.error("[EmbeddedMemberList] 加载成员列表异常:", err);
-      showToast("发生未知错误", "error");
+      showLocalCaughtError(err, showToast, "发生未知错误");
     } finally {
       setIsLoading(false);
     }

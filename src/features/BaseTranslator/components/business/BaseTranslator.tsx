@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
+import { showLocalCaughtError, toApiRequestError } from "@/api/util";
 import {
   SquareArrowRight,
   Command,
@@ -292,7 +293,7 @@ export default function BaseTranslator({
         stage: completionStage,
         error,
       });
-      showToast("推进阶段失败，请重试", "error");
+      showLocalCaughtError(error, showToast, "推进阶段失败，请重试");
     } finally {
       setIsCompletingStage(false);
     }
@@ -424,7 +425,7 @@ export default function BaseTranslator({
     if (!unitSearchTransform) return;
 
     const result = await unitSearchTransform.reloadPage(currentPageId);
-    if (!result.success) throw new Error(result.error);
+    if (!result.success) throw toApiRequestError(result);
     setLoadedUnits(result.data, setUnitBuf);
   }
 

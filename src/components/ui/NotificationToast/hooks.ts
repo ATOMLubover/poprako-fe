@@ -11,9 +11,10 @@ export const useToastStore = create<ToastStore>((set) => ({
   toast: null,
 
   showToast: (message, type) => {
-    // 先清空再设置，确保连续调用也能触发动画
     set({ toast: null });
-    requestAnimationFrame(() => {
+    const schedule = globalThis.requestAnimationFrame
+      ?? ((callback: FrameRequestCallback) => callback(0));
+    schedule(() => {
       set({ toast: { message, type } });
     });
   },

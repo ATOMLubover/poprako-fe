@@ -7,6 +7,7 @@ import {
   type RoleFilter,
 } from "@/features/MemberList";
 import type { MemberInfo } from "@/types/member";
+import type { Result } from "@/types/utils/result";
 
 const now = Date.now();
 
@@ -51,9 +52,9 @@ const MOCK_MEMBERS = Array.from({ length: 24 }, (_, i) => makeMockMember(i));
 async function mockLoadMembers(
   offset: number,
   limit: number,
-): Promise<MemberInfo[] | string> {
+): Promise<Result<MemberInfo[]>> {
   await new Promise((r) => setTimeout(r, 400));
-  return MOCK_MEMBERS.slice(offset, offset + limit);
+  return { success: true, data: MOCK_MEMBERS.slice(offset, offset + limit) };
 }
 
 // ── MemberList Story ──────────────────────────────

@@ -3,6 +3,7 @@ import { Plus, Search } from "lucide-react";
 import clsx from "clsx";
 import type { TermbaseInfo } from "@/types/termbase";
 import type { TerminologyDataSource } from "@/features/BaseTranslator/types/terminology";
+import type { ResultFailure } from "@/types/utils/result";
 import { usePaginatedList } from "../../hook/usePaginatedList";
 import { useLongPress } from "@/hooks/useLongPress";
 import InfiniteTerminologyList from "./InfiniteTerminologyList";
@@ -19,7 +20,7 @@ type Props = {
   onSelect: (termbase: TermbaseInfo) => void;
   onCreate: () => void;
   onEdit: (termbase: TermbaseInfo) => void;
-  onError: (error: string) => void;
+  onError: (error: ResultFailure) => void;
 };
 
 type RowProps = {

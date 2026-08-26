@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
+import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
-import { api } from "./util";
+import {
+  api,
+  showLocalApiFailure,
+  showLocalCaughtError,
+  toApiRequestError,
+} from "./util";
 
 function installFetch(response: Response) {
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -15,6 +21,7 @@ function installFetch(response: Response) {
 describe("api util", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    useToastStore.getState().hideToast();
   });
 
   test("serializes array query params as repeated keys for poprako-r incl", async () => {
@@ -49,6 +56,79 @@ describe("api util", () => {
       success: false,
       error: "auth failed",
     });
+  });
+
+  test("reports backend 422 messages exactly once at the HTTP boundary", async () => {
+    const showToast = vi.spyOn(useToastStore.getState(), "showToast");
+    installFetch(
+      new Response(JSON.stringify({ code: 422, message: "后端校验消息" }), {
+        status: 422,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const result = await api.post("/validation", {});
+
+    expect(result).toEqual({
+      success: false,
+      error: "后端校验消息",
+      httpStatus: 422,
+    });
+    expect(showToast).toHaveBeenCalledOnce();
+    expect(showToast).toHaveBeenCalledWith("后端校验消息", "error");
+  });
+
+  test("does not let local fallbacks overwrite an already reported 422", () => {
+    const showToast = vi.fn();
+    const failure = {
+      success: false as const,
+      error: "后端校验消息",
+      httpStatus: 422,
+    };
+
+    showLocalApiFailure(failure, showToast, "操作失败");
+    showLocalCaughtError(
+      toApiRequestError(failure),
+      showToast,
+      "操作失败",
+    );
+
+    expect(showToast).not.toHaveBeenCalled();
+  });
+
+  test("logs a protocol error when a 422 response omits message", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const showToast = vi.spyOn(useToastStore.getState(), "showToast");
+    installFetch(
+      new Response(JSON.stringify({ code: 422 }), {
+        status: 422,
+        statusText: "Unprocessable Entity",
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await expect(api.get("/invalid-response")).resolves.toEqual({
+      success: false,
+      error: "Unprocessable Entity",
+      httpStatus: 422,
+    });
+    expect(consoleError).toHaveBeenCalledWith(
+      "[API] HTTP 422 响应缺少有效 message",
+      { message: undefined },
+    );
+    expect(showToast).toHaveBeenCalledWith("Unprocessable Entity", "error");
+  });
+
+  test("keeps existing local fallbacks for non-422 failures", () => {
+    const showToast = vi.fn();
+
+    showLocalApiFailure(
+      { success: false, error: "internal detail", httpStatus: 500 },
+      showToast,
+      "操作失败",
+    );
+
+    expect(showToast).toHaveBeenCalledWith("操作失败", "error");
   });
 
   test("accepts empty 204 responses as undefined data", async () => {

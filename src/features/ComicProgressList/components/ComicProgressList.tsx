@@ -3,10 +3,12 @@ import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
 import type { ComicInfo } from "@/types";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
+import type { Result } from "@/types/utils/result";
 import ComicProgressItem from "./ComicProgressItem";
 
 type Props = {
-  onLoadComics: (offset: number, limit: number) => Promise<ComicInfo[] | string>;
+  onLoadComics: (offset: number, limit: number) => Promise<Result<ComicInfo[]>>;
   onComicClick: (comicInfo: ComicInfo) => void;
 };
 
@@ -43,24 +45,26 @@ export default function ComicProgressList({
 
     try {
       const result = await onLoadComics(requestOffset, pageSize);
-      if (typeof result === "string") {
-        console.error("[ComicProgressList] 加载漫画列表失败:", result);
-        showToast(result, "error");
+      if (!result.success) {
+        console.error("[ComicProgressList] 加载漫画列表失败:", result.error);
+        showLocalApiFailure(result, showToast);
         hasMoreRef.current = false;
         setHasMore(false);
         return;
       }
 
-      const nextOffset = requestOffset + result.length;
-      const nextHasMore = result.length === pageSize;
+      const items = result.data;
+
+      const nextOffset = requestOffset + items.length;
+      const nextHasMore = items.length === pageSize;
 
       offsetRef.current = nextOffset;
       hasMoreRef.current = nextHasMore;
       setHasMore(nextHasMore);
-      setComics((prev) => (reset ? result : [...prev, ...result]));
+      setComics((prev) => (reset ? items : [...prev, ...items]));
     } catch (err) {
       console.error("[ComicProgressList] 加载漫画列表异常:", err);
-      showToast("发生未知错误", "error");
+      showLocalCaughtError(err, showToast, "发生未知错误");
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);

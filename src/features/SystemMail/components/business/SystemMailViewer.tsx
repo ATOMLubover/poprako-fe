@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Check, Mail } from "lucide-react";
 import clsx from "clsx";
 import { listSysMails, markSysMailRead } from "@/api/sysMail";
+import { showLocalApiFailure } from "@/api/util";
 import type { SysMailInfo } from "@/types/sysMail";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import { useToastStore } from "@/components/ui/NotificationToast";
@@ -46,7 +47,7 @@ export default function SystemMailViewer() {
     setIsFetching(false);
 
     if (!result.success) {
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
       console.error("[SystemMailViewer] refreshAll:", result.error);
       setLoadedOnce(true);
       return;
@@ -81,7 +82,7 @@ export default function SystemMailViewer() {
     setIsFetching(false);
 
     if (!result.success) {
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
       console.error("[SystemMailViewer] fetchMore:", result.error);
       return;
     }
@@ -115,7 +116,7 @@ export default function SystemMailViewer() {
   const handleMarkRead = async (sysMailId: string) => {
     const result = await markSysMailRead(sysMailId);
     if (!result.success) {
-      showToast(result.error, "error");
+      showLocalApiFailure(result, showToast);
       console.error("[SystemMailViewer] markSysMailRead:", result.error);
       return;
     }

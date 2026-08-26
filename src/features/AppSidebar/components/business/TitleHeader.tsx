@@ -17,6 +17,7 @@ export default function TitleHeader() {
         className={clsx(
           "absolute left-14 whitespace-nowrap",
           "text-lg font-black tracking-tighter",
+          "[text-shadow:0_0_0.45px_currentColor]",
           "text-[#3D3028]",
           "opacity-0 transition-opacity",
           "duration-100 delay-0",
@@ -25,7 +26,7 @@ export default function TitleHeader() {
           "group-hover:delay-150",
         )}
       >
-        POPRAKO - W
+        白杨子 W
       </span>
     </div>
   );

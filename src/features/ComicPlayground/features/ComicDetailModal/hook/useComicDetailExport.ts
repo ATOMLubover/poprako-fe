@@ -1,5 +1,11 @@
 import { useCallback, useRef, useState } from "react";
 import JSZip from "jszip";
+import {
+  createHttpFailure,
+  showLocalApiFailure,
+  showLocalCaughtError,
+  toApiRequestError,
+} from "@/api/util";
 import { markCoverUploaded, reserveCoverUpload } from "@/features/ComicPlayground/api/comic";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hashPageFile } from "../pageHash";
@@ -189,7 +195,16 @@ export function useComicDetailExport({
             signal: exportAbortControllerRef.current?.signal,
           });
           if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            const responseText = await response.text();
+            let message = responseText || response.statusText || `HTTP ${response.status}`;
+            try {
+              const body = JSON.parse(responseText) as { message?: unknown };
+              if (typeof body.message === "string") message = body.message;
+            } catch {
+              const xmlMessage = /<Message>([^<]+)<\/Message>/.exec(responseText);
+              if (xmlMessage?.[1]) message = xmlMessage[1];
+            }
+            throw toApiRequestError(createHttpFailure(message, response.status));
           }
           const blob = await response.blob();
           const extension =
@@ -259,7 +274,7 @@ export function useComicDetailExport({
       assertExportNotAborted();
 
       if (!exportResult.success) {
-        showToast(exportResult.error, "error");
+        showLocalApiFailure(exportResult, showToast);
         return;
       }
 
@@ -417,7 +432,7 @@ export function useComicDetailExport({
         return;
       }
       console.error("[ComicDetailModal] 导出章节数据异常:", err);
-      showToast("导出失败", "error");
+      showLocalCaughtError(err, showToast, "导出失败");
     } finally {
       exportAbortControllerRef.current = null;
       setIsExportingData(false);
@@ -466,7 +481,7 @@ export function useComicDetailExport({
         });
 
         if (!result.success) {
-          showToast(result.error, "error");
+          showLocalApiFailure(result, showToast);
           return;
         }
 
@@ -479,7 +494,7 @@ export function useComicDetailExport({
         );
       } catch (err) {
         console.error("[ComicDetailModal] 导入章节数据异常:", err);
-        showToast("导入失败", "error");
+        showLocalCaughtError(err, showToast, "导入失败");
       } finally {
         setIsImportingData(false);
       }
@@ -516,7 +531,7 @@ export function useComicDetailExport({
           extension: ext,
         });
         if (!reserveRes.success) {
-          showToast(reserveRes.error, "error");
+          showLocalApiFailure(reserveRes, showToast);
           return;
         }
 
@@ -533,7 +548,7 @@ export function useComicDetailExport({
           (percent) => setCoverUploadProgress(percent),
         );
         if (!uploadRes.success) {
-          showToast(uploadRes.error, "error");
+          showLocalApiFailure(uploadRes, showToast);
           return;
         }
 
@@ -542,7 +557,7 @@ export function useComicDetailExport({
           slot.imageVersion,
         );
         if (!markRes.success) {
-          showToast(markRes.error, "error");
+          showLocalApiFailure(markRes, showToast);
           return;
         }
 
@@ -553,7 +568,7 @@ export function useComicDetailExport({
         showToast("封面上传成功", "success");
       } catch (err) {
         console.error("[ComicDetailModal] 封面上传异常:", err);
-        showToast(err instanceof Error ? err.message : "封面上传失败", "error");
+        showLocalCaughtError(err, showToast, "封面上传失败", true);
       } finally {
         setIsUploadingCover(false);
         setCoverUploadProgress(null);

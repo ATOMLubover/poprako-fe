@@ -9,6 +9,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
+import { showLocalApiFailure } from "@/api/util";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
 
@@ -107,7 +108,7 @@ export default function MemberDetailModal({
       const result = await onUpdateRole(member.id, selectedBits);
       if (!result.success) {
         console.error("[MemberDetailModal] 更新角色失败:", result.error);
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return;
       }
       onClose();

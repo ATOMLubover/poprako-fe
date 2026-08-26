@@ -21,6 +21,7 @@ import {
 import { listAssignmentsByChapter } from "@/api/assignment";
 import { getUser } from "@/api/user";
 import { getChapter } from "@/features/ComicPlayground/api/chapter";
+import { showLocalApiFailure, toApiRequestError } from "@/api/util";
 import {
   createTerm,
   deleteTerm,
@@ -244,7 +245,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
           pageId,
           error: result.error,
         });
-        showToast(result.error, "error");
+        showLocalApiFailure(result, showToast);
         return [];
       }
 
@@ -258,7 +259,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       const result = await saveUnits(pageId, diff);
       if (!result.success) {
         console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error });
-        throw new Error(result.error);
+        throw toApiRequestError(result);
       }
 
     },
@@ -288,7 +289,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
   const handleCompleteStage = useCallback(
     async (stage: TranslatorCompletionStage) => {
       const result = await completeChapterStage(chapterId, stage);
-      if (!result.success) throw new Error(result.error);
+      if (!result.success) throw toApiRequestError(result);
     },
     [chapterId],
   );

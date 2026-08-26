@@ -1,4 +1,4 @@
-import { api } from "@/api/util";
+import { api, createHttpFailure } from "@/api/util";
 import type {
   PageInfo,
   ReserveChapterPagesArgs,
@@ -137,15 +137,21 @@ export async function updatePage(
   return { success: true, data: undefined };
 }
 
-function extractS3Error(xhr: XMLHttpRequest): string {
+function extractUploadError(xhr: XMLHttpRequest): string {
   try {
-    const text = xhr.responseText;
+    const text = xhr.responseText.trim();
     if (!text) return "";
+
+    try {
+      const body = JSON.parse(text) as { message?: unknown };
+      if (typeof body.message === "string") return body.message;
+    } catch {
+      // Object storage commonly returns XML rather than JSON.
+    }
+
     const match = /<Message>([^<]+)<\/Message>/.exec(text);
-    if (match && match[1]) return ` (S3: ${match[1]})`;
-    // 有些 S3 兼容实现返回不同格式，截取前 200 字符兜底
-    const snippet = text.trim().slice(0, 200);
-    return snippet ? ` (${snippet})` : "";
+    if (match?.[1]) return match[1];
+    return text.slice(0, 200);
   } catch {
     return "";
   }
@@ -223,16 +229,16 @@ export async function uploadToPresignedUrl(
         return;
       }
 
-      const s3Detail = extractS3Error(xhr);
-      if (s3Detail) {
+      const responseMessage = extractUploadError(xhr);
+      if (responseMessage) {
         console.error(
-          `[uploadToPresignedUrl] S3 错误 (HTTP ${xhr.status}):${s3Detail}`,
+          `[uploadToPresignedUrl] S3 错误 (HTTP ${xhr.status}): ${responseMessage}`,
         );
       }
+      const error = responseMessage || `上传失败: HTTP ${xhr.status}`;
+      const failure = createHttpFailure(error, xhr.status);
       finish({
-        success: false,
-        error: `上传失败: HTTP ${xhr.status}`,
-        httpStatus: xhr.status,
+        ...failure,
         failureKind: "http",
       });
     };

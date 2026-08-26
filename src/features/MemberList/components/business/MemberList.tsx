@@ -1,4 +1,5 @@
 import type { MemberInfo } from "@/types/member";
+import type { Result } from "@/types/utils/result";
 import type { RoleFilter } from "../../types/types";
 import MemberListFilterHeader from "./MemberListFilterHeader";
 import EmbeddedMemberList from "./EmbeddedMemberList";
@@ -12,7 +13,7 @@ type Props = {
   onLoadMembers: (
     offset: number,
     limit: number,
-  ) => Promise<MemberInfo[] | string>;
+  ) => Promise<Result<MemberInfo[]>>;
   onMemberClick?: (member: MemberInfo) => void;
   onlineUserIds?: ReadonlySet<string>;
 };

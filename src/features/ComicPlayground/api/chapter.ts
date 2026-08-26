@@ -1,4 +1,8 @@
-import { api } from "@/api/util";
+import {
+  api,
+  createHttpFailure,
+  resolveHttpErrorMessage,
+} from "@/api/util";
 import { appConfig } from "@/config/config";
 import { useAppStore } from "@/store/app";
 import { toChapterInfo } from "@/types/chapter";
@@ -233,18 +237,18 @@ export async function exportChapter(
     const rawText = await response.text();
 
     if (!response.ok) {
+      let error: string;
       try {
         const body = JSON.parse(rawText) as { message?: string };
-        return {
-          success: false,
-          error: body.message || response.statusText || "导出翻校数据失败",
-        };
+        error = resolveHttpErrorMessage(
+          body.message,
+          response.statusText,
+          response.status,
+        );
       } catch {
-        return {
-          success: false,
-          error: rawText || response.statusText || "导出翻校数据失败",
-        };
+        error = rawText || response.statusText || "导出翻校数据失败";
       }
+      return createHttpFailure(error, response.status);
     }
 
     const body = JSON.parse(rawText) as RawChapterExports;
