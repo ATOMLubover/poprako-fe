@@ -12,7 +12,6 @@ type Props = {
     limit: number,
   ) => Promise<Result<MemberInfo[]>>;
   onMemberClick?: (member: MemberInfo) => void;
-  onlineUserIds?: ReadonlySet<string>;
 };
 
 // 受控的成员列表展示组件，负责无限下滑加载
@@ -20,7 +19,6 @@ type Props = {
 export default function EmbeddedMemberList({
   onLoadMembers,
   onMemberClick,
-  onlineUserIds,
 }: Props) {
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +85,6 @@ export default function EmbeddedMemberList({
           <MemberCard
             key={m.id}
             member={m}
-            isOnline={onlineUserIds?.has(m.userId) ?? false}
             onClick={onMemberClick ? () => onMemberClick(m) : undefined}
           />
         ))}

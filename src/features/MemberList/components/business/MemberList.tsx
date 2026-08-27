@@ -15,7 +15,6 @@ type Props = {
     limit: number,
   ) => Promise<Result<MemberInfo[]>>;
   onMemberClick?: (member: MemberInfo) => void;
-  onlineUserIds?: ReadonlySet<string>;
 };
 
 export default function MemberList({
@@ -26,7 +25,6 @@ export default function MemberList({
   onCreateMember,
   onLoadMembers,
   onMemberClick,
-  onlineUserIds,
 }: Props) {
   return (
     <div className="flex h-full w-full flex-col gap-3 overflow-hidden">
@@ -41,7 +39,6 @@ export default function MemberList({
         <EmbeddedMemberList
           onLoadMembers={onLoadMembers}
           onMemberClick={onMemberClick}
-          onlineUserIds={onlineUserIds}
         />
       </div>
     </div>

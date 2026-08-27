@@ -1,10 +1,10 @@
 import clsx from "clsx";
 import { User as UserIcon, ShieldCheck, Clock } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
+import { getMemberActivityColor } from "./activityStatus";
 
 type Props = {
   member: MemberInfo;
-  isOnline?: boolean;
   onClick?: () => void;
 };
 
@@ -46,7 +46,7 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps) {
   );
 }
 
-export default function MemberCard({ member, isOnline = false, onClick }: Props) {
+export default function MemberCard({ member, onClick }: Props) {
   const { user } = member;
   const isAdmin = user?.isSuperAdmin || !!member.assignedAdminAt;
 
@@ -107,7 +107,7 @@ export default function MemberCard({ member, isOnline = false, onClick }: Props)
           <div
             className={clsx(
               "h-3 w-1 rounded-full shrink-0 transition-colors duration-300",
-              isOnline ? "bg-[#2e5c33]" : "bg-stone-300",
+              getMemberActivityColor(user?.lastActiveAt),
             )}
           />
         </div>
