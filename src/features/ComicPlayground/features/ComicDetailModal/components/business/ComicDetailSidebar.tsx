@@ -155,7 +155,7 @@ export default function ComicDetailSidebar({
                   "opacity-0 group-hover:opacity-100",
                   "transition-all active:scale-95",
                 )}
-                title="上传封面"
+                title="上传自定义封面"
               >
                 <Upload className="h-3 w-3" strokeWidth={2.25} />
               </button>

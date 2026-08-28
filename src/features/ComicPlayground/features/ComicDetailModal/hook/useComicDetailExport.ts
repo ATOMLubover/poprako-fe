@@ -21,6 +21,7 @@ import type {
 } from "../types";
 import { DEFAULT_EXPORT_PROGRESS } from "../types";
 import { getFileExtension } from "../utils";
+import { resolveComicDetailCoverUrl } from "../coverUrl";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -31,6 +32,7 @@ type Args = {
   comicAuthor?: string | null;
   comicIndex?: number | null;
   comicCoverThumbnailUrl?: string | null;
+  isCoverUploaded: boolean;
   selectedChapterId: string | null;
   selectedChapter?: {
     index: number;
@@ -120,6 +122,7 @@ export function useComicDetailExport({
   comicAuthor,
   comicIndex,
   comicCoverThumbnailUrl,
+  isCoverUploaded,
   selectedChapterId,
   selectedChapter,
   pages,
@@ -146,6 +149,12 @@ export function useComicDetailExport({
   const canUploadCover =
     (activeMember !== null && hasRole(activeMember, "admin")) ||
     canUploadRawPages;
+  const displayedCoverUrl = resolveComicDetailCoverUrl({
+    isCoverUploaded,
+    comicCoverThumbnailUrl,
+    selectedChapterIndex: selectedChapter?.index,
+    pages,
+  });
 
   const buildExportBaseName = useCallback(() => {
     const normalizedComicIndex = (comicIndex ?? 0) + 1;
@@ -597,7 +606,7 @@ export function useComicDetailExport({
     coverUpload: {
       isUploadingCover,
       coverUploadProgress,
-      localCoverUrl: localCoverUrl ?? comicCoverThumbnailUrl ?? null,
+      localCoverUrl: localCoverUrl ?? displayedCoverUrl,
       handleCoverFileChange,
     } satisfies CoverUploadState,
     cancelExport: () => exportAbortControllerRef.current?.abort(),

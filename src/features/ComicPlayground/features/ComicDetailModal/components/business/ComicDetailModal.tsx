@@ -231,6 +231,7 @@ export default function ComicDetailModal({
     comicAuthor: comicInfo.author,
     comicIndex: comicInfo.index,
     comicCoverThumbnailUrl: comicInfo.coverThumbnailUrl,
+    isCoverUploaded: comicInfo.isCoverUploaded,
     selectedChapterId,
     selectedChapter,
     pages,
