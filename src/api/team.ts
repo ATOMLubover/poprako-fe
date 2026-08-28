@@ -1,11 +1,42 @@
 import { api } from "./util";
 import type { Result } from "@/types/utils/result";
-import type { ReserveTeamAvatarResult, UpdateTeamArgs } from "@/types/team";
+import type {
+  ReserveTeamAvatarResult,
+  TeamInfo,
+  UpdateTeamArgs,
+} from "@/types/team";
 import type { ReserveImageArgs } from "@/types/image";
 import {
+  unwrapRawTeamInfo,
   unwrapRawReserveTeamAvatarResult,
+  type RawTeamInfo,
   type RawReserveTeamAvatarResult,
 } from "@/types/raw/team";
+import { useAppStore } from "@/store/app";
+
+type ListMyTeamsArgs = {
+  offset: number;
+  limit: number;
+};
+
+export async function listMyTeams(
+  args: ListMyTeamsArgs,
+): Promise<Result<TeamInfo[]>> {
+  const userId = useAppStore.getState().loginState?.userInfo.id;
+  if (!userId) return { success: false, error: "未找到当前用户" };
+
+  const result = await api.get<RawTeamInfo[] | null>("/teams", {
+    user_id: userId,
+    offset: args.offset,
+    limit: args.limit,
+  });
+  if (!result.success) return result;
+
+  return {
+    success: true,
+    data: (result.data ?? []).map(unwrapRawTeamInfo),
+  };
+}
 
 export async function markSelfOnline(teamId: string): Promise<Result<void>> {
   return api.put<void, Record<string, never>>(
