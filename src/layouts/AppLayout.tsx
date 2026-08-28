@@ -8,6 +8,11 @@ import { listMyMembers } from "@/api/member";
 import { listSysMails } from "@/api/sysMail";
 import { useAppStore } from "@/store/app";
 import LoadingCircle from "@/components/ui/LoadingCircle";
+import {
+  FirstRegistrationGuideDialog,
+  readFirstRegistrationFlag,
+  writeFirstRegistrationFlag,
+} from "@/features/FirstRegistrationGuide";
 
 const MAIL_PREFETCH_SIZE = 15;
 
@@ -72,11 +77,20 @@ export default function AppLayout() {
   const sysMailCache = useAppStore((s) => s.sysMailCache);
   const setSysMailCache = useAppStore((s) => s.setSysMailCache);
   const [isReady, setIsReady] = useState(loginState !== null);
+  const [showFirstRegistrationGuide, setShowFirstRegistrationGuide] = useState(
+    () => loginState !== null && !readFirstRegistrationFlag(),
+  );
+
+  const closeFirstRegistrationGuide = () => {
+    writeFirstRegistrationFlag(true);
+    setShowFirstRegistrationGuide(false);
+  };
 
   useEffect(() => {
     if (loginState !== null) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsReady(true);
+      setShowFirstRegistrationGuide(!readFirstRegistrationFlag());
       return;
     }
 
@@ -85,6 +99,7 @@ export default function AppLayout() {
         const memberInfos = await listMyMembers({ ownerId: userInfo.id });
         setLoginState({ userInfo, memberInfos });
         setIsReady(true);
+        setShowFirstRegistrationGuide(!readFirstRegistrationFlag());
       })
       .catch(() => navigate("/login", { replace: true }));
   }, [loginState, navigate, setLoginState]);
@@ -120,6 +135,15 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <MobileBottomNav />
+      {showFirstRegistrationGuide && (
+        <FirstRegistrationGuideDialog
+          onClose={closeFirstRegistrationGuide}
+          onOpenSettings={() => {
+            closeFirstRegistrationGuide();
+            navigate("/settings");
+          }}
+        />
+      )}
     </div>
   );
 }
