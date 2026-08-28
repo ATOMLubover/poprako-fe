@@ -7,6 +7,7 @@ import { useAppStore } from "@/store/app";
 import { useNavigate } from "react-router-dom";
 import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import { loginUser, registerUser } from "../../api/auth";
+import { writeFirstRegistrationFlag } from "@/features/FirstRegistrationGuide";
 
 type Mode = "login" | "register";
 
@@ -66,6 +67,9 @@ export default function LoginCard() {
 
       setAccessToken(result.data.accessToken);
       setLoginState(null);
+      if (mode === "register") {
+        writeFirstRegistrationFlag(false);
+      }
       showToast(mode === "login" ? "登录成功！" : "注册成功！", "success");
       navigate("/comic-playground", { replace: true });
     } catch (err) {
