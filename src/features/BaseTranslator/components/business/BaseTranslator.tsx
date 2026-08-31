@@ -27,6 +27,7 @@ import {
 } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
 import type { Project } from "@/types/project";
+import type { PageImageQuality } from "@/types/page";
 import Canvas, {
   type CanvasHandle,
 } from "@/features/BaseTranslator/features/Canvas";
@@ -59,6 +60,10 @@ import type {
 import type { UnitUserResolver } from "../../features/UnitList/hook/unitContributorCache";
 import { useUnitPersistence } from "../../hook/useUnitPersistence";
 import {
+  resolveInitialPageIndex,
+  usePageImagePreloader,
+} from "../../hook/usePageImagePreloader";
+import {
   availableTranslatorModes,
   initialTranslatorMode,
   translatorCompletionStage,
@@ -77,7 +82,7 @@ type Props = {
   // 懒加载的图片 URL 获取器，BaseTranslator 只负责在需要时调用它来获取图片 URL
   onLoadPageImage: (
     pageId: string,
-    quality: "thumbnail" | "original",
+    quality: PageImageQuality,
   ) => Promise<string>;
   onResolveUser: UnitUserResolver;
   onCompleteStage?: (stage: TranslatorCompletionStage) => Promise<void>;
@@ -125,7 +130,12 @@ export default function BaseTranslator({
   startPageId,
   startMode,
 }: Props) {
-  const [pageIndex, setPageIndex] = useState(0);
+  const initialPageIndex = resolveInitialPageIndex(
+    project.pages,
+    startPageId,
+    startPageIndex,
+  );
+  const [pageIndex, setPageIndex] = useState(initialPageIndex);
   const [unitBuf, setUnitBuf] = useState<UnitInfo[]>([]);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>(
     undefined,
@@ -162,6 +172,9 @@ export default function BaseTranslator({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isHighResolution, setIsHighResolution] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const imageQuality: PageImageQuality = isHighResolution
+    ? "original"
+    : "optimized";
   const { isRelocationEnabled, toggleRelocation } = useRelocationPreference();
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
   const [isShortcutPanelOpen, setIsShortcutPanelOpen] = useState(false);
@@ -184,6 +197,13 @@ export default function BaseTranslator({
 
   const showToast = useToastStore((s) => s.showToast);
   const { allChars, favoriteChars } = useSpecialChars();
+
+  usePageImagePreloader({
+    pages: project.pages,
+    currentPageIndex: pageIndex,
+    quality: imageQuality,
+    onLoadPageImage,
+  });
 
   const { fixedShortcuts, configurableShortcuts, updateConfigurableShortcuts } =
     useShortcuts();
@@ -231,7 +251,7 @@ export default function BaseTranslator({
     try {
       const [units, img] = await Promise.all([
         onLoadUnits(page.id),
-        onLoadPageImage(page.id, isHighResolution ? "original" : "thumbnail"),
+        onLoadPageImage(page.id, imageQuality),
       ]);
       setLoadedUnits(units, setUnitBuf);
       setImageUrl(img);
@@ -245,22 +265,7 @@ export default function BaseTranslator({
 
   useEffect(() => {
     if (project.pages.length > 0) {
-      let initial = 0;
-
-      if (startPageId) {
-        const idxById = project.pages.findIndex((page) => page.id === startPageId);
-        if (idxById >= 0) {
-          initial = idxById;
-        }
-      } else if (
-        startPageIndex !== undefined &&
-        startPageIndex >= 0 &&
-        startPageIndex < project.pages.length
-      ) {
-        initial = startPageIndex;
-      }
-
-      void loadPage(initial).catch((error) => {
+      void loadPage(initialPageIndex).catch((error) => {
         console.error("[BaseTranslator] 初始页面加载失败", error);
       });
     }
@@ -281,7 +286,7 @@ export default function BaseTranslator({
     try {
       const nextImageUrl = await onLoadPageImage(
         page.id,
-        nextIsHighResolution ? "original" : "thumbnail",
+        nextIsHighResolution ? "original" : "optimized",
       );
       setImageUrl(nextImageUrl);
     } finally {

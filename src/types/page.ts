@@ -1,6 +1,8 @@
 import type { UserInfo } from "./user";
 import type { ImageUploadSlot } from "./image";
 
+export type PageImageQuality = "optimized" | "original";
+
 export type Page = {
   id: string;
 
@@ -8,6 +10,7 @@ export type Page = {
   index: number;
 
   imageUrl: string;
+  imageOptimizedUrl?: string;
   imageThumbnailUrl?: string;
   isUploaded: boolean;
   imageHash?: string;

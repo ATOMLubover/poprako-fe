@@ -158,10 +158,10 @@ export default function StatusOptionBar({
         type="button"
         title={
           isHighResolution
-            ? "当前：高清原图，点击切换到低清缩略图"
-            : "当前：低清缩略图，点击切换到高清原图"
+            ? "当前：高清原图，点击切换到优化图片"
+            : "当前：优化图片，点击切换到高清原图"
         }
-        aria-label={isHighResolution ? "切换到低清图片" : "切换到高清图片"}
+        aria-label={isHighResolution ? "切换到优化图片" : "切换到高清原图"}
         aria-pressed={isHighResolution}
         disabled={isLoadingPage}
         onClick={() => void onToggleImageQualityClick()}
