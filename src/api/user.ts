@@ -1,11 +1,11 @@
 import {
-  unwrapRawReserveUserAvatarResult,
+  unwrapRawAllocUserAvatarResult,
   unwrapRawUserInfo,
-  type RawReserveUserAvatarResult,
+  type RawAllocUserAvatarResult,
   type RawUserInfo,
 } from "@/types/raw/user";
-import type { ReserveUserAvatarResult, UserInfo } from "@/types/user";
-import type { ReserveImageArgs } from "@/types/image";
+import type { AllocUserAvatarResult, UserInfo } from "@/types/user";
+import type { AllocImageArgs } from "@/types/image";
 import type { Result } from "@/types/utils/result";
 import { api, toApiRequestError } from "./util";
 
@@ -40,23 +40,23 @@ export async function updateUserPassword(
   });
 }
 
-export async function reserveUserAvatarUpload(
+export async function allocUserAvatarUpload(
   userId: string,
-  args: ReserveImageArgs,
-): Promise<Result<ReserveUserAvatarResult>> {
-  const res = await api.post<RawReserveUserAvatarResult, {
+  args: AllocImageArgs,
+): Promise<Result<AllocUserAvatarResult>> {
+  const res = await api.post<RawAllocUserAvatarResult, {
     image_hash: string;
     new_byte_len: number;
     ext: string;
   }>(
-    `/users/${userId}/avatar/reserve`,
+    `/users/${userId}/avatar/alloc`,
     { image_hash: args.imageHash, new_byte_len: args.newByteLen, ext: args.extension },
   );
   if (!res.success) return res;
 
   return {
     success: true,
-    data: unwrapRawReserveUserAvatarResult(res.data),
+    data: unwrapRawAllocUserAvatarResult(res.data),
   };
 }
 

@@ -4,7 +4,7 @@ export type ImageUploadSlot = {
   headers: Record<string, string>;
 };
 
-export type ReserveImageArgs = {
+export type AllocImageArgs = {
   imageHash: string;
   newByteLen: number;
   extension: string;

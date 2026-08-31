@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Upload, User as UserIcon } from "lucide-react";
 import clsx from "clsx";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
-import { confirmUserAvatarUploaded, reserveUserAvatarUpload } from "@/api/user";
+import { confirmUserAvatarUploaded, allocUserAvatarUpload } from "@/api/user";
 import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hashPageFile } from "@/features/ComicPlayground/features/ComicDetailModal/pageHash";
@@ -91,17 +91,17 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
 
     try {
       const { imageHash } = await hashPageFile(file);
-      const reserveRes = await reserveUserAvatarUpload(user.id, {
+      const allocRes = await allocUserAvatarUpload(user.id, {
         imageHash,
         newByteLen: file.size,
         extension,
       });
-      if (!reserveRes.success) {
-        showLocalApiFailure(reserveRes, showToast);
+      if (!allocRes.success) {
+        showLocalApiFailure(allocRes, showToast);
         return;
       }
 
-      const slot = reserveRes.data;
+      const slot = allocRes.data;
       if (slot === null) {
         showToast("头像图片未发生变化", "success");
         return;

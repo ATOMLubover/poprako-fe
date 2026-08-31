@@ -1,8 +1,8 @@
-import type { UserInfo, ReserveUserAvatarResult } from "../user";
+import type { UserInfo, AllocUserAvatarResult } from "../user";
 import { ensureHttpsUrl } from "@/utils/url";
 import {
   unwrapRawImageUploadSlot,
-  type RawReserveImageResult,
+  type RawAllocImageResult,
 } from "./image";
 
 export type RawUserInfo = {
@@ -31,10 +31,10 @@ export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
   } as UserInfo;
 }
 
-export type RawReserveUserAvatarResult = RawReserveImageResult;
+export type RawAllocUserAvatarResult = RawAllocImageResult;
 
-export function unwrapRawReserveUserAvatarResult(
-  raw: RawReserveUserAvatarResult,
-): ReserveUserAvatarResult {
+export function unwrapRawAllocUserAvatarResult(
+  raw: RawAllocUserAvatarResult,
+): AllocUserAvatarResult {
   return raw.slot === null ? null : unwrapRawImageUploadSlot(raw.slot);
 }

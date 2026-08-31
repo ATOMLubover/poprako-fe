@@ -6,7 +6,7 @@ import {
   showLocalCaughtError,
   toApiRequestError,
 } from "@/api/util";
-import { markCoverUploaded, reserveCoverUpload } from "@/features/ComicPlayground/api/comic";
+import { markCoverUploaded, allocCoverUpload } from "@/features/ComicPlayground/api/comic";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hashPageFile } from "../pageHash";
 import { hasRole } from "@/types/role";
@@ -534,17 +534,17 @@ export function useComicDetailExport({
 
       try {
         const { imageHash } = await hashPageFile(file);
-        const reserveRes = await reserveCoverUpload(comicId, {
+        const allocRes = await allocCoverUpload(comicId, {
           imageHash,
           newByteLen: file.size,
           extension: ext,
         });
-        if (!reserveRes.success) {
-          showLocalApiFailure(reserveRes, showToast);
+        if (!allocRes.success) {
+          showLocalApiFailure(allocRes, showToast);
           return;
         }
 
-        const slot = reserveRes.data;
+        const slot = allocRes.data;
         if (slot === null) {
           showToast("封面图片未发生变化", "success");
           return;

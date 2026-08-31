@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const apiMocks = vi.hoisted(() => ({
   listPages: vi.fn(),
-  reserveChapterPages: vi.fn(),
-  reserveExistingPageUpload: vi.fn(),
+  allocChapterPages: vi.fn(),
+  allocExistingPageUpload: vi.fn(),
   updatePage: vi.fn(),
   uploadToPresignedUrl: vi.fn(),
 }));
@@ -59,7 +59,7 @@ describe("page upload coordinator", () => {
     vi.unstubAllGlobals();
   });
 
-  test("reserves the full manifest without reading existing image bytes", async () => {
+  test("allocates the full manifest without reading existing image bytes", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     apiMocks.listPages.mockResolvedValue({
@@ -74,7 +74,7 @@ describe("page upload coordinator", () => {
       ],
     });
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "new-hash" });
-    apiMocks.reserveChapterPages.mockResolvedValue({
+    apiMocks.allocChapterPages.mockResolvedValue({
       success: true,
       data: {
         pages: [
@@ -103,7 +103,7 @@ describe("page upload coordinator", () => {
       reportedValidationFailures: 0,
     });
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
+    expect(apiMocks.allocChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
       pages: [
         {
@@ -125,7 +125,7 @@ describe("page upload coordinator", () => {
     const oversizedByteLength = 21 * 1024 * 1024;
     Object.defineProperty(oversizedFile, "size", { value: oversizedByteLength });
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "oversized-hash" });
-    apiMocks.reserveChapterPages.mockResolvedValue({
+    apiMocks.allocChapterPages.mockResolvedValue({
       success: true,
       data: {
         pages: [{
@@ -138,7 +138,7 @@ describe("page upload coordinator", () => {
 
     await startChapterPageUpload("chapter-1", [oversizedFile]);
 
-    expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
+    expect(apiMocks.allocChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
       pages: [{
         imageHash: "oversized-hash",
@@ -150,7 +150,7 @@ describe("page upload coordinator", () => {
 
   test("marks backend 422 failures as already reported", async () => {
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "page-hash" });
-    apiMocks.reserveExistingPageUpload.mockResolvedValue({
+    apiMocks.allocExistingPageUpload.mockResolvedValue({
       success: false,
       error: "后端文件大小限制",
       httpStatus: 422,
@@ -169,7 +169,7 @@ describe("page upload coordinator", () => {
     });
   });
 
-  test("re-reserves a matching pending page instead of skipping it as a duplicate", async () => {
+  test("re-allocates a matching pending page instead of skipping it as a duplicate", async () => {
     apiMocks.listPages.mockResolvedValue({
       success: true,
       data: [
@@ -183,7 +183,7 @@ describe("page upload coordinator", () => {
       ],
     });
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "pending-hash" });
-    apiMocks.reserveChapterPages.mockResolvedValue({
+    apiMocks.allocChapterPages.mockResolvedValue({
       success: true,
       data: {
         pages: [
@@ -203,7 +203,7 @@ describe("page upload coordinator", () => {
       failed: 0,
       reportedValidationFailures: 0,
     });
-    expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
+    expect(apiMocks.allocChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
       pages: [
         {
@@ -237,7 +237,7 @@ describe("page upload coordinator", () => {
       ],
     });
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "uploaded-hash" });
-    apiMocks.reserveChapterPages.mockResolvedValue({
+    apiMocks.allocChapterPages.mockResolvedValue({
       success: true,
       data: {
         pages: [
@@ -258,7 +258,7 @@ describe("page upload coordinator", () => {
       failed: 0,
       reportedValidationFailures: 0,
     });
-    expect(apiMocks.reserveChapterPages).toHaveBeenCalledWith({
+    expect(apiMocks.allocChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
       pages: [
         {
@@ -287,7 +287,7 @@ describe("page upload coordinator", () => {
       .mockResolvedValueOnce({ imageHash: "hash-page-1" })
       .mockResolvedValueOnce({ imageHash: "hash-page-2" })
       .mockResolvedValueOnce({ imageHash: "hash-page-3" });
-    apiMocks.reserveChapterPages.mockResolvedValue({
+    apiMocks.allocChapterPages.mockResolvedValue({
       success: true,
       data: {
         pages: [slot("page-1"), slot("page-2"), slot("page-3")],
@@ -314,7 +314,7 @@ describe("page upload coordinator", () => {
       reportedValidationFailures: 0,
     });
     expect(apiMocks.uploadToPresignedUrl).toHaveBeenCalledTimes(3);
-    expect(apiMocks.reserveExistingPageUpload).not.toHaveBeenCalled();
+    expect(apiMocks.allocExistingPageUpload).not.toHaveBeenCalled();
     expect(apiMocks.updatePage).toHaveBeenCalledTimes(2);
     expect(apiMocks.updatePage).toHaveBeenCalledWith("page-2", {
       isUploaded: true,
@@ -331,10 +331,10 @@ describe("page upload coordinator", () => {
     ).toBe(true);
   });
 
-  test("re-reserves and retries recoverable PUT failures twice", async () => {
+  test("re-allocates and retries recoverable PUT failures twice", async () => {
     vi.useFakeTimers();
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "hash-page-1" });
-    apiMocks.reserveChapterPages.mockResolvedValue({
+    apiMocks.allocChapterPages.mockResolvedValue({
       success: true,
       data: { pages: [slot("page-1")] },
     });
@@ -355,7 +355,7 @@ describe("page upload coordinator", () => {
         data: undefined,
         httpStatus: 200,
       });
-    apiMocks.reserveExistingPageUpload
+    apiMocks.allocExistingPageUpload
       .mockResolvedValueOnce({ success: true, data: slot("page-1", 1) })
       .mockResolvedValueOnce({ success: true, data: slot("page-1", 1) });
 
@@ -370,8 +370,8 @@ describe("page upload coordinator", () => {
       reportedValidationFailures: 0,
     });
     expect(apiMocks.uploadToPresignedUrl).toHaveBeenCalledTimes(3);
-    expect(apiMocks.reserveExistingPageUpload).toHaveBeenCalledTimes(2);
-    expect(apiMocks.reserveExistingPageUpload).toHaveBeenCalledWith({
+    expect(apiMocks.allocExistingPageUpload).toHaveBeenCalledTimes(2);
+    expect(apiMocks.allocExistingPageUpload).toHaveBeenCalledWith({
       pageId: "page-1",
       imageHash: "hash-page-1",
       newByteLen: 1,
@@ -383,7 +383,7 @@ describe("page upload coordinator", () => {
   test("owns mark-uploaded retries after the caller releases the task", async () => {
     vi.useFakeTimers();
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "hash-page-1" });
-    apiMocks.reserveChapterPages.mockResolvedValue({
+    apiMocks.allocChapterPages.mockResolvedValue({
       success: true,
       data: { pages: [slot("page-1")] },
     });
@@ -412,7 +412,7 @@ describe("page upload coordinator", () => {
 
   test("treats a null reupload slot as an already accepted identity", async () => {
     hashMocks.hashPageFile.mockResolvedValue({ imageHash: "hash-page-1" });
-    apiMocks.reserveExistingPageUpload.mockResolvedValue({
+    apiMocks.allocExistingPageUpload.mockResolvedValue({
       success: true,
       data: {
         ...slot("page-1"),
@@ -436,7 +436,7 @@ describe("page upload coordinator", () => {
     expect(apiMocks.updatePage).not.toHaveBeenCalled();
   });
 
-  test("keeps reserve, PUT, and mark serial for the same page", async () => {
+  test("keeps alloc, PUT, and mark serial for the same page", async () => {
     const events: string[] = [];
     let finishFirstPut = () => {};
     const firstPut = new Promise<{
@@ -453,13 +453,13 @@ describe("page upload coordinator", () => {
     hashMocks.hashPageFile
       .mockResolvedValueOnce({ imageHash: "hash-a" })
       .mockResolvedValueOnce({ imageHash: "hash-b" });
-    apiMocks.reserveExistingPageUpload
+    apiMocks.allocExistingPageUpload
       .mockImplementationOnce(async () => {
-        events.push("reserve-a");
+        events.push("alloc-a");
         return { success: true, data: slot("page-1", 1) };
       })
       .mockImplementationOnce(async () => {
-        events.push("reserve-b");
+        events.push("alloc-b");
         return { success: true, data: slot("page-1", 2) };
       });
     apiMocks.uploadToPresignedUrl
@@ -477,20 +477,20 @@ describe("page upload coordinator", () => {
     });
 
     const first = await startPageReupload("chapter-1", "page-1", file("a.png"));
-    await vi.waitFor(() => expect(events).toEqual(["reserve-a", "put-a"]));
+    await vi.waitFor(() => expect(events).toEqual(["alloc-a", "put-a"]));
 
     const second = await startPageReupload("chapter-1", "page-1", file("b.png"));
-    expect(events).toEqual(["reserve-a", "put-a"]);
+    expect(events).toEqual(["alloc-a", "put-a"]);
 
     finishFirstPut();
     await first.completion;
     await second.completion;
 
     expect(events).toEqual([
-      "reserve-a",
+      "alloc-a",
       "put-a",
       "mark-1",
-      "reserve-b",
+      "alloc-b",
       "put-b",
       "mark-2",
     ]);

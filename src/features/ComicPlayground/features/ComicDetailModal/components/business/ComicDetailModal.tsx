@@ -53,7 +53,7 @@ export default function ComicDetailModal({
   currentUserId,
   onAddPages,
   onDeleteChapterPages,
-  onReservePageUpload,
+  onAllocPageUpload,
   onJoinChapterRole,
   onExportChapter,
   onImportChapter,
@@ -210,7 +210,7 @@ export default function ComicDetailModal({
     onLoadChapters,
     onAddPages,
     onDeleteChapterPages,
-    onReservePageUpload,
+    onAllocPageUpload,
     reloadLoadedChapters,
     showToast,
   });
@@ -255,7 +255,7 @@ export default function ComicDetailModal({
     canUploadRawPages &&
     !!selectedChapterId &&
     !!onAddPages;
-  const canReuploadRawPages = canUploadRawPages && !!onReservePageUpload;
+  const canReuploadRawPages = canUploadRawPages && !!onAllocPageUpload;
   const canClickPage = canTranslateOrProofread || canReadOnly;
 
   const handleTransition = async (

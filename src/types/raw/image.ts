@@ -6,7 +6,7 @@ export type RawImageUploadSlot = {
   headers: Record<string, string>;
 };
 
-export type RawReserveImageResult = { slot: RawImageUploadSlot | null };
+export type RawAllocImageResult = { slot: RawImageUploadSlot | null };
 
 export function unwrapRawImageUploadSlot(raw: RawImageUploadSlot): ImageUploadSlot {
   return {

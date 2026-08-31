@@ -29,6 +29,7 @@ function InteractiveWrapper({
     DEFAULT_READ_ONLY_UNIT_VIEW,
   );
   const [relocation, setRelocation] = useState(false);
+  const [isHighResolution, setIsHighResolution] = useState(false);
   const [previewVisibility, setPreviewVisibility] = useState<
     "visible" | "dimmed"
   >("visible");
@@ -59,6 +60,8 @@ function InteractiveWrapper({
         isRelocationEnabled={relocation}
         isUnitCreationEnabled={true}
         proofreadPreviewVisibility={previewVisibility}
+        isHighResolution={isHighResolution}
+        isLoadingPage={false}
         onSwitchView={switchView}
         onSwitchReadOnlyUnitView={() =>
           setReadOnlyUnitView((current) =>
@@ -69,6 +72,9 @@ function InteractiveWrapper({
         onUnitCreationClick={() => console.log("unit creation toggled")}
         onToggleProofreadPreviewClick={() =>
           setPreviewVisibility((v) => (v === "visible" ? "dimmed" : "visible"))
+        }
+        onToggleImageQualityClick={async () =>
+          setIsHighResolution((current) => !current)
         }
         onSaveClick={async () => console.log("saved")}
         saving={false}

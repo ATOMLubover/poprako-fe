@@ -29,7 +29,7 @@ import { updateWorkset } from "../../api/workset";
 import {
   listPages,
   deleteChapterPages,
-  reserveExistingPageUpload,
+  allocExistingPageUpload,
 } from "../../api/page";
 import {
   deleteAssignment,
@@ -259,14 +259,14 @@ export default function ComicPlayground() {
     [],
   );
 
-  const handleReservePageUpload = useCallback(
+  const handleAllocPageUpload = useCallback(
     async (args: {
       pageId: string;
       imageHash: string;
       newByteLen: number;
       extension: string;
     }) => {
-      return reserveExistingPageUpload(args);
+      return allocExistingPageUpload(args);
     },
     [],
   );
@@ -472,7 +472,7 @@ export default function ComicPlayground() {
           currentUserId={currentUserId}
           onAddPages={handleAddPages}
           onDeleteChapterPages={handleDeleteChapterPages}
-          onReservePageUpload={handleReservePageUpload}
+          onAllocPageUpload={handleAllocPageUpload}
           onJoinChapterRole={handleJoinChapterRole}
           onImportChapter={handleImportChapter}
           onExportChapter={handleExportChapter}

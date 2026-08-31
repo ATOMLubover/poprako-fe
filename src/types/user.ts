@@ -14,4 +14,4 @@ export type UserInfo = {
   updatedAt: number;
 };
 
-export type ReserveUserAvatarResult = import("./image").ImageUploadSlot | null;
+export type AllocUserAvatarResult = import("./image").ImageUploadSlot | null;

@@ -1,16 +1,16 @@
 import { api } from "./util";
 import type { Result } from "@/types/utils/result";
 import type {
-  ReserveTeamAvatarResult,
+  AllocTeamAvatarResult,
   TeamInfo,
   UpdateTeamArgs,
 } from "@/types/team";
-import type { ReserveImageArgs } from "@/types/image";
+import type { AllocImageArgs } from "@/types/image";
 import {
   unwrapRawTeamInfo,
-  unwrapRawReserveTeamAvatarResult,
+  unwrapRawAllocTeamAvatarResult,
   type RawTeamInfo,
-  type RawReserveTeamAvatarResult,
+  type RawAllocTeamAvatarResult,
 } from "@/types/raw/team";
 import { useAppStore } from "@/store/app";
 
@@ -51,14 +51,14 @@ export async function listOnlineUserIds(
   return api.get<string[]>(`/teams/${teamId}/online-users`);
 }
 
-export async function reserveTeamAvatarUpload(
+export async function allocTeamAvatarUpload(
   teamId: string,
-  args: ReserveImageArgs,
-): Promise<Result<ReserveTeamAvatarResult>> {
+  args: AllocImageArgs,
+): Promise<Result<AllocTeamAvatarResult>> {
   const res = await api.post<
-    RawReserveTeamAvatarResult,
+    RawAllocTeamAvatarResult,
     { image_hash: string; new_byte_len: number; ext: string }
-  >(`/teams/${teamId}/avatar/reserve`, {
+  >(`/teams/${teamId}/avatar/alloc`, {
     image_hash: args.imageHash,
     new_byte_len: args.newByteLen,
     ext: args.extension,
@@ -67,7 +67,7 @@ export async function reserveTeamAvatarUpload(
 
   return {
     success: true,
-    data: unwrapRawReserveTeamAvatarResult(res.data),
+    data: unwrapRawAllocTeamAvatarResult(res.data),
   };
 }
 

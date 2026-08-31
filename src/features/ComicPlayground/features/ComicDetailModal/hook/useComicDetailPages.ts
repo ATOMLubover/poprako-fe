@@ -26,7 +26,7 @@ type Args = {
   onLoadChapters: ComicDetailModalProps["onLoadChapters"];
   onAddPages?: ComicDetailModalProps["onAddPages"];
   onDeleteChapterPages?: ComicDetailModalProps["onDeleteChapterPages"];
-  onReservePageUpload?: ComicDetailModalProps["onReservePageUpload"];
+  onAllocPageUpload?: ComicDetailModalProps["onAllocPageUpload"];
   reloadLoadedChapters: () => Promise<unknown>;
   showToast: ShowToast;
 };
@@ -61,7 +61,7 @@ export function useComicDetailPages({
   onLoadChapters,
   onAddPages,
   onDeleteChapterPages,
-  onReservePageUpload,
+  onAllocPageUpload,
   reloadLoadedChapters,
   showToast,
 }: Args) {
@@ -220,7 +220,7 @@ export function useComicDetailPages({
         if (started.skippedCount > 0) {
           showToast(
             `已跳过 ${started.skippedCount} 张重复图片，`
-              + `开始上传 ${started.reservedCount} 张`,
+              + `开始上传 ${started.allocatedCount} 张`,
             "info",
           );
         }
@@ -235,8 +235,8 @@ export function useComicDetailPages({
           }
         });
       } catch (error) {
-        console.error("[ComicDetailModal] 预留页面失败:", error);
-        showLocalCaughtError(error, showToast, "预留页面失败", true);
+        console.error("[ComicDetailModal] 分配页面失败:", error);
+        showLocalCaughtError(error, showToast, "分配页面失败", true);
       }
     },
     [chapterId, onAddPages, showToast],
@@ -268,7 +268,7 @@ export function useComicDetailPages({
 
   const handleReuploadPage = useCallback(
     async (pageId: string, file: File) => {
-      if (!chapterId || !onReservePageUpload || reuploadingPageIds[pageId]) return;
+      if (!chapterId || !onAllocPageUpload || reuploadingPageIds[pageId]) return;
 
       try {
         const started = await startPageReupload(chapterId, pageId, file);
@@ -281,13 +281,13 @@ export function useComicDetailPages({
           showToast("重上传失败，请检查对应页面", "error");
         });
       } catch (error) {
-        console.error("[ComicDetailModal] 重上传预留失败:", error);
+        console.error("[ComicDetailModal] 重上传分配失败:", error);
         showLocalCaughtError(error, showToast, "重上传失败", true);
       }
     },
     [
       chapterId,
-      onReservePageUpload,
+      onAllocPageUpload,
       reuploadingPageIds,
       showToast,
     ],
