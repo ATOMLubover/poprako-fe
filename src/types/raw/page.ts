@@ -10,6 +10,7 @@ export type RawPageInfo = {
   id: string;
   chapter_id: string;
   image_url: string | null;
+  image_optimized_url?: string | null;
   image_thumbnail_url?: string | null;
   image_hash: string;
   ext: string;
@@ -30,6 +31,7 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
     proofreadUnitCount: raw.proofread_unit_count,
     chapterId: raw.chapter_id,
     imageUrl: ensureHttpsUrl(raw.image_url),
+    imageOptimizedUrl: ensureHttpsUrl(raw.image_optimized_url),
     imageThumbnailUrl: ensureHttpsUrl(raw.image_thumbnail_url),
     isUploaded: !!raw.image_url,
     imageHash: raw.image_hash,

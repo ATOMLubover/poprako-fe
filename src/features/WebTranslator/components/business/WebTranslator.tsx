@@ -6,7 +6,7 @@ import type {
 } from "@/features/BaseTranslator";
 import type { Project } from "@/types/project";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
-import type { Page } from "@/types/page";
+import type { Page, PageImageQuality } from "@/types/page";
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast";
 import LoadingCircle from "@/components/ui/LoadingCircle";
@@ -34,6 +34,7 @@ import {
   listComicTermbases,
   updateTermbase,
 } from "@/features/ComicPlayground/api/termbase";
+import { selectPageImageUrl } from "../../pageImage";
 
 import type { TranslatorMode } from "@/types/translatorMode";
 import type {
@@ -178,6 +179,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
           chapterId: p.chapterId,
           index: p.index,
           imageUrl: p.imageUrl,
+          imageOptimizedUrl: p.imageOptimizedUrl,
           imageThumbnailUrl: p.imageThumbnailUrl,
           isUploaded: p.isUploaded,
           creatorId: p.creatorId ?? "",
@@ -270,27 +272,19 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
   const handleLoadPageImage = useCallback(
     async (
       pageId: string,
-      quality: "thumbnail" | "original",
+      quality: PageImageQuality,
     ): Promise<string> => {
-      // Page URLs are already available in project.pages. Thumbnail loading
-      // falls back to the original for pages created before thumbnails existed.
+      // Page URLs are already available in project.pages. Optimized loading
+      // falls back to the original while older servers are still in use.
       if (state.status === "ready") {
         const page = state.project.pages.find((p) => p.id === pageId);
-        if (page) {
-          return quality === "thumbnail"
-            ? page.imageThumbnailUrl || page.imageUrl
-            : page.imageUrl;
-        }
+        if (page) return selectPageImageUrl(page, quality);
       }
       // Fallback: fetch pages again
       const result = await listPages(chapterId);
       if (result.success) {
         const page = result.data.find((p) => p.id === pageId);
-        if (page) {
-          return quality === "thumbnail"
-            ? page.imageThumbnailUrl || page.imageUrl
-            : page.imageUrl;
-        }
+        if (page) return selectPageImageUrl(page, quality);
       }
       return "";
     },

@@ -7,6 +7,7 @@ import {
   type UnitInfo,
 } from "@/types/unit";
 import type { Project } from "@/types/project";
+import type { PageImageQuality } from "@/types/page";
 import type { UserInfo } from "@/types/user";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 import type {
@@ -333,6 +334,7 @@ const mockProject: Project = {
       chapterId: "chapter-1",
       index: 0,
       imageUrl: DEMO_IMAGE,
+      imageOptimizedUrl: DEMO_IMAGE,
       isUploaded: true,
       creatorId: "mock-user",
       totalUnitCount: 5,
@@ -346,6 +348,7 @@ const mockProject: Project = {
       chapterId: "chapter-1",
       index: 1,
       imageUrl: DEMO_IMAGE,
+      imageOptimizedUrl: DEMO_IMAGE,
       isUploaded: true,
       creatorId: "mock-user",
       totalUnitCount: 5,
@@ -359,6 +362,7 @@ const mockProject: Project = {
       chapterId: "chapter-1",
       index: 2,
       imageUrl: DEMO_IMAGE,
+      imageOptimizedUrl: DEMO_IMAGE,
       isUploaded: true,
       creatorId: "mock-user",
       totalUnitCount: 5,
@@ -511,7 +515,7 @@ function createStoryArgs({
     canTranslate,
     canProofread,
     onLoadUnits: async (pageId: string) => unitsByPage.get(pageId) ?? [],
-    onLoadPageImage: async (_pageId: string, _quality: "thumbnail" | "original") =>
+    onLoadPageImage: async (_pageId: string, _quality: PageImageQuality) =>
       DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
     onResolveUser: mockResolveUser,
