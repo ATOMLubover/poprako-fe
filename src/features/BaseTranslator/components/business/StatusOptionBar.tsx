@@ -128,6 +128,7 @@ export default function StatusOptionBar({
             onClick={onUnitCreationClick}
             className={clsx(
               btnBase,
+              "hidden [@media(any-pointer:coarse)]:flex",
               !isUnitCreationEnabled
                 ? "bg-green-50 hover:bg-green-100"
                 : "bg-white hover:bg-stone-100",
