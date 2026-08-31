@@ -4,6 +4,7 @@ import {
   Eye,
   FileType,
   GitCompareArrows,
+  Image,
   Loader2,
   Lock,
   MapPin,
@@ -25,12 +26,15 @@ type Props = {
   isRelocationEnabled: boolean;
   isUnitCreationEnabled: boolean;
   proofreadPreviewVisibility: ProofreadPreviewVisibility;
+  isHighResolution: boolean;
+  isLoadingPage: boolean;
   saving: boolean;
   onSwitchView: () => void;
   onSwitchReadOnlyUnitView: () => void;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
   onToggleProofreadPreviewClick: () => void;
+  onToggleImageQualityClick: () => Promise<void>;
   onSaveClick: () => Promise<void>;
 };
 
@@ -55,12 +59,15 @@ export default function StatusOptionBar({
   isRelocationEnabled,
   isUnitCreationEnabled,
   proofreadPreviewVisibility,
+  isHighResolution,
+  isLoadingPage,
   saving,
   onSwitchView,
   onSwitchReadOnlyUnitView,
   onRelocationClick,
   onUnitCreationClick,
   onToggleProofreadPreviewClick,
+  onToggleImageQualityClick,
   onSaveClick,
 }: Props) {
   const btnBase = clsx(
@@ -121,6 +128,7 @@ export default function StatusOptionBar({
             onClick={onUnitCreationClick}
             className={clsx(
               btnBase,
+              "hidden [@media(any-pointer:coarse)]:flex",
               !isUnitCreationEnabled
                 ? "bg-green-50 hover:bg-green-100"
                 : "bg-white hover:bg-stone-100",
@@ -146,6 +154,27 @@ export default function StatusOptionBar({
           </button>
         </>
       )}
+      <button
+        type="button"
+        title={
+          isHighResolution
+            ? "当前：高清原图，点击切换到低清缩略图"
+            : "当前：低清缩略图，点击切换到高清原图"
+        }
+        aria-label={isHighResolution ? "切换到低清图片" : "切换到高清图片"}
+        aria-pressed={isHighResolution}
+        disabled={isLoadingPage}
+        onClick={() => void onToggleImageQualityClick()}
+        className={clsx(
+          btnBase,
+          isLoadingPage && "cursor-not-allowed opacity-40",
+          isHighResolution
+            ? "bg-green-50 hover:bg-green-100"
+            : "bg-white hover:bg-stone-100",
+        )}
+      >
+        <Image size={18} />
+      </button>
       <button
         title={
           proofreadPreviewVisibility === "visible"

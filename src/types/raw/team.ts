@@ -3,12 +3,12 @@ import type {
   CreateTeamArgs,
   CreateTeamResult,
   UpdateTeamArgs,
-  ReserveTeamAvatarResult,
+  AllocTeamAvatarResult,
 } from "../team";
 import { ensureHttpsUrl } from "@/utils/url";
 import {
   unwrapRawImageUploadSlot,
-  type RawReserveImageResult,
+  type RawAllocImageResult,
 } from "./image";
 
 export type RawTeamInfo = {
@@ -58,9 +58,9 @@ export function unwrapRawUpdateTeamArgs(
   return { id: raw.id, name: raw.name, description: raw.description };
 }
 
-export type RawReserveTeamAvatarResult = RawReserveImageResult;
-export function unwrapRawReserveTeamAvatarResult(
-  raw: RawReserveTeamAvatarResult,
-): ReserveTeamAvatarResult {
+export type RawAllocTeamAvatarResult = RawAllocImageResult;
+export function unwrapRawAllocTeamAvatarResult(
+  raw: RawAllocTeamAvatarResult,
+): AllocTeamAvatarResult {
   return raw.slot === null ? null : unwrapRawImageUploadSlot(raw.slot);
 }

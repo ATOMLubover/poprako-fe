@@ -178,6 +178,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
           chapterId: p.chapterId,
           index: p.index,
           imageUrl: p.imageUrl,
+          imageThumbnailUrl: p.imageThumbnailUrl,
           isUploaded: p.isUploaded,
           creatorId: p.creatorId ?? "",
           creator: p.creator,
@@ -267,19 +268,29 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
   );
 
   const handleLoadPageImage = useCallback(
-    async (pageId: string): Promise<string> => {
-      // Page imageUrl is already available in the project.pages array
-      // BaseTranslator calls this per-page, so we just return the
-      // imageUrl from the project
+    async (
+      pageId: string,
+      quality: "thumbnail" | "original",
+    ): Promise<string> => {
+      // Page URLs are already available in project.pages. Thumbnail loading
+      // falls back to the original for pages created before thumbnails existed.
       if (state.status === "ready") {
         const page = state.project.pages.find((p) => p.id === pageId);
-        if (page) return page.imageUrl;
+        if (page) {
+          return quality === "thumbnail"
+            ? page.imageThumbnailUrl || page.imageUrl
+            : page.imageUrl;
+        }
       }
       // Fallback: fetch pages again
       const result = await listPages(chapterId);
       if (result.success) {
         const page = result.data.find((p) => p.id === pageId);
-        if (page) return page.imageUrl;
+        if (page) {
+          return quality === "thumbnail"
+            ? page.imageThumbnailUrl || page.imageUrl
+            : page.imageUrl;
+        }
       }
       return "";
     },

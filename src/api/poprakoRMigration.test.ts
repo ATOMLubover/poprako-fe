@@ -11,16 +11,22 @@ import { listComments } from "@/api/comment";
 import { listInvitations, createInvitation } from "@/api/invitation";
 import { updateMemberRole, joinMember, listMembers, listMyMembers } from "@/api/member";
 import { markSysMailRead, listSysMails } from "@/api/sysMail";
-import { reserveTeamAvatarUpload, confirmTeamAvatarUploaded } from "@/api/team";
-import { reserveUserAvatarUpload, confirmUserAvatarUploaded } from "@/api/user";
+import { allocTeamAvatarUpload, confirmTeamAvatarUploaded } from "@/api/team";
+import { allocUserAvatarUpload, confirmUserAvatarUploaded } from "@/api/user";
 import { listChapters, updateChapter, importChapter, exportChapter } from "@/features/ComicPlayground/api/chapter";
 import {
   archiveComic,
   listComics,
   markCoverUploaded,
-  reserveCoverUpload,
+  allocCoverUpload,
 } from "@/features/ComicPlayground/api/comic";
-import { listPages, reserveChapterPages, reserveExistingPageUpload, updatePage, deleteChapterPages } from "@/features/ComicPlayground/api/page";
+import {
+  listPages,
+  allocChapterPages,
+  allocExistingPageUpload,
+  updatePage,
+  deleteChapterPages,
+} from "@/features/ComicPlayground/api/page";
 import { listWorksets } from "@/features/ComicPlayground/api/workset";
 import {
   completeChapterStage,
@@ -186,12 +192,12 @@ describe("poprako-r API migration", () => {
       pages: [],
     }));
 
-    await reserveUserAvatarUpload("user_1", {
+    await allocUserAvatarUpload("user_1", {
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       newByteLen: 3,
       extension: "png",
     });
-    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/users/user_1/avatar/reserve");
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/users/user_1/avatar/alloc");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       new_byte_len: 3,
@@ -202,12 +208,12 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/users/user_1/avatar/mark-uploaded");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ image_version: 10 });
 
-    await reserveTeamAvatarUpload("team_1", {
+    await allocTeamAvatarUpload("team_1", {
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       newByteLen: 3,
       extension: "webp",
     });
-    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/avatar/reserve");
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/avatar/alloc");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       new_byte_len: 3,
@@ -218,12 +224,12 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/avatar/mark-uploaded");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ image_version: 11 });
 
-    await reserveCoverUpload("comic_1", {
+    await allocCoverUpload("comic_1", {
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       newByteLen: 3,
       extension: "jpg",
     });
-    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/cover/reserve");
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/cover/alloc");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       new_byte_len: 3,
@@ -238,7 +244,7 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/comics/comic_1/archive");
     expect(lastFetchCall(fetchMock).init?.method).toBe("POST");
 
-    await reserveChapterPages({
+    await allocChapterPages({
       chapterId: "chapter_1",
       pages: [
         {
@@ -248,7 +254,7 @@ describe("poprako-r API migration", () => {
         },
       ],
     });
-    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/pages/reserve");
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/pages/alloc");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       chapter_id: "chapter_1",
       pages: [
@@ -275,13 +281,13 @@ describe("poprako-r API migration", () => {
         },
       })).clone(),
     );
-    await reserveExistingPageUpload({
+    await allocExistingPageUpload({
       pageId: "page_1",
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       newByteLen: 3,
       extension: "png",
     });
-    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/reserve");
+    expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/alloc");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       new_byte_len: 3,

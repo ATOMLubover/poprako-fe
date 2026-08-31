@@ -1,8 +1,8 @@
 import type {
   PageInfo,
-  ReservedPage,
-  ReserveChapterPagesArgs,
-  ReserveChapterPagesResult,
+  AllocatedPage,
+  AllocChapterPagesArgs,
+  AllocChapterPagesResult,
 } from "../page";
 import { ensureHttpsUrl } from "@/utils/url";
 
@@ -40,7 +40,7 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
   } as PageInfo;
 }
 
-export type RawReservedPage = {
+export type RawAllocatedPage = {
   page_id: string;
   index: number;
   image_hash: string;
@@ -51,7 +51,7 @@ export type RawReservedPage = {
     headers: Record<string, string>;
   } | null;
 };
-export function unwrapRawReservedPage(raw: RawReservedPage): ReservedPage {
+export function unwrapRawAllocatedPage(raw: RawAllocatedPage): AllocatedPage {
   return {
     pageId: raw.page_id,
     index: raw.index,
@@ -65,7 +65,7 @@ export function unwrapRawReservedPage(raw: RawReservedPage): ReservedPage {
   };
 }
 
-export type RawReserveChapterPagesArgs = {
+export type RawAllocChapterPagesArgs = {
   chapter_id: string;
   pages: Array<{
     page_id?: string;
@@ -74,9 +74,9 @@ export type RawReserveChapterPagesArgs = {
     ext: string;
   }>;
 };
-export function unwrapRawReserveChapterPagesArgs(
-  raw: RawReserveChapterPagesArgs,
-): ReserveChapterPagesArgs {
+export function unwrapRawAllocChapterPagesArgs(
+  raw: RawAllocChapterPagesArgs,
+): AllocChapterPagesArgs {
   return {
     chapterId: raw.chapter_id,
     pages: raw.pages.map((page) => ({
@@ -88,14 +88,14 @@ export function unwrapRawReserveChapterPagesArgs(
   };
 }
 
-export type RawReserveChapterPagesResult = {
-  pages: RawReservedPage[];
+export type RawAllocChapterPagesResult = {
+  pages: RawAllocatedPage[];
 };
-export function unwrapRawReserveChapterPagesResult(
-  raw: RawReserveChapterPagesResult,
-): ReserveChapterPagesResult {
+export function unwrapRawAllocChapterPagesResult(
+  raw: RawAllocChapterPagesResult,
+): AllocChapterPagesResult {
   return {
-    pages: raw.pages.map(unwrapRawReservedPage),
+    pages: raw.pages.map(unwrapRawAllocatedPage),
   };
 }
 

@@ -1,15 +1,15 @@
 import { api, createHttpFailure } from "@/api/util";
 import type {
   PageInfo,
-  ReserveChapterPagesArgs,
-  ReserveChapterPagesResult,
+  AllocChapterPagesArgs,
+  AllocChapterPagesResult,
 } from "@/types";
 import type { Result } from "@/types/utils/result";
 import {
   unwrapRawPageInfo,
-  unwrapRawReserveChapterPagesResult,
-  type RawReserveChapterPagesArgs,
-  type RawReserveChapterPagesResult,
+  unwrapRawAllocChapterPagesResult,
+  type RawAllocChapterPagesArgs,
+  type RawAllocChapterPagesResult,
   type RawPageInfo,
 } from "@/types/raw/page";
 
@@ -38,10 +38,10 @@ export async function listPages(
   };
 }
 
-export async function reserveChapterPages(
-  args: ReserveChapterPagesArgs,
-): Promise<Result<ReserveChapterPagesResult>> {
-  const rawArgs: RawReserveChapterPagesArgs = {
+export async function allocChapterPages(
+  args: AllocChapterPagesArgs,
+): Promise<Result<AllocChapterPagesResult>> {
+  const rawArgs: RawAllocChapterPagesArgs = {
     chapter_id: args.chapterId,
     pages: args.pages.map((page) => ({
       page_id: page.pageId,
@@ -52,54 +52,54 @@ export async function reserveChapterPages(
   };
 
   const res = await api.post<
-    RawReserveChapterPagesResult,
-    RawReserveChapterPagesArgs
-  >(`/chapters/${args.chapterId}/pages/reserve`, rawArgs);
+    RawAllocChapterPagesResult,
+    RawAllocChapterPagesArgs
+  >(`/chapters/${args.chapterId}/pages/alloc`, rawArgs);
   if (!res.success) return res;
 
   return {
     success: true,
-    data: unwrapRawReserveChapterPagesResult(
-      res.data as RawReserveChapterPagesResult,
+    data: unwrapRawAllocChapterPagesResult(
+      res.data as RawAllocChapterPagesResult,
     ),
   };
 }
 
-type ReserveExistingPageUploadArgs = {
+type AllocExistingPageUploadArgs = {
   pageId: string;
   imageHash: string;
   newByteLen: number;
   extension: string;
 };
 
-type RawReserveExistingPageUploadArgs = {
+type RawAllocExistingPageUploadArgs = {
   image_hash: string;
   new_byte_len: number;
   ext: string;
 };
 
-type ReserveExistingPageUploadResult = import("@/types").ReservedPage;
-type RawReserveExistingPageUploadResult = import("@/types/raw/page").RawReservedPage;
+type AllocExistingPageUploadResult = import("@/types").AllocatedPage;
+type RawAllocExistingPageUploadResult = import("@/types/raw/page").RawAllocatedPage;
 
-export async function reserveExistingPageUpload(
-  args: ReserveExistingPageUploadArgs,
-): Promise<Result<ReserveExistingPageUploadResult>> {
-  const rawArgs: RawReserveExistingPageUploadArgs = {
+export async function allocExistingPageUpload(
+  args: AllocExistingPageUploadArgs,
+): Promise<Result<AllocExistingPageUploadResult>> {
+  const rawArgs: RawAllocExistingPageUploadArgs = {
     image_hash: args.imageHash,
     new_byte_len: args.newByteLen,
     ext: args.extension,
   };
 
   const res = await api.post<
-    RawReserveExistingPageUploadResult,
-    RawReserveExistingPageUploadArgs
-  >(`/pages/${args.pageId}/image/reserve`, rawArgs);
+    RawAllocExistingPageUploadResult,
+    RawAllocExistingPageUploadArgs
+  >(`/pages/${args.pageId}/image/alloc`, rawArgs);
 
   if (!res.success) return res;
 
   return {
     success: true,
-    data: unwrapRawReserveChapterPagesResult({ pages: [res.data] }).pages[0],
+    data: unwrapRawAllocChapterPagesResult({ pages: [res.data] }).pages[0],
   };
 }
 

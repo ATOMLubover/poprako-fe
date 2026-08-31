@@ -12,7 +12,7 @@ import { toComicInfo } from "@/types";
 import type { ComicInfo } from "@/types";
 import { toChapterInfo } from "@/types/chapter";
 import type { Result } from "@/types/utils/result";
-import type { ImageUploadSlot, ReserveImageArgs } from "@/types/image";
+import type { ImageUploadSlot, AllocImageArgs } from "@/types/image";
 import { unwrapRawAssignmentInfo } from "@/types/raw/assignment";
 
 export async function listComics(
@@ -121,14 +121,14 @@ export async function archiveComic(id: string): Promise<Result<void>> {
   return { success: true, data: undefined };
 }
 
-export async function reserveCoverUpload(
+export async function allocCoverUpload(
   comicId: string,
-  args: ReserveImageArgs,
+  args: AllocImageArgs,
 ): Promise<Result<ImageUploadSlot | null>> {
   const res = await api.post<
     { slot: { put_url: string; image_version: number; headers: Record<string, string> } | null },
     { image_hash: string; new_byte_len: number; ext: string }
-  >(`/comics/${comicId}/cover/reserve`, {
+  >(`/comics/${comicId}/cover/alloc`, {
     image_hash: args.imageHash,
     new_byte_len: args.newByteLen,
     ext: args.extension,

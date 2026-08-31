@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent }
 import clsx from "clsx";
 import type { TeamConfig } from "../../types/types";
 import { joinMember } from "@/api/member";
-import { confirmTeamAvatarUploaded, reserveTeamAvatarUpload } from "@/api/team";
+import { confirmTeamAvatarUploaded, allocTeamAvatarUpload } from "@/api/team";
 import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import { uploadToPresignedUrl } from "@/features/ComicPlayground/api/page";
 import { hashPageFile } from "@/features/ComicPlayground/features/ComicDetailModal/pageHash";
@@ -393,17 +393,17 @@ export default function TeamOption({
 
     try {
       const { imageHash } = await hashPageFile(file);
-      const reserveRes = await reserveTeamAvatarUpload(activeTeam.id, {
+      const allocRes = await allocTeamAvatarUpload(activeTeam.id, {
         imageHash,
         newByteLen: file.size,
         extension,
       });
-      if (!reserveRes.success) {
-        showLocalApiFailure(reserveRes, showToast);
+      if (!allocRes.success) {
+        showLocalApiFailure(allocRes, showToast);
         return;
       }
 
-      const slot = reserveRes.data;
+      const slot = allocRes.data;
       if (slot === null) {
         showToast("团队头像未发生变化", "success");
         return;

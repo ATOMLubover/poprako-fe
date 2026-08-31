@@ -41,7 +41,7 @@ export type PageImageInput = {
 
 export type PageImageUpload = ImageUploadSlot;
 
-export type ReservedPage = {
+export type AllocatedPage = {
   pageId: string;
   index: number;
   imageHash: string;
@@ -49,16 +49,16 @@ export type ReservedPage = {
   slot: PageImageUpload | null;
 };
 
-export type ReserveChapterPagesArgs = {
+export type AllocChapterPagesArgs = {
   chapterId: string;
   pages: PageImageInput[];
 };
-export type ReserveChapterPagesResult = { pages: ReservedPage[] };
+export type AllocChapterPagesResult = { pages: AllocatedPage[] };
 
 export type PendingPage = { pageId: string; index: number; fileIndex: number };
 
 export type UploadProgressCallbacks = {
-  onPagesReserved: (pendingPages: PendingPage[]) => void;
+  onPagesAllocated: (pendingPages: PendingPage[]) => void;
   onPageUploaded: (pageId: string, file: File) => void;
   onPageUploadProgress?: (pageId: string, percent: number) => void;
 };

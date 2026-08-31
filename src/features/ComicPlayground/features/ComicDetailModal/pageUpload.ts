@@ -1,11 +1,11 @@
 import {
   listPages,
-  reserveChapterPages,
-  reserveExistingPageUpload,
+  allocChapterPages,
+  allocExistingPageUpload,
   updatePage,
   uploadToPresignedUrl,
 } from "@/features/ComicPlayground/api/page";
-import type { PageInfo, ReservedPage, UploadProgressCallbacks } from "@/types";
+import type { PageInfo, AllocatedPage, UploadProgressCallbacks } from "@/types";
 import { isReportedValidationError, toApiRequestError } from "@/api/util";
 import { getFileExtension } from "./utils";
 import { hashPageFile } from "./pageHash";
@@ -28,7 +28,7 @@ type RuntimeTask = {
   file: File;
   imageHash: string;
   extension: string;
-  slot: ReservedPage["slot"] | undefined;
+  slot: AllocatedPage["slot"] | undefined;
   callbacks?: UploadProgressCallbacks;
   abortController: AbortController;
   cancelled: boolean;
@@ -52,7 +52,7 @@ export type PageUploadBatchSummary = {
 
 export type StartPageUploadResult = {
   batchId: string;
-  reservedCount: number;
+  allocatedCount: number;
   skippedCount: number;
   completion: Promise<PageUploadBatchSummary>;
 };
@@ -81,7 +81,7 @@ type ExistingManifestEntry = {
 
 const queue: QueueEntry[] = [];
 const activeTasks = new Map<string, RuntimeTask>();
-const chapterReserveTails = new Map<string, Promise<void>>();
+const chapterAllocTails = new Map<string, Promise<void>>();
 const pageTaskTails = new Map<string, Promise<void>>();
 
 let activeWorkerCount = 0;
@@ -119,11 +119,11 @@ async function serialize<T>(
   }
 }
 
-function serializeChapterReserve<T>(
+function serializeChapterAlloc<T>(
   chapterId: string,
   operation: () => Promise<T>,
 ): Promise<T> {
-  return serialize(chapterReserveTails, chapterId, operation);
+  return serialize(chapterAllocTails, chapterId, operation);
 }
 
 function serializePageTask<T>(
@@ -195,11 +195,11 @@ function canRetryPut(httpStatus?: number, failureKind?: string): boolean {
   return httpStatus >= 500;
 }
 
-async function reserveRetrySlot(
+async function allocRetrySlot(
   task: RuntimeTask,
-): Promise<ReservedPage["slot"]> {
-  return serializeChapterReserve(task.chapterId, async () => {
-    const result = await reserveExistingPageUpload({
+): Promise<AllocatedPage["slot"]> {
+  return serializeChapterAlloc(task.chapterId, async () => {
+    const result = await allocExistingPageUpload({
       pageId: task.pageId,
       imageHash: task.imageHash,
       newByteLen: task.file.size,
@@ -210,9 +210,9 @@ async function reserveRetrySlot(
   });
 }
 
-async function reserveInitialPage(task: RuntimeTask): Promise<ReservedPage> {
-  return serializeChapterReserve(task.chapterId, async () => {
-    const result = await reserveExistingPageUpload({
+async function allocInitialPage(task: RuntimeTask): Promise<AllocatedPage> {
+  return serializeChapterAlloc(task.chapterId, async () => {
+    const result = await allocExistingPageUpload({
       pageId: task.pageId,
       imageHash: task.imageHash,
       newByteLen: task.file.size,
@@ -229,12 +229,12 @@ async function executeTask(task: RuntimeTask): Promise<TaskOutcome> {
 
     let slot = task.slot;
     if (slot === undefined) {
-      const reservedPage = await reserveInitialPage(task);
-      slot = reservedPage.slot;
+      const allocatedPage = await allocInitialPage(task);
+      slot = allocatedPage.slot;
       task.slot = slot;
-      task.imageHash = reservedPage.imageHash;
-      task.extension = reservedPage.extension;
-      patchPageUploadTask(task.taskId, { index: reservedPage.index });
+      task.imageHash = allocatedPage.imageHash;
+      task.extension = allocatedPage.extension;
+      patchPageUploadTask(task.taskId, { index: allocatedPage.index });
       bumpPageUploadChapterRevision(task.chapterId);
     }
 
@@ -289,7 +289,7 @@ async function executeTask(task: RuntimeTask): Promise<TaskOutcome> {
       await sleep(2 ** (attempt - 1) * 1000);
       if (task.cancelled) throw new Error("上传已取消");
 
-      slot = await reserveRetrySlot(task);
+      slot = await allocRetrySlot(task);
       task.slot = slot;
 
       if (slot === null) {
@@ -415,7 +415,7 @@ export async function startChapterPageUpload(
   );
 
   try {
-    return await serializeChapterReserve(chapterId, async () => {
+    return await serializeChapterAlloc(chapterId, async () => {
       const pagesResult = await listPages({ chapterId });
       if (!pagesResult.success) throw toApiRequestError(pagesResult);
 
@@ -460,7 +460,7 @@ export async function startChapterPageUpload(
         };
       });
 
-      const reserveResult = await reserveChapterPages({
+      const allocResult = await allocChapterPages({
         chapterId,
         pages: [
           ...manifestInputs,
@@ -471,17 +471,17 @@ export async function startChapterPageUpload(
           })),
         ],
       });
-      if (!reserveResult.success) throw toApiRequestError(reserveResult);
+      if (!allocResult.success) throw toApiRequestError(allocResult);
 
       if (
-        reserveResult.data.pages.length !==
+        allocResult.data.pages.length !==
         manifest.length + newFiles.length
       ) {
-        throw new Error("预留页面数量与清单数量不一致");
+        throw new Error("分配页面数量与清单数量不一致");
       }
 
-      const uploadPages: Array<{ page: ReservedPage; prepared: PreparedFile }> = [];
-      for (const [index, page] of reserveResult.data.pages.entries()) {
+      const uploadPages: Array<{ page: AllocatedPage; prepared: PreparedFile }> = [];
+      for (const [index, page] of allocResult.data.pages.entries()) {
         const prepared = index < manifest.length
           ? preparedFilesByPageId.get(page.pageId)
           : newFiles[index - manifest.length];
@@ -499,7 +499,7 @@ export async function startChapterPageUpload(
         uploadPages.push({ page, prepared });
       }
 
-      callbacks?.onPagesReserved(
+      callbacks?.onPagesAllocated(
         uploadPages.map(({ page, prepared }) => ({
           pageId: page.pageId,
           index: page.index,
@@ -534,7 +534,7 @@ export async function startChapterPageUpload(
 
       return {
         batchId,
-        reservedCount: uploadPages.length,
+        allocatedCount: uploadPages.length,
         skippedCount: preparedFiles.length - uploadPages.length,
         completion: Promise.all(taskCompletions).then(completionSummary),
       };
@@ -578,7 +578,7 @@ export async function startPageReupload(
 
   return {
     batchId,
-    reservedCount: 1,
+    allocatedCount: 1,
     skippedCount: 0,
     completion: enqueueTask(runtimeTask).then((outcome) =>
       completionSummary([outcome]),

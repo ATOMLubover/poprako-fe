@@ -37,7 +37,7 @@ export type UpdateTeamArgs = {
   description?: string;
 };
 
-export type ReserveTeamAvatarResult = import("./image").ImageUploadSlot | null;
+export type AllocTeamAvatarResult = import("./image").ImageUploadSlot | null;
 
 export function teamAvatarUrl(team: TeamInfo) {
   if (team.avatarThumbnailUrl) {

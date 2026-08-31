@@ -75,7 +75,10 @@ type Props = {
   // 以及一个手动的 "保存" 按钮被按下时
   onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
   // 懒加载的图片 URL 获取器，BaseTranslator 只负责在需要时调用它来获取图片 URL
-  onLoadPageImage: (pageId: string) => Promise<string>;
+  onLoadPageImage: (
+    pageId: string,
+    quality: "thumbnail" | "original",
+  ) => Promise<string>;
   onResolveUser: UnitUserResolver;
   onCompleteStage?: (stage: TranslatorCompletionStage) => Promise<void>;
   onExit: () => void;
@@ -157,6 +160,7 @@ export default function BaseTranslator({
     view === "translate" ? canTranslate : canProofread
   );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isHighResolution, setIsHighResolution] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const { isRelocationEnabled, toggleRelocation } = useRelocationPreference();
   const [isUnitCreationEnabled, setIsUnitCreationEnabled] = useState(true);
@@ -227,7 +231,7 @@ export default function BaseTranslator({
     try {
       const [units, img] = await Promise.all([
         onLoadUnits(page.id),
-        onLoadPageImage(page.id),
+        onLoadPageImage(page.id, isHighResolution ? "original" : "thumbnail"),
       ]);
       setLoadedUnits(units, setUnitBuf);
       setImageUrl(img);
@@ -265,6 +269,24 @@ export default function BaseTranslator({
 
   async function handleSave() {
     await flushIfDirty();
+  }
+
+  async function handleToggleImageQuality() {
+    const nextIsHighResolution = !isHighResolution;
+    const page = project.pages[pageIndex];
+
+    setIsHighResolution(nextIsHighResolution);
+    setIsLoadingPage(true);
+    setImageUrl(null);
+    try {
+      const nextImageUrl = await onLoadPageImage(
+        page.id,
+        nextIsHighResolution ? "original" : "thumbnail",
+      );
+      setImageUrl(nextImageUrl);
+    } finally {
+      setIsLoadingPage(false);
+    }
   }
 
   async function handleCompleteStage() {
@@ -681,6 +703,8 @@ export default function BaseTranslator({
             isRelocationEnabled={isRelocationEnabled}
             isUnitCreationEnabled={isUnitCreationEnabled}
             proofreadPreviewVisibility={proofreadPreviewVisibility}
+            isHighResolution={isHighResolution}
+            isLoadingPage={isLoadingPage}
             onSwitchView={handleSwitchView}
             onSwitchReadOnlyUnitView={handleSwitchReadOnlyUnitView}
             onRelocationClick={toggleRelocation}
@@ -690,6 +714,7 @@ export default function BaseTranslator({
                 v === "visible" ? "dimmed" : "visible",
               )
             }
+            onToggleImageQualityClick={handleToggleImageQuality}
             onSaveClick={handleSave}
             saving={saving}
           />

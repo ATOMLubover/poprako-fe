@@ -98,12 +98,12 @@ export type ComicDetailModalProps = {
     callbacks?: UploadProgressCallbacks,
   ) => Promise<void>;
   onDeleteChapterPages?: (chapterId: string) => Promise<Result<void>>;
-  onReservePageUpload?: (args: {
+  onAllocPageUpload?: (args: {
     pageId: string;
     imageHash: string;
     newByteLen: number;
     extension: string;
-  }) => Promise<Result<import("@/types").ReservedPage>>;
+  }) => Promise<Result<import("@/types").AllocatedPage>>;
   onJoinChapterRole?: (chapterId: string, role: Role) => Promise<Result<void>>;
   onImportChapter?: (args: {
     chapterId: string;

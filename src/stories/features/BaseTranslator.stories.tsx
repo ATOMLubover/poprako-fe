@@ -511,7 +511,8 @@ function createStoryArgs({
     canTranslate,
     canProofread,
     onLoadUnits: async (pageId: string) => unitsByPage.get(pageId) ?? [],
-    onLoadPageImage: async (_pageId: string) => DEMO_IMAGE,
+    onLoadPageImage: async (_pageId: string, _quality: "thumbnail" | "original") =>
+      DEMO_IMAGE,
     onSaveUnits: mockSaveUnits,
     onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
