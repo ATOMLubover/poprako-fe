@@ -67,7 +67,8 @@ export default function OnlineUserPopover({ onlineCount, users }: Props) {
           role="dialog"
           aria-label="在线组员"
           className={clsx(
-            "absolute right-0 top-full z-40 mt-2 w-64",
+            "absolute left-0 top-full z-40 mt-2 w-64 max-w-[calc(100vw-2rem)]",
+            "sm:left-auto sm:right-0",
             "rounded-lg border border-stone-200 bg-[#FEFDF9] p-3 shadow-lg",
           )}
         >
