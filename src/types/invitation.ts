@@ -18,6 +18,6 @@ export interface CreateInvitationArgs {
 }
 export interface UpdateInvitationArgs {
   id: string;
-  roles?: number;
-  teamId?: string;
+  roles?: number | undefined;
+  teamId?: string | undefined;
 }

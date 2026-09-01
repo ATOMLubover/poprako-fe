@@ -32,7 +32,7 @@ export default function SettingsPanel() {
     return loginState.memberInfos.flatMap((m) => {
         const team = m.team;
         if (!team) {return [];}
-        const short = team.name[0].toUpperCase();
+        const short = team.name[0]?.toUpperCase() ?? "";
         return [{
           id: team.id,
           name: team.name,

@@ -12,7 +12,7 @@ interface Props {
     offset: number,
     limit: number,
   ) => Promise<Result<ComicTranslationListItem[]>>;
-  onComicClick?: (comicInfo: ComicTranslationListItem["comicInfo"]) => void;
+  onComicClick?: ((comicInfo: ComicTranslationListItem["comicInfo"]) => void) | undefined;
 }
 
 export default function ComicTranslationList({
@@ -49,7 +49,10 @@ export default function ComicTranslationList({
     try {
       const result = await onLoadComics(requestOffset, pageSize);
       if (!result.success) {
-        console.error("[ComicTranslationList] 加载漫画列表失败:", result.error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[ComicTranslationList] 加载漫画列表失败:", result.error,
+        );
         showLocalApiFailure(result, showToast);
         hasMoreRef.current = false;
         setHasMore(false);

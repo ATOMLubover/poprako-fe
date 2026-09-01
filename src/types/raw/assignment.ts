@@ -7,10 +7,10 @@ export interface RawAssignmentInfo {
   id: string;
 
   user_id: string;
-  user?: RawUserInfo;
+  user?: RawUserInfo | undefined;
 
   chapter_id: string;
-  chapter?: RawChapterInfo;
+  chapter?: RawChapterInfo | undefined;
 
   roles: number;
 
@@ -45,7 +45,7 @@ export function unwrapRawAssignmentInfo(
 
 export interface RawListAssignmentArgs {
   chapter_id: string;
-  includes?: string[];
+  includes?: string[] | undefined;
   offset: number;
   limit: number;
 }

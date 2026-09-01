@@ -28,17 +28,17 @@ interface Props {
   imageSrc: string | null;
   units: UnitInfo[];
   mode: TranslatorMode;
-  isLoading?: boolean;
-  isUnitCreationEnabled?: boolean;
-  focusedUnitId?: string;
-  onFocusUnit?: (unitId: string) => void;
-  onMoveUnit?: (unitId: string, xCoord: number, yCoord: number) => void;
-  onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
-  onDeleteUnit?: (unitId: string) => void;
-  onToggleBubble?: (unitId: string) => void;
-  onImageLoad?: () => void;
-  enableReadOnly?: boolean;
-  proofreadPreviewVisibility?: ProofreadPreviewVisibility;
+  isLoading?: boolean | undefined;
+  isUnitCreationEnabled?: boolean | undefined;
+  focusedUnitId?: string | undefined;
+  onFocusUnit?: ((unitId: string) => void) | undefined;
+  onMoveUnit?: ((unitId: string, xCoord: number, yCoord: number) => void) | undefined;
+  onAddUnit?: ((xCoord: number, yCoord: number, isBubble: boolean) => void) | undefined;
+  onDeleteUnit?: ((unitId: string) => void) | undefined;
+  onToggleBubble?: ((unitId: string) => void) | undefined;
+  onImageLoad?: (() => void) | undefined;
+  enableReadOnly?: boolean | undefined;
+  proofreadPreviewVisibility?: ProofreadPreviewVisibility | undefined;
 }
 
 const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
@@ -276,7 +276,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                     left: `${String(pos.xCoord * 100)}%`,
                     top: `${String(pos.yCoord * 100)}%`,
                     transformOrigin: "0 0",
-                    transform: `translate(${String((CIRCLE_SIZE / 2 + 12) / transform.scale)}px, ${String(-PIN_OFFSET / transform.scale)}px) scale(${String(1 / transform.scale)})`,
+                    transform: `translate(${String((CIRCLE_SIZE / 2 + 12) / transform.scale)}px, `
+                      + `${String(-PIN_OFFSET / transform.scale)}px) `
+                      + `scale(${String(1 / transform.scale)})`,
                   }}
                 >
                   <div className="px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre">

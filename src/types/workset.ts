@@ -5,7 +5,7 @@ export interface WorksetInfo {
   id: string;
 
   teamId: string;
-  team?: TeamInfo;
+  team?: TeamInfo | undefined;
 
   index: number;
   name: string;

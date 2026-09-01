@@ -1,4 +1,4 @@
-/* eslint-disable @eslint-react/exhaustive-deps, @eslint-react/no-unused-props -- editor lifecycle. */
+/* eslint-disable @eslint-react/exhaustive-deps, @eslint-react/no-unused-props */
 import {
   useEffect,
   useRef,
@@ -20,24 +20,24 @@ import type { SpecialCharInsertRequest } from "./UnitList";
 interface Props {
   unit: UnitInfo;
   isFocused: boolean;
-  onSelect?: (unitId: string) => void;
-  onIndexActivate?: (unitId: string) => void;
-  canToggleBubble?: boolean;
-  onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
-  onIndexPointerDown?: (
+  onSelect?: ((unitId: string) => void) | undefined;
+  onIndexActivate?: ((unitId: string) => void) | undefined;
+  canToggleBubble?: boolean | undefined;
+  onModifyUnit?: ((unitId: string, updates: UnitEdit) => void) | undefined;
+  onIndexPointerDown?: ((
     event: ReactPointerEvent<HTMLButtonElement>,
     unitId: string,
-  ) => void;
-  isDragging?: boolean;
-  isDragDimmed?: boolean;
-  showDropIndicator?: boolean;
-  dataUnitId?: string;
-  enableReadOnly?: boolean;
-  translator?: UserInfo;
-  proofreader?: UserInfo;
-  specialCharInsertRequest?: SpecialCharInsertRequest;
-  onSpecialCharUse?: (char: string) => void;
-  onSpecialCharInserted?: (requestId: number, char: string) => void;
+  ) => void) | undefined;
+  isDragging?: boolean | undefined;
+  isDragDimmed?: boolean | undefined;
+  showDropIndicator?: boolean | undefined;
+  dataUnitId?: string | undefined;
+  enableReadOnly?: boolean | undefined;
+  translator?: UserInfo | undefined;
+  proofreader?: UserInfo | undefined;
+  specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  onSpecialCharUse?: ((char: string) => void) | undefined;
+  onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
 }
 
 export default function TranslateModeUnitItem({

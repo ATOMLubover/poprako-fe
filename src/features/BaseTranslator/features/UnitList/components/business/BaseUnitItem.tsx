@@ -13,19 +13,19 @@ import UnitContributorTooltip, {
 interface Props {
   unit: UnitInfo;
   isFocused: boolean;
-  onIndexActivate?: (unitId: string) => void;
-  canToggleBubble?: boolean;
-  onIndexPointerDown?: (
+  onIndexActivate?: ((unitId: string) => void) | undefined;
+  canToggleBubble?: boolean | undefined;
+  onIndexPointerDown?: ((
     event: ReactPointerEvent<HTMLButtonElement>,
     unitId: string,
-  ) => void;
-  isDragging?: boolean;
-  isDragDimmed?: boolean;
-  showDropIndicator?: boolean;
-  enableReadOnly?: boolean;
+  ) => void) | undefined;
+  isDragging?: boolean | undefined;
+  isDragDimmed?: boolean | undefined;
+  showDropIndicator?: boolean | undefined;
+  enableReadOnly?: boolean | undefined;
   contributors: UnitContributor[];
   children: React.ReactNode;
-  dataUnitId?: string;
+  dataUnitId?: string | undefined;
 }
 
 export default function BaseUnitItem({

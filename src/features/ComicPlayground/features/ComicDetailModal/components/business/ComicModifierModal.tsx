@@ -8,7 +8,7 @@ import type { Result } from "@/types/utils/result";
 interface UpdateComicArgs {
   title: string;
   author: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 interface Props {

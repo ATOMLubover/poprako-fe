@@ -28,7 +28,7 @@ export interface ChapterInfo {
   id: string;
 
   comicId: string;
-  comic?: ComicInfo;
+  comic?: ComicInfo | undefined;
 
   index: number;
   subtitle: string;
@@ -39,20 +39,20 @@ export interface ChapterInfo {
   translatedUnitCount: number;
   proofreadUnitCount: number;
 
-  stages?: number;
+  stages?: number | undefined;
 
-  uploadedAt?: number;
-  translatingAt?: number;
-  translatedAt?: number;
-  typesetAt?: number;
-  typesettingAt?: number;
-  proofreadAt?: number;
-  proofreadingAt?: number;
-  reviewedAt?: number;
-  publishedAt?: number;
+  uploadedAt?: number | undefined;
+  translatingAt?: number | undefined;
+  translatedAt?: number | undefined;
+  typesetAt?: number | undefined;
+  typesettingAt?: number | undefined;
+  proofreadAt?: number | undefined;
+  proofreadingAt?: number | undefined;
+  reviewedAt?: number | undefined;
+  publishedAt?: number | undefined;
 
   creatorId: string;
-  creator?: UserInfo;
+  creator?: UserInfo | undefined;
 
   createdAt: number;
   updatedAt: number;
@@ -60,7 +60,7 @@ export interface ChapterInfo {
 
 export interface CreateChapterArgs {
   comicId: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
 }
 
 export interface CreateChapterResult {
@@ -68,16 +68,16 @@ export interface CreateChapterResult {
 }
 
 export interface WithWorkflow {
-  stages?: number;
-  uploadedAt?: number;
-  translatingAt?: number;
-  translatedAt?: number;
-  typesetAt?: number;
-  typesettingAt?: number;
-  proofreadAt?: number;
-  proofreadingAt?: number;
-  reviewedAt?: number;
-  publishedAt?: number;
+  stages?: number | undefined;
+  uploadedAt?: number | undefined;
+  translatingAt?: number | undefined;
+  translatedAt?: number | undefined;
+  typesetAt?: number | undefined;
+  typesettingAt?: number | undefined;
+  proofreadAt?: number | undefined;
+  proofreadingAt?: number | undefined;
+  reviewedAt?: number | undefined;
+  publishedAt?: number | undefined;
 }
 
 type WorkflowStage = "upload" | "translate" | "proofread" | "typeset" | "review" | "publish";

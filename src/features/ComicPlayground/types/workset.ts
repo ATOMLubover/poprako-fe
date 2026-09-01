@@ -13,22 +13,22 @@ export interface RawListWorksetArgs {
 export interface CreateWorksetArgs {
   teamId: string;
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export interface RawCreateWorksetArgs {
   team_id: string;
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export interface UpdateWorksetArgs {
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export interface RawUpdateWorksetArgs {
   id: string;
   name: string;
-  description?: string;
+  description?: string | undefined;
 }

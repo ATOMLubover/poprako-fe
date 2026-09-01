@@ -10,7 +10,7 @@ interface Props {
   hasMore: boolean;
   isInitialLoading: boolean;
   isLoadingMore: boolean;
-  error?: string;
+  error?: string | undefined;
   emptyMessage: string;
   role: "list" | "listbox";
   ariaLabel: string;

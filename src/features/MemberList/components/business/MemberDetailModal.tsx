@@ -107,7 +107,10 @@ export default function MemberDetailModal({
     try {
       const result = await onUpdateRole(member.id, selectedBits);
       if (!result.success) {
-        console.error("[MemberDetailModal] 更新角色失败:", result.error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[MemberDetailModal] 更新角色失败:", result.error,
+        );
         showLocalApiFailure(result, showToast);
         return;
       }

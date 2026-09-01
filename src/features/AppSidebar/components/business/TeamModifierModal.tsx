@@ -7,7 +7,7 @@ import type { Result } from "@/types/utils/result";
 
 interface UpdateTeamArgs {
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 interface Props {

@@ -28,17 +28,17 @@ export interface SpecialCharInsertRequest {
 
 interface Props {
   units: UnitInfo[];
-  focusedUnitId?: string;
+  focusedUnitId?: string | undefined;
   mode: TranslatorMode;
-  onFocusUnit?: (unitId: string) => void;
+  onFocusUnit?: ((unitId: string) => void) | undefined;
   // 在 units 长度为 0 时，不存在这个字段
-  onModifyUnit?: (unitId: string, unit: UnitEdit) => void;
-  onReorderUnit?: (unitId: string, targetIndex: number) => void;
+  onModifyUnit?: ((unitId: string, unit: UnitEdit) => void) | undefined;
+  onReorderUnit?: ((unitId: string, targetIndex: number) => void) | undefined;
   onResolveUser: UnitUserResolver;
-  enableReadOnly?: boolean;
-  specialCharInsertRequest?: SpecialCharInsertRequest;
-  onSpecialCharUse?: (char: string) => void;
-  onSpecialCharInserted?: (requestId: number, char: string) => void;
+  enableReadOnly?: boolean | undefined;
+  specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  onSpecialCharUse?: ((char: string) => void) | undefined;
+  onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
 }
 
 export default function UnitList({

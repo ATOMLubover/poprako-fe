@@ -10,15 +10,15 @@ export interface Page {
   index: number;
 
   imageUrl: string;
-  imageOptimizedUrl?: string;
-  imageThumbnailUrl?: string;
+  imageOptimizedUrl?: string | undefined;
+  imageThumbnailUrl?: string | undefined;
   isUploaded: boolean;
-  imageHash?: string;
-  newByteLen?: number;
-  extension?: string;
+  imageHash?: string | undefined;
+  newByteLen?: number | undefined;
+  extension?: string | undefined;
 
   creatorId: string;
-  creator?: UserInfo;
+  creator?: UserInfo | undefined;
 
   totalUnitCount: number;
   translatedUnitCount: number;
@@ -36,9 +36,9 @@ export type PageInfo = Page & {
 };
 
 export interface PageImageInput {
-  pageId?: string;
+  pageId?: string | undefined;
   imageHash: string;
-  newByteLen?: number;
+  newByteLen?: number | undefined;
   extension: string;
 }
 
@@ -63,5 +63,5 @@ export interface PendingPage { pageId: string; index: number; fileIndex: number 
 export interface UploadProgressCallbacks {
   onPagesAllocated: (pendingPages: PendingPage[]) => void;
   onPageUploaded: (pageId: string, file: File) => void;
-  onPageUploadProgress?: (pageId: string, percent: number) => void;
+  onPageUploadProgress?: ((pageId: string, percent: number) => void) | undefined;
 }

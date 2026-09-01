@@ -21,7 +21,9 @@ interface Props {
   onToggleList: (isNextOpen: boolean) => void;
   onSelectTeam: (team: TeamConfig) => void;
   onJoinTeam: () => void | Promise<void>;
-  onUpdateTeam?: (id: string, args: { name: string; description?: string }) => Promise<Result<void>>;
+  onUpdateTeam?: (
+    (id: string, args: { name: string; description?: string | undefined }) => Promise<Result<void>>
+  ) | undefined;
   onAvatarUploadingChange: (isUploading: boolean) => void;
 }
 
@@ -123,12 +125,12 @@ function TeamList({
   activeId: string;
   onSelect: (team: TeamConfig) => void;
   onJoin: () => void;
-  onLongPressTeam?: (team: TeamConfig) => void;
+  onLongPressTeam?: ((team: TeamConfig) => void) | undefined;
 }) {
   const [inviteCode, setInviteCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
-  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTeamRef = useRef<TeamConfig | null>(null);
   const longPressHandledRef = useRef(false);
 
@@ -247,7 +249,11 @@ function TeamList({
                   )}
                 >
                   {t.avatarThumbnailUrl ?? t.avatarUrl ? (
-                    <img src={t.avatarThumbnailUrl ?? t.avatarUrl} alt={t.name} className="w-full h-full object-cover" />
+                    <img
+                      src={t.avatarThumbnailUrl ?? t.avatarUrl}
+                      alt={t.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     t.short
                   )}

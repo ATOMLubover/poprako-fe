@@ -115,6 +115,7 @@ export const PendingUploadFailed: Story = {
 
     const canvas = within(canvasElement);
     const pageBadge = canvas.getAllByText("P2")[0];
+    if (!pageBadge) {throw new Error("页面标记缺失");}
     const pageCard = pageBadge.closest(String.raw`.aspect-3\/4`);
     await expect(pageCard).not.toBeNull();
 

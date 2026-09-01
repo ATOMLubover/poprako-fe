@@ -14,11 +14,11 @@ import BaseUnitItem from "./BaseUnitItem";
 interface Props {
   unit: UnitInfo;
   isFocused: boolean;
-  onSelect?: (unitId: string) => void;
-  onIndexActivate?: (unitId: string) => void;
-  dataUnitId?: string;
-  translator?: UserInfo;
-  proofreader?: UserInfo;
+  onSelect?: ((unitId: string) => void) | undefined;
+  onIndexActivate?: ((unitId: string) => void) | undefined;
+  dataUnitId?: string | undefined;
+  translator?: UserInfo | undefined;
+  proofreader?: UserInfo | undefined;
 }
 
 export default function ReadOnlyDiffUnitItem({

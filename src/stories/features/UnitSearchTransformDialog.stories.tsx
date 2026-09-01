@@ -46,8 +46,8 @@ const meta: Meta<typeof UnitSearchTransformDialog> = {
     pages,
     part: "translatedText",
     currentPageId: "page-1",
-    onBeforeSearch: fn(async () => { return; }), // eslint-disable-line @typescript-eslint/require-await
-    onRefreshCurrentPage: fn(async () => { return; }), // eslint-disable-line @typescript-eslint/require-await
+    onBeforeSearch: fn(() => Promise.resolve()),
+    onRefreshCurrentPage: fn(() => Promise.resolve()),
     onNavigate: fn(async () => { return; }), // eslint-disable-line @typescript-eslint/require-await
     onClose: fn(),
   },
@@ -76,10 +76,14 @@ export const GroupedResults: Story = {
       name: "选择第 1 页全部匹配项",
     });
     await expect(pageSelector).toHaveAttribute("aria-checked", "true");
-    await userEvent.click(page.getAllByRole("button", { name: "展开页面" })[0]);
+    const expandButton = page.getAllByRole("button", { name: "展开页面" })[0];
+    if (!expandButton) {throw new Error("展开按钮缺失");}
+    await userEvent.click(expandButton);
     await expect(page.getAllByText("旧词").length).toBeGreaterThan(0);
     await expect(page.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
-    await userEvent.click(page.getAllByRole("checkbox", { name: "选择该 Unit" })[0]);
+    const unitCheckbox = page.getAllByRole("checkbox", { name: "选择该 Unit" })[0];
+    if (!unitCheckbox) {throw new Error("Unit 复选框缺失");}
+    await userEvent.click(unitCheckbox);
     await expect(pageSelector).toHaveAttribute("aria-checked", "mixed");
     await userEvent.click(pageSelector);
     await expect(pageSelector).toHaveAttribute("aria-checked", "true");

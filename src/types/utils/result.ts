@@ -6,7 +6,7 @@ export type Result<T> =
   | {
       success: false;
       error: string;
-      httpStatus?: number;
+      httpStatus?: number | undefined;
     };
 
 export type ResultFailure = Extract<Result<unknown>, { success: false }>;

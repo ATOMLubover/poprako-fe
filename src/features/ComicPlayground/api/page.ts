@@ -17,8 +17,8 @@ import {
 
 export interface ListPageArgs {
   chapterId: string;
-  offset?: number;
-  limit?: number;
+  offset?: number | undefined;
+  limit?: number | undefined;
 }
 
 export async function listPages(
@@ -101,7 +101,8 @@ export async function allocExistingPageUpload(
 
   return {
     success: true,
-    data: unwrapRawAllocChapterPagesResult({ pages: [res.data] }).pages[0],
+    data: unwrapRawAllocChapterPagesResult({ pages: [res.data] }).pages[0]
+      ?? (() => { throw new Error("分配页面响应为空"); })(),
   };
 }
 
@@ -113,10 +114,10 @@ export async function getPage(pageId: string): Promise<Result<PageInfo>> {
 
 export function deletePage(pageId: string): Promise<Result<undefined>> {
   void pageId;
-  return {
+  return Promise.resolve({
     success: false,
     error: "当前后端不支持删除单页",
-  };
+  });
 }
 
 export async function deleteChapterPages(chapterId: string): Promise<Result<undefined>> {
@@ -127,7 +128,7 @@ export async function deleteChapterPages(chapterId: string): Promise<Result<unde
 
 export async function updatePage(
   pageId: string,
-  args: { isUploaded?: boolean; imageVersion?: number },
+  args: { isUploaded?: boolean | undefined; imageVersion?: number | undefined },
 ): Promise<Result<undefined>> {
   if (!args.isUploaded) {
     return { success: true, data: undefined };
@@ -180,8 +181,8 @@ export async function uploadToPresignedUrl(
   signal?: AbortSignal,
 ): Promise<
   Result<undefined> & {
-    httpStatus?: number;
-    failureKind?: "http" | "timeout" | "network" | "aborted";
+    httpStatus?: number | undefined;
+    failureKind?: "http" | "timeout" | "network" | "aborted" | undefined;
   }
 > {
   const headers = typeof headersOrOnProgress === "function" ? {} : headersOrOnProgress;
@@ -193,8 +194,8 @@ export async function uploadToPresignedUrl(
 
     const finish = (
       result: Result<undefined> & {
-        httpStatus?: number;
-        failureKind?: "http" | "timeout" | "network" | "aborted";
+        httpStatus?: number | undefined;
+        failureKind?: "http" | "timeout" | "network" | "aborted" | undefined;
       },
     ) => {
       if (isSettled) {return;}

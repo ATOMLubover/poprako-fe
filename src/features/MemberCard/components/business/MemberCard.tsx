@@ -5,7 +5,7 @@ import { getMemberActivityColor } from "./activityStatus";
 
 interface Props {
   member: MemberInfo;
-  onClick?: () => void;
+  onClick?: (() => void) | undefined;
 }
 
 const ROLE_MAP: { label: string; field: keyof MemberInfo }[] = [
@@ -140,7 +140,8 @@ export default function MemberCard({ member, onClick }: Props) {
             <RoleTag
               key={role.label}
               label={role.label}
-              isActive={Boolean(member[role.field])} // eslint-disable-line unicorn/no-computed-property-existence-check
+              // eslint-disable-next-line unicorn/no-computed-property-existence-check
+              isActive={Boolean(member[role.field])}
               isFirst={i === 0}
               isLast={i === ROLE_MAP.length - 1}
             />

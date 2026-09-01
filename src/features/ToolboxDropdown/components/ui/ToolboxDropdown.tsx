@@ -5,7 +5,7 @@ import clsx from "clsx";
 
 interface Props {
   options: ToolboxOption[];
-  direction?: "up" | "down";
+  direction?: "up" | "down" | undefined;
 }
 
 export default function ToolboxDropdown({ options, direction = "down" }: Props) {

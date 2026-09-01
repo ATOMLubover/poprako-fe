@@ -12,9 +12,9 @@ import {
 import TransitionDialog from "./TransitionDialog";
 
 interface Props {
-  selectedChapter?: ChapterInfo;
+  selectedChapter?: ChapterInfo | undefined;
   assignments: AssignmentInfo[];
-  currentUserId?: string | null;
+  currentUserId?: string | null | undefined;
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
 }
 

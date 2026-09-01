@@ -80,7 +80,7 @@ export function useWorkflowRecordUsers({
   return useCallback(
     (userId: string) => {
       const user = assignmentUsers.get(userId) ?? resolvedUsers.get(userId);
-      return user?.name.trim() || shortWorkflowRecordUserId(userId); // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing
+      return user?.name.trim() ?? shortWorkflowRecordUserId(userId);
     },
     [assignmentUsers, resolvedUsers],
   );

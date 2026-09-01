@@ -7,7 +7,7 @@ import WorksetModifierModal from "@/features/ComicPlayground/components/business
 
 interface UpdateWorksetArgs {
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
   onCreateWorkset: () => void;
   onDeleteWorkset: (worksetId: string) => void;
   onChangeWorkset: (worksetId: string) => void;
-  onUpdateWorkset?: (id: string, args: UpdateWorksetArgs) => Promise<Result<void>>;
+  onUpdateWorkset?: ((id: string, args: UpdateWorksetArgs) => Promise<Result<void>>) | undefined;
 }
 
 export default function WorksetSidebar({
@@ -31,7 +31,7 @@ export default function WorksetSidebar({
 }: Props) {
   void onDeleteWorkset;
   const [worksetToModify, setWorksetToModify] = useState<WorksetInfo | null>(null);
-  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressWorksetRef = useRef<WorksetInfo | null>(null);
   const longPressHandledRef = useRef(false);
 

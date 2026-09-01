@@ -36,8 +36,8 @@ function makeRecord(
   id: string,
   event: ChapterWorkflowRecordEvent,
   options: {
-    actorUserId?: string | null;
-    createdAt?: number;
+    actorUserId?: string | null | undefined;
+    createdAt?: number | undefined;
   } = {},
 ): ChapterWorkflowRecord {
   return {
@@ -361,7 +361,7 @@ function InteractivePaginationDemo() {
     hasMore: true,
   }));
   const loadingRef = useRef(false);
-  const timeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => {
     if (timeoutRef.current !== null) {

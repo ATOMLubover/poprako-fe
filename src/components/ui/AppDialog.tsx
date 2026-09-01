@@ -8,18 +8,18 @@ type Tone = "brand" | "warning";
 
 interface Props {
   title: string;
-  description?: string;
+  description?: string | undefined;
   children: ReactNode;
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
   onClose: () => void;
-  size?: Size;
-  tone?: Tone;
-  locked?: boolean;
-  showClose?: boolean;
-  closeOnEscape?: boolean;
-  closeOnBackdrop?: boolean;
-  bodyClassName?: string;
-  contentClassName?: string;
+  size?: Size | undefined;
+  tone?: Tone | undefined;
+  locked?: boolean | undefined;
+  showClose?: boolean | undefined;
+  closeOnEscape?: boolean | undefined;
+  closeOnBackdrop?: boolean | undefined;
+  bodyClassName?: string | undefined;
+  contentClassName?: string | undefined;
 }
 
 export default function AppDialog({
@@ -132,7 +132,7 @@ export default function AppDialog({
 }
 
 type ActionProps = ComponentProps<"button"> & {
-  tone?: "neutral" | "brand" | "danger" | "warning";
+  tone?: "neutral" | "brand" | "danger" | "warning" | undefined;
 };
 
 export function AppDialogAction({

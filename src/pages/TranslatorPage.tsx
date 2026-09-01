@@ -46,7 +46,8 @@ export default function TranslatorPage() {
   // Ensure user is authenticated before rendering translator
   useEffect(() => {
     if (loginState !== null) {
-      setIsAuthReady(true); // eslint-disable-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
+      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+      setIsAuthReady(true);
       return;
     }
 
@@ -55,6 +56,7 @@ export default function TranslatorPage() {
         const userInfo = await getMyUser();
         const memberInfos = await listMyMembers({ ownerId: userInfo.id });
         setLoginState({ userInfo, memberInfos });
+
         setIsAuthReady(true);
       } catch {
         void navigate("/login", { replace: true });

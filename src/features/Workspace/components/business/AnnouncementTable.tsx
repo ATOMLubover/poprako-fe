@@ -73,7 +73,10 @@ export default function AnnouncementTable({
         content: args.content,
       });
       if (!result.success) {
-        console.error("[AnnouncementTable] 发布公告失败:", result.error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[AnnouncementTable] 发布公告失败:", result.error,
+        );
         showLocalApiFailure(result, showToast, "发布公告失败");
         return result;
       }

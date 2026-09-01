@@ -36,7 +36,7 @@ import type {
 export type { ListChapterWorkflowRecordsArgs } from "../types/chapter";
 
 interface ExportRequestOptions {
-  signal?: AbortSignal;
+  signal?: AbortSignal | undefined;
 }
 
 function toStageUpdate(
@@ -226,13 +226,9 @@ export async function exportChapter(
     const response = await fetch(
       `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=poprako,label_plus`,
       {
-        headers: token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
+        ...(token && { headers: { Authorization: `Bearer ${token}` } }),
         credentials: "omit",
-        signal: options?.signal,
+        ...(options?.signal && { signal: options.signal }),
       },
     );
 
@@ -241,7 +237,7 @@ export async function exportChapter(
     if (!response.ok) {
       let error: string;
       try {
-        const body = JSON.parse(rawText) as { message?: string };
+        const body = JSON.parse(rawText) as { message?: string | undefined };
         error = resolveHttpErrorMessage(
           body.message,
           response.statusText,

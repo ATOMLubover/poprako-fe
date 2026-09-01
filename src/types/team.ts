@@ -9,7 +9,7 @@ export interface TeamInfo {
   description: string;
 
   avatarUrl: string;
-  avatarThumbnailUrl?: string;
+  avatarThumbnailUrl?: string | undefined;
 
   createdAt: number;
   updatedAt: number;
@@ -34,8 +34,8 @@ export interface CreateTeamResult { id: string }
 
 export interface UpdateTeamArgs {
   id: string;
-  name?: string;
-  description?: string;
+  name?: string | undefined;
+  description?: string | undefined;
 }
 
 export type AllocTeamAvatarResult = ImageUploadSlot | null;

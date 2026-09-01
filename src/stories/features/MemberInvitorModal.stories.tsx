@@ -159,7 +159,11 @@ export const EmptyPending: Story = {
             onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); console.log("删除邀请:", id); return { success: true, data: undefined }; }} // eslint-disable-line no-console
+            onDeleteInvitation={async (id) => {
+              await new Promise((resolve) => setTimeout(resolve, 400));
+              void id;
+              return { success: true, data: undefined };
+            }}
           />
         )}
       </div>
@@ -198,7 +202,11 @@ export const LoadError: Story = {
             onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); console.log("删除邀请:", id); return { success: true, data: undefined }; }} // eslint-disable-line no-console
+            onDeleteInvitation={async (id) => {
+              await new Promise((resolve) => setTimeout(resolve, 400));
+              void id;
+              return { success: true, data: undefined };
+            }}
           />
         )}
       </div>

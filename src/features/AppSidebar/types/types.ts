@@ -20,5 +20,5 @@ export interface TeamConfig {
   short: string;
   desc: string;
   avatarUrl: string;
-  avatarThumbnailUrl?: string;
+  avatarThumbnailUrl?: string | undefined;
 }

@@ -25,7 +25,9 @@ describe("chapter unit search and transform API", () => {
 
     const result = await listEdittedDiffPageIds("chapter-1");
 
-    expect(String(fetchMock.mock.calls[0][0])).toBe(
+    const firstCall = fetchMock.mock.calls[0];
+    if (!firstCall) {throw new Error("fetch 未被调用");}
+    expect(String(firstCall[0])).toBe(
       "/api/v1/chapters/chapter-1/pages/editted-diffs",
     );
     expect(result).toEqual({
@@ -53,7 +55,9 @@ describe("chapter unit search and transform API", () => {
       phrase: "旧词",
     });
 
-    expect(String(fetchMock.mock.calls[0][0])).toBe(
+    const firstCall = fetchMock.mock.calls[0];
+    if (!firstCall) {throw new Error("fetch 未被调用");}
+    expect(String(firstCall[0])).toBe(
       "/api/v1/chapters/chapter-1/units/search?part=translated_text&phrase=%E6%97%A7%E8%AF%8D",
     );
     expect(result.success && result.data[0]).toMatchObject({
@@ -72,10 +76,12 @@ describe("chapter unit search and transform API", () => {
       target: "新词",
       unitIds: ["unit-1", "unit-2"],
     });
-    const request = fetchMock.mock.calls[0][1] as RequestInit;
+    const firstCall = fetchMock.mock.calls[0];
+    if (!firstCall) {throw new Error("fetch 未被调用");}
+    const request = firstCall[1] as RequestInit;
 
     expect(result).toEqual({ success: true, data: undefined });
-    expect(String(fetchMock.mock.calls[0][0])).toBe(
+    expect(String(firstCall[0])).toBe(
       "/api/v1/chapters/chapter-1/units/transform",
     );
     expect(JSON.parse(request.body as string)).toEqual({

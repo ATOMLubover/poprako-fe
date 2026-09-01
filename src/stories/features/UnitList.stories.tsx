@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import UnitList from "@/features/BaseTranslator/features/UnitList";
 import {
+  applyUnitUpdates,
   moveUnitToIndex,
   type UnitEdit,
   type UnitInfo,
@@ -194,8 +195,8 @@ const diffShowcaseUnits: UnitInfo[] = [
 
 interface UnitListWrapperProps {
   initialMode: TranslatorMode;
-  readOnly?: boolean;
-  initialUnitInfos?: UnitInfo[];
+  readOnly?: boolean | undefined;
+  initialUnitInfos?: UnitInfo[] | undefined;
 }
 
 function UnitListWrapper({
@@ -208,9 +209,9 @@ function UnitListWrapper({
   const [units, setUnits] = useState<UnitInfo[]>(initialUnitInfos);
 
   const handleModifyUnit = (unitId: string, updates: UnitEdit) => {
-    setUnits((prev) =>
-      prev.map((u) => (u.id === unitId ? { ...u, ...updates } : u)),
-    );
+    setUnits((prev) => prev.map((u) =>
+      u.id === unitId ? applyUnitUpdates(u, updates) : u,
+    ));
   };
 
   const handleReorderUnit = (unitId: string, targetIndex: number) => {

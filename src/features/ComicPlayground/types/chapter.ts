@@ -26,7 +26,7 @@ export type WorkflowTransition =
 
 export interface ListChapterArgs {
   comicId: string;
-  includes?: ChapterInclude[];
+  includes?: ChapterInclude[] | undefined;
   offset: number;
   limit: number;
 }
@@ -39,33 +39,33 @@ export interface ListChapterWorkflowRecordsArgs {
 
 export interface RawListChapterArgs {
   comic_id: string;
-  incl?: ChapterInclude[];
+  incl?: ChapterInclude[] | undefined;
   offset: number;
   limit: number;
 }
 
 export interface CreateChapterArgs {
   comicId: string;
-  subtitle?: string;
-  presetAssignmentRoles?: number;
+  subtitle?: string | undefined;
+  presetAssignmentRoles?: number | undefined;
 }
 
 export interface RawCreateChapterArgs {
   comic_id: string;
-  subtitle?: string;
-  preset_assignment_roles?: number;
+  subtitle?: string | undefined;
+  preset_assignment_roles?: number | undefined;
 }
 
 export interface UpdateChapterArgs {
-  subtitle?: string;
-  isPinned?: boolean;
-  workflowTransition?: WorkflowTransition;
-  revertTransition?: WorkflowTransition;
+  subtitle?: string | undefined;
+  isPinned?: boolean | undefined;
+  workflowTransition?: WorkflowTransition | undefined;
+  revertTransition?: WorkflowTransition | undefined;
 }
 
 export interface RawUpdateChapterArgs {
   id: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
 }
 
 export interface RawUpdateChapterStageArgs {
@@ -81,20 +81,20 @@ export interface RawUpdateChapterStageArgs {
 }
 
 export interface ChapterExportUnit {
-  unitId?: string;
-  unitIndex?: number;
-  pageId?: string;
-  pageIndex?: number;
-  translatedText?: string;
-  proofreadText?: string;
-  translatorId?: string;
-  proofreaderId?: string;
-  translatorComment?: string;
-  proofreaderComment?: string;
-  xCoord?: number;
-  yCoord?: number;
-  isBubble?: boolean;
-  isProofread?: boolean;
+  unitId?: string | undefined;
+  unitIndex?: number | undefined;
+  pageId?: string | undefined;
+  pageIndex?: number | undefined;
+  translatedText?: string | undefined;
+  proofreadText?: string | undefined;
+  translatorId?: string | undefined;
+  proofreaderId?: string | undefined;
+  translatorComment?: string | undefined;
+  proofreaderComment?: string | undefined;
+  xCoord?: number | undefined;
+  yCoord?: number | undefined;
+  isBubble?: boolean | undefined;
+  isProofread?: boolean | undefined;
 }
 
 export interface ChapterExportPage {
@@ -113,20 +113,20 @@ export interface ChapterExport {
 }
 
 export interface RawChapterExportUnit {
-  unit_id?: string;
-  unit_index?: number;
-  page_id?: string;
-  page_index?: number;
-  translated_text?: string;
-  proofread_text?: string;
-  translator_id?: string;
-  proofreader_id?: string;
-  translator_comment?: string;
-  proofreader_comment?: string;
-  x_coord?: number;
-  y_coord?: number;
-  is_bubble?: boolean;
-  is_proofread?: boolean;
+  unit_id?: string | undefined;
+  unit_index?: number | undefined;
+  page_id?: string | undefined;
+  page_index?: number | undefined;
+  translated_text?: string | undefined;
+  proofread_text?: string | undefined;
+  translator_id?: string | undefined;
+  proofreader_id?: string | undefined;
+  translator_comment?: string | undefined;
+  proofreader_comment?: string | undefined;
+  x_coord?: number | undefined;
+  y_coord?: number | undefined;
+  is_bubble?: boolean | undefined;
+  is_proofread?: boolean | undefined;
 }
 
 export interface RawChapterExportPage {

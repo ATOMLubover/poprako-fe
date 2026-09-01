@@ -183,7 +183,7 @@ export default function ComicPlayground() {
   const handleLoadAssignableMembers = useCallback(
     async (
       chapterId: string,
-      args: { role: Role; keyword?: string; offset: number; limit: number },
+      args: { role: Role; keyword?: string | undefined; offset: number; limit: number },
     ): Promise<Result<MemberInfo[]>> => {
       void chapterId;
       if (!teamId) {
@@ -252,7 +252,10 @@ export default function ComicPlayground() {
     async (chapterId: string, role: Role): Promise<Result<void>> => {
       const result = await joinChapter(chapterId, roleMask([role]));
       if (!result.success) {
-        console.error("[ComicPlayground] 加入章节分工失败:", result.error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[ComicPlayground] 加入章节分工失败:", result.error,
+      );
       }
       return result;
     },
@@ -272,7 +275,7 @@ export default function ComicPlayground() {
   );
 
   const handleExportChapter = useCallback(
-    async (chapterId: string, options?: { signal?: AbortSignal }) => {
+    async (chapterId: string, options?: { signal?: AbortSignal | undefined }) => {
       return exportChapter(chapterId, options);
     },
     [],
@@ -309,13 +312,16 @@ export default function ComicPlayground() {
   );
 
   const handleUpdateComic = useCallback(
-    async (args: { title: string; author: string; description?: string }) => {
+    async (args: { title: string; author: string; description?: string | undefined }) => {
       if (!selectedComic) {
         return { success: false, error: "未选择漫画" } as Result<void>;
       }
       const result = await updateComic(selectedComic.id, args);
       if (!result.success) {
-        console.error("[ComicPlayground] 更新漫画信息失败:", result.error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[ComicPlayground] 更新漫画信息失败:", result.error,
+      );
         showLocalApiFailure(result, showToast);
         return result;
       }
@@ -330,7 +336,10 @@ export default function ComicPlayground() {
     async (chapterId: string, subtitle?: string) => {
       const result = await updateChapter(chapterId, { subtitle });
       if (!result.success) {
-        console.error("[ComicPlayground] 更新章节信息失败:", result.error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[ComicPlayground] 更新章节信息失败:", result.error,
+      );
         showLocalApiFailure(result, showToast);
         return result;
       }
@@ -341,7 +350,7 @@ export default function ComicPlayground() {
   );
 
   const handleUpdateWorkset = useCallback(
-    async (id: string, args: { name: string; description?: string }) => {
+    async (id: string, args: { name: string; description?: string | undefined }) => {
       const result = await updateWorkset(id, args);
       if (!result.success) {
         console.error("[ComicPlayground] 更新作品集失败:", result.error); // eslint-disable-line no-console
@@ -390,7 +399,7 @@ export default function ComicPlayground() {
   );
 
   const handleCreateChapter = useCallback(
-    async (args: { comicId: string; subtitle?: string }): Promise<Result<string>> => {
+    async (args: { comicId: string; subtitle?: string | undefined }): Promise<Result<string>> => {
       return createChapter(args);
     },
     [],

@@ -2,8 +2,8 @@ import { useCallback, useRef } from "react";
 
 interface UseLongPressOptions {
   onLongPress: () => void;
-  onClick?: () => void;
-  threshold?: number;
+  onClick?: (() => void) | undefined;
+  threshold?: number | undefined;
 }
 
 export function useLongPress({
@@ -11,7 +11,7 @@ export function useLongPress({
   onClick,
   threshold = 500,
 }: UseLongPressOptions) {
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressHandledRef = useRef(false);
 
   const onPointerDown = useCallback(

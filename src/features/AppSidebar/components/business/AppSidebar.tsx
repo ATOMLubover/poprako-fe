@@ -68,7 +68,7 @@ export default function AppSidebar() {
   };
 
   const handleUpdateTeam = useCallback(
-    async (id: string, args: { name: string; description?: string }) => {
+    async (id: string, args: { name: string; description?: string | undefined }) => {
       const result2 = await updateTeam({ id, ...args });
       if (!result2.success) {
         console.error("[AppSidebar] 更新汉化组信息失败:", result2.error); // eslint-disable-line no-console

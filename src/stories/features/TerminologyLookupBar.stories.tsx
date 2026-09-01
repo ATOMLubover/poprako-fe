@@ -79,8 +79,8 @@ function createDataSource({
   termbaseItems = termbases,
   termItems = terms,
 }: {
-  termbaseItems?: TermbaseInfo[];
-  termItems?: TermInfo[];
+  termbaseItems?: TermbaseInfo[] | undefined;
+  termItems?: TermInfo[] | undefined;
 } = {}): TerminologyDataSource {
   const currentTermbases = [...termbaseItems];
   const currentTerms = [...termItems];

@@ -14,29 +14,29 @@ export interface UnitInfo {
   // 是否为框内文本，否则是框外文本
   isBubble: boolean;
 
-  translatedText?: string;
-  translatorId?: string;
-  translatorCommnet?: string;
+  translatedText?: string | undefined;
+  translatorId?: string | undefined;
+  translatorCommnet?: string | undefined;
 
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread: boolean;
-  proofreadText?: string;
-  proofreaderId?: string;
-  proofreaderComment?: string;
+  proofreadText?: string | undefined;
+  proofreaderId?: string | undefined;
+  proofreaderComment?: string | undefined;
 }
 
 export interface UnitEdit {
-  xCoord?: number;
-  yCoord?: number;
-  isBubble?: boolean;
-  translatedText?: string;
-  translatorId?: string;
-  translatorCommnet?: string;
+  xCoord?: number | undefined;
+  yCoord?: number | undefined;
+  isBubble?: boolean | undefined;
+  translatedText?: string | undefined;
+  translatorId?: string | undefined;
+  translatorCommnet?: string | undefined;
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
-  isProofread?: boolean;
-  proofreadText?: string;
-  proofreaderId?: string;
-  proofreaderComment?: string;
+  isProofread?: boolean | undefined;
+  proofreadText?: string | undefined;
+  proofreaderId?: string | undefined;
+  proofreaderComment?: string | undefined;
 }
 
 export function unitId(unit: Pick<UnitInfo, "id">): string {
@@ -171,6 +171,7 @@ export function moveUnitToIndex(
 
   const nextUnits = [...units];
   const [targetUnit] = nextUnits.splice(sourceIndex, 1);
+  if (!targetUnit) {return units;}
   const boundedIndex = Math.max(0, Math.min(targetIndex, nextUnits.length));
   nextUnits.splice(boundedIndex, 0, targetUnit);
 
@@ -403,20 +404,20 @@ export function isUnitSame(rhs: UnitInfo, lhs: UnitInfo): boolean {
 export interface UnitPatch {
   id: string;
 
-  xCoord?: number;
-  yCoord?: number;
+  xCoord?: number | undefined;
+  yCoord?: number | undefined;
 
-  isBubble?: boolean;
+  isBubble?: boolean | undefined;
 
-  translatedText?: string | null;
-  translatorId?: string | null;
-  translatorCommnet?: string | null;
+  translatedText?: string | null | undefined;
+  translatorId?: string | null | undefined;
+  translatorCommnet?: string | null | undefined;
 
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
-  isProofread?: boolean;
-  proofreadText?: string | null;
-  proofreaderId?: string | null;
-  proofreaderComment?: string | null;
+  isProofread?: boolean | undefined;
+  proofreadText?: string | null | undefined;
+  proofreaderId?: string | null | undefined;
+  proofreaderComment?: string | null | undefined;
 }
 
 export type UnitCreation = UnitInfo;

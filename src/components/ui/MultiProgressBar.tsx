@@ -6,11 +6,11 @@ export interface BarArgs {
   /**
   CSS 颜色值（hex、rgb 等），用于 inline style，避免 Tailwind class 被 purge
   */
-  barColor?: string;
+  barColor?: string | undefined;
   /**
   @deprecated 用 barColor 代替，避免 production build 时 Tailwind class 被 purge
   */
-  barColorClass?: string;
+  barColorClass?: string | undefined;
 }
 
 export interface Props {
@@ -18,15 +18,15 @@ export interface Props {
   /**
   以 rem 为单位，整个进度条容器的宽度，默认  75 rem
   */
-  width?: number;
+  width?: number | undefined;
   /**
   以 rem 为单位，整个进度条容器的高度，默认 2 rem
   */
-  height?: number;
+  height?: number | undefined;
   /**
   为 true 时宽度 100% 自适应父容器，忽略 width
   */
-  fullWidth?: boolean;
+  fullWidth?: boolean | undefined;
 }
 
 export default function MultiProgressBar({

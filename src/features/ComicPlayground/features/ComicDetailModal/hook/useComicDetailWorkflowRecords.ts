@@ -106,7 +106,10 @@ export function useComicDetailWorkflowRecords({
       if (requestVersionsRef.current.get(chapterId) !== requestVersion) {return;}
 
       if (!result.success) {
-        console.error("[ComicDetailModal] 加载 workflow records 失败:", result.error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[ComicDetailModal] 加载 workflow records 失败:", result.error,
+        );
         updateChapterState(chapterId, (state) => ({
           ...state,
           loadedOnce: true,
@@ -132,7 +135,10 @@ export function useComicDetailWorkflowRecords({
       }));
     } catch (error) {
       if (requestVersionsRef.current.get(chapterId) !== requestVersion) {return;}
-      console.error("[ComicDetailModal] 加载 workflow records 异常:", error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[ComicDetailModal] 加载 workflow records 异常:", error,
+      );
       updateChapterState(chapterId, (state) => ({
         ...state,
         loadedOnce: true,
@@ -175,7 +181,10 @@ export function useComicDetailWorkflowRecords({
       if (requestVersionsRef.current.get(chapterId) !== requestVersion) {return;}
 
       if (!result.success) {
-        console.error("[ComicDetailModal] 加载更早 records 失败:", result.error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[ComicDetailModal] 加载更早 records 失败:", result.error,
+        );
         updateChapterState(chapterId, (state) => ({
           ...state,
           isLoadingMore: false,

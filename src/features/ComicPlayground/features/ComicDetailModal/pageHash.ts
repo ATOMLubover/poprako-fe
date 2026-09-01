@@ -4,7 +4,7 @@ interface HashResult {
 
 type HashResponse = HashResult & {
   id: number;
-  error?: string;
+  error?: string | undefined;
 };
 
 interface PendingHash {
@@ -28,7 +28,8 @@ function getHashWorker(): Worker {
     type: "module",
   });
 
-  worker.onmessage = (event: MessageEvent<HashResponse>) => { // eslint-disable-line unicorn/prefer-add-event-listener
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
+  worker.onmessage = (event: MessageEvent<HashResponse>) => {
     const pendingHash = pendingHashes.get(event.data.id);
     if (!pendingHash) {return;}
 

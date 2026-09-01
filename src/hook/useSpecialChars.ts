@@ -52,11 +52,15 @@ export function useSpecialChars() {
       }
     };
 
-    globalThis.addEventListener(CHANGE_EVENT, handleChange); // eslint-disable-line unicorn/no-unnecessary-global-this
-    globalThis.addEventListener("storage", handleChange); // eslint-disable-line unicorn/no-unnecessary-global-this
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
+    globalThis.addEventListener(CHANGE_EVENT, handleChange);
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
+    globalThis.addEventListener("storage", handleChange);
     return () => {
-      globalThis.removeEventListener(CHANGE_EVENT, handleChange); // eslint-disable-line unicorn/no-unnecessary-global-this
-      globalThis.removeEventListener("storage", handleChange); // eslint-disable-line unicorn/no-unnecessary-global-this
+      // eslint-disable-next-line unicorn/no-unnecessary-global-this
+      globalThis.removeEventListener(CHANGE_EVENT, handleChange);
+      // eslint-disable-next-line unicorn/no-unnecessary-global-this
+      globalThis.removeEventListener("storage", handleChange);
     };
   }, []);
 
@@ -100,6 +104,7 @@ export function useSpecialChars() {
 
       const next = [...current];
       const [activeChar] = next.splice(activeIndex, 1);
+      if (!activeChar) {return current;}
       next.splice(overIndex, 0, activeChar);
       saveToStorage(next);
       return next;

@@ -1,6 +1,10 @@
-/* eslint-disable no-console, eqeqeq, unicorn/no-non-function-verb-prefix, unicorn/no-unnecessary-global-this, unicorn/prefer-minimal-ternary -- translator lifecycle and diagnostics. */
-/* eslint-disable @typescript-eslint/use-unknown-in-catch-callback-variable, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-floating-promises, @typescript-eslint/no-misused-promises -- UI callbacks bridge async lifecycle APIs. */
-/* eslint-disable @eslint-react/use-state, @eslint-react/exhaustive-deps -- translator engine lifecycle. */
+/* eslint-disable no-console, eqeqeq, unicorn/no-non-function-verb-prefix */
+/* eslint-disable unicorn/no-unnecessary-global-this, unicorn/prefer-minimal-ternary */
+/* eslint-disable @typescript-eslint/use-unknown-in-catch-callback-variable */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @eslint-react/use-state, @eslint-react/exhaustive-deps */
 import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 import { showLocalCaughtError, toApiRequestError } from "@/api/util";
@@ -232,7 +236,7 @@ export default function BaseTranslator({
     handleRetryPendingAction,
     handleDiscardPendingAction,
   } = useUnitPersistence({
-    getPageId: () => project.pages[pageIndex].id,
+    getPageId: () => project.pages[pageIndex]!.id,
     onSaveUnits,
     onReloadUnits: onLoadUnits,
     onExit,
@@ -243,6 +247,7 @@ export default function BaseTranslator({
 
   async function loadPage(idx: number, targetUnitId?: string) {
     const page = project.pages[idx];
+    if (!page) {return;}
     setPageIndex(idx);
     setIsLoadingPage(true);
     setImageUrl(null);
@@ -277,6 +282,7 @@ export default function BaseTranslator({
   async function handleToggleImageQuality() {
     const isNextIsHighResolution = !isHighResolution;
     const page = project.pages[pageIndex];
+    if (!page) {return;}
 
     setIsHighResolution(isNextIsHighResolution);
     setIsLoadingPage(true);
@@ -478,7 +484,7 @@ export default function BaseTranslator({
   }
 
   async function handleRefreshCurrentPage() {
-    const currentPageId = project.pages[pageIndex].id;
+    const currentPageId = project.pages[pageIndex]!.id;
     const result = await unitSearchTransform.reloadPage(currentPageId);
     if (!result.success) {throw toApiRequestError(result);}
     setLoadedUnits(result.data, setUnitBuf);
@@ -537,7 +543,7 @@ export default function BaseTranslator({
     if (!canSwitchView) {return;}
     setViewState((current) => {
       const currentIndex = availableModes.indexOf(current.view);
-      const next = availableModes[(currentIndex + 1) % availableModes.length];
+      const next = availableModes[(currentIndex + 1) % availableModes.length]!;
       return {
         entryMode: mode,
         view: next,
@@ -558,13 +564,13 @@ export default function BaseTranslator({
         if (unitBuf.length === 0) {return;}
         const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const next = cur >= unitBuf.length - 1 ? 0 : cur + 1;
-        handleFocusUnit(unitId(unitBuf[next]));
+        handleFocusUnit(unitId(unitBuf[next]!));
       },
       prevMarker: () => {
         if (unitBuf.length === 0) {return;}
         const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const prev = cur <= 0 ? unitBuf.length - 1 : cur - 1;
-        handleFocusUnit(unitId(unitBuf[prev]));
+        handleFocusUnit(unitId(unitBuf[prev]!));
       },
       pageUp: () => {
         if (pageIndex > 0) {handleNavigate(pageIndex - 1);}
@@ -642,7 +648,12 @@ export default function BaseTranslator({
         onDeleteUnit={canEditView ? handleDeleteUnit : undefined}
         onToggleBubble={
           canEditView ? (targetId) =>
-            { handleModifyUnit(targetId, { isBubble: !unitIsBubble(unitBufRef.current.find(u => unitId(u) === targetId)!) }); }
+            {
+              const targetUnit = unitBufRef.current.find((u) => unitId(u) === targetId);
+              if (targetUnit) {
+                handleModifyUnit(targetId, { isBubble: !unitIsBubble(targetUnit) });
+              }
+            }
             : undefined
         }
         onImageLoad={handlePageImageLoad}
@@ -740,7 +751,7 @@ export default function BaseTranslator({
           <StatusOptionBar
             currMode={view}
             view={view}
-            nextView={nextView}
+            nextView={nextView!}
             canSwitchView={canSwitchView}
             isRelocationEnabled={isRelocationEnabled}
             isUnitCreationEnabled={isUnitCreationEnabled}
@@ -802,7 +813,7 @@ export default function BaseTranslator({
         <UnitSearchTransformDialog
           pages={project.pages}
           part={unitSearchPart}
-          currentPageId={project.pages[pageIndex].id}
+          currentPageId={project.pages[pageIndex]!.id}
           dataSource={unitSearchTransform}
           onBeforeSearch={() => flushIfDirty(false)}
           onRefreshCurrentPage={handleRefreshCurrentPage}

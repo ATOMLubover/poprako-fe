@@ -32,7 +32,7 @@ function makeMockMember(idx: number): MemberInfo {
       qq: `100${String(idx)}0000`,
       name: ["苍井翔太", "草莓大福", "云雀小队", "星河制作", "翡翠工坊"][
         idx % 5
-      ],
+      ] ?? "",
       avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=member${String(idx)}`,
       isSuperAdmin: idx === 0,
       lastActiveAt: now - 1000 * 60 * 60 * idx,
@@ -40,7 +40,9 @@ function makeMockMember(idx: number): MemberInfo {
       updatedAt: now - 1000 * 60 * 60 * idx,
     },
     assignedAdminAt: idx === 0 ? now : undefined,
-    [assignedRole]: now - 1000 * 60 * 60 * 24 * idx,
+    ...(assignedRole && {
+      [assignedRole]: now - 1000 * 60 * 60 * 24 * idx,
+    }),
     roles: idx === 0 ? 0b1 : 0,
     createdAt: now - 1000 * 60 * 60 * 24 * 30,
     updatedAt: now - 1000 * 60 * 60 * idx,

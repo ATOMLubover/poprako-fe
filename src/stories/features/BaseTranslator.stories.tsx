@@ -512,7 +512,7 @@ function createStoryArgs({
 }: {
   canTranslate: boolean;
   canProofread: boolean;
-  units?: UnitInfo[];
+  units?: UnitInfo[] | undefined;
 }): BaseTranslatorProps {
   const unitsByPage = new Map(
     mockProject.pages.map((page) => [

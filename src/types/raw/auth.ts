@@ -44,9 +44,9 @@ export function unwrapRawRegisterUserResult(
 
 export interface RawUpdateUserArgs {
   user_id: string;
-  qid?: string;
-  name?: string;
-  password?: string;
+  qid?: string | undefined;
+  name?: string | undefined;
+  password?: string | undefined;
 }
 export function unwrapRawUpdateUserArgs(
   raw: RawUpdateUserArgs,

@@ -3,9 +3,9 @@ import clsx from "clsx";
 
 interface Props {
   src: string;
-  alt?: string;
-  className?: string;
-  placeholderClassName?: string;
+  alt?: string | undefined;
+  className?: string | undefined;
+  placeholderClassName?: string | undefined;
 }
 
 export default function LazyImage({
@@ -23,6 +23,7 @@ export default function LazyImage({
     if (!el) {return;}
     const observer = new IntersectionObserver(
       ([entry]) => {
+        if (!entry) {return;}
         const isVisible = entry.isIntersecting;
         setVisible(isVisible);
         if (!isVisible) {

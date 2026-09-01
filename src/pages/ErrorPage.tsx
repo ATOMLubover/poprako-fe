@@ -6,15 +6,15 @@ export interface Props {
   /**
   错误状态码，例如 404, 500
   */
-  code?: string | number;
+  code?: string | number | undefined;
   /**
   错误标题
   */
-  title?: string;
+  title?: string | undefined;
   /**
   详细描述信息
   */
-  message?: string;
+  message?: string | undefined;
 }
 
 export default function ErrorPage({

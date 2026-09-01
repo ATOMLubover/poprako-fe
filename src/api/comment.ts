@@ -10,7 +10,7 @@ interface ListCommentsArgs {
   teamId: string;
   offset: number;
   limit: number;
-  includes?: string[];
+  includes?: string[] | undefined;
 }
 
 export async function listComments(

@@ -96,7 +96,7 @@ function mergePageCounters(
 export default function WebTranslator({ chapterId, startPageId, onExit, startMode }: Props) {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
   const { showToast } = useToastStore();
-  const currentUserId = useAppStore((state) => state.loginState.userInfo.id);
+  const currentUserId = useAppStore((state) => state.loginState?.userInfo.id ?? "");
 
   const handleResolveUser = useCallback(async (userId: string) => {
     const currentUser = useAppStore.getState().loginState?.userInfo;
@@ -141,7 +141,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
 
       // 2. Determine the current user's assignment permissions.
       // An unavailable assignment lookup must fail closed to read-only.
-      const userId = useAppStore.getState().loginState.userInfo.id;
+      const userId = useAppStore.getState().loginState?.userInfo.id;
       let canTranslate = false;
       let canProofread = false;
 
@@ -264,7 +264,10 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     async (pageId: string, diff: UnitDiff): Promise<void> => {
       const result = await saveUnits(pageId, diff);
       if (!result.success) {
-        console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error }); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error },
+        );
         throw toApiRequestError(result);
       }
 

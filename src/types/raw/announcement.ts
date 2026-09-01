@@ -5,7 +5,7 @@ export interface RawAnnouncementInfo {
   id: string;
   team_id: string;
   user_id: string;
-  user?: RawUserInfo;
+  user?: RawUserInfo | undefined;
   title: string;
   content: string;
   created_at: number;

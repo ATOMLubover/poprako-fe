@@ -9,17 +9,17 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 interface Props {
   comicInfo: ComicInfo;
   chapters: ChapterInfo[];
-  selectedChapter?: ChapterInfo;
+  selectedChapter?: ChapterInfo | undefined;
   hasMore: boolean;
-  isLoading?: boolean;
+  isLoading?: boolean | undefined;
   onLoadMore: () => void;
   onSelect: (id: string) => void;
-  onCreateChapter?: (
+  onCreateChapter?: ((
     subtitle?: string,
     presetAssignmentRoles?: number,
-  ) => Promise<Result<string>>;
-  onDelete?: (id: string) => void;
-  onLongPress?: (chapter: ChapterInfo) => void;
+  ) => Promise<Result<string>>) | undefined;
+  onDelete?: ((id: string) => void) | undefined;
+  onLongPress?: ((chapter: ChapterInfo) => void) | undefined;
 }
 
 export default function ChapterOption({
@@ -39,7 +39,7 @@ export default function ChapterOption({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<HTMLDivElement>(null);
-  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressChapterRef = useRef<ChapterInfo | null>(null);
   const longPressHandledRef = useRef(false);
 
@@ -112,7 +112,7 @@ export default function ChapterOption({
   useEffect(() => {
     if (!isOpen || !hasMore || isLoading || !observerRef.current) {return;}
     const ob = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
+      if (entries[0]?.isIntersecting) {
         onLoadMore();
       }
     });

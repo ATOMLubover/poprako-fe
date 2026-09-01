@@ -5,7 +5,7 @@ export interface RawCommentInfo {
   id: string;
   team_id: string;
   user_id: string;
-  user?: RawUserInfo;
+  user?: RawUserInfo | undefined;
   content: string;
   created_at: number;
 }

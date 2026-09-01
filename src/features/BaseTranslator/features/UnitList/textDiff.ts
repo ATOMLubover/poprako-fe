@@ -44,16 +44,23 @@ function orderReplacementParts(parts: RawDiffPart[]): UnitTextDiffPart[] {
   let index = 0;
 
   while (index < parts.length) {
-    if (parts[index].kind === "unchanged") {
-      ordered.push({ kind: "unchanged", text: parts[index].text });
+    const part = parts[index];
+    if (!part) {break;}
+    if (part.kind === "unchanged") {
+      ordered.push({ kind: "unchanged", text: part.text });
       index += 1;
       continue;
     }
 
     const changed: RawDiffPart[] = [];
-    while (index < parts.length && parts[index].kind !== "unchanged") {
-      changed.push(parts[index]);
-      index += 1;
+    while (index < parts.length && parts[index]?.kind !== "unchanged") {
+      const changedPart = parts[index];
+      if (changedPart) {
+        changed.push(changedPart);
+        index += 1;
+      } else {
+        index = parts.length;
+      }
     }
     const isReplacement = changed.some((part) => part.kind === "removed")
       && changed.some((part) => part.kind === "added");

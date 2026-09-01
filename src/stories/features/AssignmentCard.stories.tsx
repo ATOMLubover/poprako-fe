@@ -9,6 +9,11 @@ interface AssignmentCardProps {
   onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
 }
 
+function required<T>(value: T | undefined): T {
+  if (value === undefined) {throw new Error("示例数据缺失");}
+  return value;
+}
+
 function AssignmentCard({
   assignmentInfo,
   mode,
@@ -218,7 +223,7 @@ type Story = StoryObj<typeof AssignmentCard>;
 
 export const TranslatorSingle: Story = {
   args: {
-    assignmentInfo: TRANSLATOR_SAMPLES[0],
+    assignmentInfo: required(TRANSLATOR_SAMPLES[0]),
     mode: "translator",
     onClick: () => { return; },
     onLoadAssignments: () => Promise.resolve([]),
@@ -250,7 +255,7 @@ export const ReviewerSingle: Story = {
   render: () => (
     <div className="w-120">
       <AssignmentCard
-        assignmentInfo={REVIEWER_SAMPLES[0]}
+        assignmentInfo={required(REVIEWER_SAMPLES[0])}
         mode="reviewer"
         onClick={() => { return; }}
         onLoadAssignments={async () => [ // eslint-disable-line @typescript-eslint/require-await

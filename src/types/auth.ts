@@ -11,7 +11,7 @@ export type RegisterUserResult = LoginUserResult;
 
 export interface UpdateUserArgs {
   userId: string;
-  qq?: string;
-  name?: string;
-  password?: string;
+  qq?: string | undefined;
+  name?: string | undefined;
+  password?: string | undefined;
 }

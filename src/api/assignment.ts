@@ -11,14 +11,14 @@ interface ListAssignmentsByChapterArgs {
   chapterId: string;
   offset: number;
   limit: number;
-  includes?: string[];
+  includes?: string[] | undefined;
 }
 
 interface ListMyAssignmentsArgs {
-  userId?: string;
+  userId?: string | undefined;
   offset: number;
   limit: number;
-  includes?: string[];
+  includes?: string[] | undefined;
 }
 
 interface UpsertAssignmentArgs {

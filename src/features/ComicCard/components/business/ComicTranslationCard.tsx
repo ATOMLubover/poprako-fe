@@ -13,7 +13,7 @@ import MultiProgressBar from "@/components/ui/MultiProgressBar";
 
 interface Props {
   comicInfo: ComicInfo;
-  chapter?: ChapterInfo;
+  chapter?: ChapterInfo | undefined;
   onClick: () => void;
 }
 
@@ -21,8 +21,8 @@ function getActivityStatusColor(lastActiveAt: number | undefined): string {
   if (!lastActiveAt) {return "bg-stone-300 text-stone-600";}
   const diff = Date.now() - lastActiveAt;
   const threeMonths = 1000 * 60 * 60 * 24 * 90;
-  const sixMonths = 1000 * 60 * 60 * 24 * 180; // eslint-disable-line unicorn/no-declarations-before-early-exit
   if (diff <= threeMonths) {return "bg-green-800/60 text-white/85";}
+  const sixMonths = 1000 * 60 * 60 * 24 * 180;
   if (diff <= sixMonths) {return "bg-amber-200 text-amber-700";}
   return "bg-stone-300 text-stone-600";
 }

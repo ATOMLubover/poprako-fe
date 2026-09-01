@@ -1,4 +1,5 @@
-/* eslint-disable unicorn/consistent-boolean-name, unicorn/prefer-simple-condition-first, unicorn/no-unnecessary-global-this, unicorn/no-array-callback-reference -- drag lifecycle. */
+/* eslint-disable unicorn/consistent-boolean-name, unicorn/prefer-simple-condition-first */
+/* eslint-disable unicorn/no-unnecessary-global-this, unicorn/no-array-callback-reference */
 import {
   useCallback,
   useEffect,
@@ -22,8 +23,8 @@ interface Args {
   units: UnitInfo[];
   listRef: RefObject<HTMLDivElement | null>;
   enabled: boolean;
-  onActivateUnit?: (unitId: string) => void;
-  onReorderUnit?: (unitId: string, targetIndex: number) => void;
+  onActivateUnit?: ((unitId: string) => void) | undefined;
+  onReorderUnit?: ((unitId: string, targetIndex: number) => void) | undefined;
 }
 
 interface DragSession {
@@ -106,7 +107,7 @@ export function useUnitReorder({
 
     const rows = [...list.querySelectorAll<HTMLElement>("[data-unit-id]")];
     const rowsById = new Map(
-      rows.map((row) => [row.dataset.unitId, row]),
+      rows.map((row) => [row.dataset["unitId"], row]),
     );
     const remainingIds = session.previewOrder.filter(
       (id) => id !== session.unitId,

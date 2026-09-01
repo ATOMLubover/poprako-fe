@@ -75,7 +75,9 @@ describe("unit search transform helpers", () => {
     ]);
 
     expect(groups.map((group) => group.page.id)).toEqual(["page-1", "page-2"]);
-    expect(groups[0].matches.map((match) => match.unit.id)).toEqual([
+    const firstGroup = groups[0];
+    if (!firstGroup) {throw new Error("搜索分组缺失");}
+    expect(firstGroup.matches.map((match) => match.unit.id)).toEqual([
       "unit-1",
       "unit-2",
     ]);

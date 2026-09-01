@@ -8,22 +8,22 @@ import PageCard from "./PageCard";
 
 interface Props {
   pages: PageInfo[];
-  onClickPage?: (pageId: string) => void;
-  onDeletePage?: (pageId: string) => void;
-  onReuploadPage?: (pageId: string, file: File) => void;
-  canReuploadPage?: (page: PageInfo) => boolean;
-  isPageReuploading?: (pageId: string) => boolean;
-  enableDelete?: boolean;
-  enableClick?: boolean;
+  onClickPage?: ((pageId: string) => void) | undefined;
+  onDeletePage?: ((pageId: string) => void) | undefined;
+  onReuploadPage?: ((pageId: string, file: File) => void) | undefined;
+  canReuploadPage?: ((page: PageInfo) => boolean) | undefined;
+  isPageReuploading?: ((pageId: string) => boolean) | undefined;
+  enableDelete?: boolean | undefined;
+  enableClick?: boolean | undefined;
   /**
   当提供时，区域支持拖放批量上传，文件按 Windows 自然排序顺序排列
   */
-  onAddPages?: (files: File[]) => Promise<void>;
-  accept?: string;
-  reuploadAccept?: string;
-  uploadProgressByPageId?: Record<string, number>;
-  uploadStatusByPageId?: Record<string, PageUploadTaskStatus>;
-  uploadErrorByPageId?: Record<string, string>;
+  onAddPages?: ((files: File[]) => Promise<void>) | undefined;
+  accept?: string | undefined;
+  reuploadAccept?: string | undefined;
+  uploadProgressByPageId?: Record<string, number> | undefined;
+  uploadStatusByPageId?: Record<string, PageUploadTaskStatus> | undefined;
+  uploadErrorByPageId?: Record<string, string> | undefined;
 }
 
 function naturalSort(files: FileList): File[] {

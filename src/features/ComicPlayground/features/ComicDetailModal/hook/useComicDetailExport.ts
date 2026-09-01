@@ -29,24 +29,24 @@ interface Args {
   accessToken: string | null;
   comicId: string;
   comicTitle: string;
-  comicAuthor?: string | null;
-  comicIndex?: number | null;
-  comicCoverThumbnailUrl?: string | null;
+  comicAuthor?: string | null | undefined;
+  comicIndex?: number | null | undefined;
+  comicCoverThumbnailUrl?: string | null | undefined;
   isCoverUploaded: boolean;
   selectedChapterId: string | null;
   selectedChapter?: {
     index: number;
-    subtitle?: string;
-  };
+    subtitle?: string | undefined;
+  } | undefined;
   pages: PageInfo[];
   assignments: AssignmentInfo[];
   activeMember: MemberInfo | null;
   canUploadRawPages: boolean;
-  onExportChapter?: ComicDetailModalProps["onExportChapter"];
-  onImportChapter?: ComicDetailModalProps["onImportChapter"];
+  onExportChapter?: ComicDetailModalProps["onExportChapter"] | undefined;
+  onImportChapter?: ComicDetailModalProps["onImportChapter"] | undefined;
   reloadCurrentPages: () => Promise<void>;
   reloadLoadedChapters: () => Promise<unknown>;
-  onWorkflowRecordsChanged?: () => void;
+  onWorkflowRecordsChanged?: (() => void) | undefined;
   showToast: ShowToast;
 }
 
@@ -67,7 +67,7 @@ function wait(ms: number) {
 }
 
 function getFileExtensionFromContentType(contentType: string | null) {
-  switch (contentType?.split(";", 1)[0].trim().toLowerCase()) {
+  switch (contentType?.split(";", 1)[0]?.trim().toLowerCase()) {
     case undefined: {
       return null;
     }
@@ -207,12 +207,12 @@ export function useComicDetailExport({
           const downloadUrl = appendDownloadCacheBuster(imageUrl);
           const response = await fetch(downloadUrl, {
             cache: "no-store",
-            headers: accessToken
-              ? {
-                  Authorization: `Bearer ${accessToken}`,
-                }
-              : undefined,
-            signal: exportAbortControllerRef.current?.signal,
+            ...(accessToken && {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }),
+            ...(exportAbortControllerRef.current && {
+              signal: exportAbortControllerRef.current.signal,
+            }),
           });
           if (!response.ok) {
             const responseText = await response.text();
@@ -274,7 +274,7 @@ export function useComicDetailExport({
     return rows.join("\n");
   }, [assignments]);
 
-  const handleExportData = useCallback(async (opts?: { includeImages?: boolean }) => {
+  const handleExportData = useCallback(async (opts?: { includeImages?: boolean | undefined }) => {
     if (!selectedChapterId || !onExportChapter) {return;}
     if (isExportingData) {return;}
     const isIncludeImages = opts?.includeImages ?? true;
@@ -513,7 +513,8 @@ export function useComicDetailExport({
         onWorkflowRecordsChanged?.();
 
         showToast(
-          `导入成功：${String(result.data.importedPageCount)} 页，${String(result.data.importedUnitCount)} 单元`,
+          `导入成功：${String(result.data.importedPageCount)} 页，`
+          + `${String(result.data.importedUnitCount)} 单元`,
           "success",
         );
       } catch (error) {

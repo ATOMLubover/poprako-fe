@@ -4,7 +4,7 @@ export interface RawWorksetInfo {
   id: string;
 
   team_id: string;
-  team?: RawTeamInfo;
+  team?: RawTeamInfo | undefined;
 
   index: number;
   comic_count: number;

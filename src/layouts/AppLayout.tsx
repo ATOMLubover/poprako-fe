@@ -88,8 +88,11 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (loginState !== null) {
-      setIsReady(true); // eslint-disable-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
-      setShowFirstRegistrationGuide(!readFirstRegistrationFlag()); // eslint-disable-line @eslint-react/set-state-in-effect
+      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+      setIsReady(true);
+
+      // eslint-disable-next-line @eslint-react/set-state-in-effect
+      setShowFirstRegistrationGuide(!readFirstRegistrationFlag());
       return;
     }
 
@@ -98,6 +101,7 @@ export default function AppLayout() {
         const userInfo = await getMyUser();
         const memberInfos = await listMyMembers({ ownerId: userInfo.id });
         setLoginState({ userInfo, memberInfos });
+
         setIsReady(true);
         setShowFirstRegistrationGuide(!readFirstRegistrationFlag());
       } catch {

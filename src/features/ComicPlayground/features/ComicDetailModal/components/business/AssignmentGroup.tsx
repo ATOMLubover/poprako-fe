@@ -13,21 +13,21 @@ import { ASSIGNMENT_ROLE_DEFS } from "./assignmentWorkflow";
 import TransitionDialog from "./TransitionDialog";
 
 interface Props {
-  selectedChapter?: ChapterInfo;
+  selectedChapter?: ChapterInfo | undefined;
   assignments: AssignmentInfo[];
-  isAssignmentsLoading?: boolean;
-  currentUserId?: string | null;
+  isAssignmentsLoading?: boolean | undefined;
+  currentUserId?: string | null | undefined;
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveAssignment?: (userId: string, role: Role) => void;
-  onAddAssignment?: (role: Role) => void;
-  onJoinRole?: (role: Role) => void;
-  canJoinRole?: (role: Role) => boolean;
-  isRoleJoining?: (role: Role) => boolean;
-  onLeaveRole?: (role: Role) => void;
-  canLeaveRole?: (role: Role) => boolean;
-  isRoleLeaving?: (role: Role) => boolean;
-  canOperateWorkflow?: boolean;
-  canManageAssignments?: boolean;
+  onRemoveAssignment?: ((userId: string, role: Role) => void) | undefined;
+  onAddAssignment?: ((role: Role) => void) | undefined;
+  onJoinRole?: ((role: Role) => void) | undefined;
+  canJoinRole?: ((role: Role) => boolean) | undefined;
+  isRoleJoining?: ((role: Role) => boolean) | undefined;
+  onLeaveRole?: ((role: Role) => void) | undefined;
+  canLeaveRole?: ((role: Role) => boolean) | undefined;
+  isRoleLeaving?: ((role: Role) => boolean) | undefined;
+  canOperateWorkflow?: boolean | undefined;
+  canManageAssignments?: boolean | undefined;
 }
 
 interface TransitionState {
@@ -45,8 +45,8 @@ interface RemoveState {
 
 interface ActionButtonProps {
   label: string;
-  disabled?: boolean;
-  danger?: boolean;
+  disabled?: boolean | undefined;
+  danger?: boolean | undefined;
   onClick: () => void;
   children: ReactNode;
 }
@@ -196,7 +196,7 @@ export default function AssignmentGroup({
             <div // eslint-disable-line jsx-a11y/no-static-element-interactions
               key={roleDef.addRole}
               role={hasTransition ? "button" : undefined}
-              tabIndex={hasTransition ? 0 : undefined} // eslint-disable-line jsx-a11y/no-noninteractive-tabindex
+              {...(hasTransition ? { tabIndex: 0 } : {})}
               aria-label={`${roleDef.fullLabel}，${statusLabel}`}
               onClick={openTransition}
               onKeyDown={(event) => {

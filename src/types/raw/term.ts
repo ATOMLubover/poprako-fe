@@ -6,7 +6,7 @@ export interface RawTermInfo {
 
   source: string;
   targets: string[];
-  comment?: string | null;
+  comment?: string | null | undefined;
 
   creator_id: string;
   created_at: number;

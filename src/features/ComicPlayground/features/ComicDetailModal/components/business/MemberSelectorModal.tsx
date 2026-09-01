@@ -24,17 +24,17 @@ interface Props {
   title: string;
   chapterId: string | null;
   role: Role;
-  onLoadMembers?: (
+  onLoadMembers?: ((
     chapterId: string,
     args: {
       role: Role;
-      keyword?: string;
+      keyword?: string | undefined;
       offset: number;
       limit: number;
     },
-  ) => Promise<Result<MemberInfo[]>>;
+  ) => Promise<Result<MemberInfo[]>>) | undefined;
   setIsLoading: (isLoading: boolean) => void;
-  isSubmitting?: boolean;
+  isSubmitting?: boolean | undefined;
   onSelectUser: (userId: string) => void;
   onClose: () => void;
 }
@@ -56,7 +56,8 @@ export default function MemberSelectorModal({
 
   useEffect(() => {
     if (!chapterId || !onLoadMembers) {
-      setMembers([]); // eslint-disable-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+      setMembers([]);
       setIsLoading(false);
       return;
     }
@@ -76,7 +77,11 @@ export default function MemberSelectorModal({
           });
           if (latestRequestIdRef.current !== requestId) {return;}
           if (!result.success) {
-            console.error("[MemberSelectorModal] 加载成员失败:", result.error); // eslint-disable-line no-console
+            // eslint-disable-next-line no-console
+            console.error(
+              "[MemberSelectorModal] 加载成员失败:", result.error,
+            );
+
             setMembers([]);
             return;
           }
@@ -85,6 +90,7 @@ export default function MemberSelectorModal({
         } catch (error) {
           if (latestRequestIdRef.current !== requestId) {return;}
           console.error("[MemberSelectorModal] 加载成员异常:", error); // eslint-disable-line no-console
+
           setMembers([]);
         } finally {
           if (latestRequestIdRef.current === requestId) {

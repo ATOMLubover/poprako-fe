@@ -19,9 +19,9 @@ interface DragState {
   startY: number;
   startOffsetX: number;
   startOffsetY: number;
-  unitId?: string;
-  startUnitX?: number;
-  startUnitY?: number;
+  unitId?: string | undefined;
+  startUnitX?: number | undefined;
+  startUnitY?: number | undefined;
   exceeded: boolean;
 }
 
@@ -29,10 +29,10 @@ interface Args {
   imageSrc: string | null;
   isUnitCreationEnabled: boolean;
   enableReadOnly: boolean;
-  onFocusUnit?: (unitId: string) => void;
-  onMoveUnit?: (unitId: string, xCoord: number, yCoord: number) => void;
-  onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
-  onDeleteUnit?: (unitId: string) => void;
+  onFocusUnit?: ((unitId: string) => void) | undefined;
+  onMoveUnit?: ((unitId: string, xCoord: number, yCoord: number) => void) | undefined;
+  onAddUnit?: ((xCoord: number, yCoord: number, isBubble: boolean) => void) | undefined;
+  onDeleteUnit?: ((unitId: string) => void) | undefined;
 }
 
 export function useCanvasInteraction({
@@ -75,7 +75,9 @@ export function useCanvasInteraction({
     const el = containerRef.current;
     if (!el) {return;}
     const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
+      const entry = entries[0];
+      if (!entry) {return;}
+      const { width, height } = entry.contentRect;
       setContainerSize({ w: width, h: height });
     });
     observer.observe(el);
@@ -328,7 +330,7 @@ export function useCanvasInteraction({
         : null;
       if (markerEl) {
         const markerId = markerEl instanceof HTMLElement
-          ? markerEl.dataset.marker
+          ? markerEl.dataset["marker"]
           : undefined;
         if (markerId) {onDeleteUnit?.(markerId);}
         return;

@@ -10,8 +10,8 @@ export interface RawPageInfo {
   id: string;
   chapter_id: string;
   image_url: string | null;
-  image_optimized_url?: string | null;
-  image_thumbnail_url?: string | null;
+  image_optimized_url?: string | null | undefined;
+  image_thumbnail_url?: string | null | undefined;
   image_hash: string;
   ext: string;
   index: number;
@@ -70,9 +70,9 @@ export function unwrapRawAllocatedPage(raw: RawAllocatedPage): AllocatedPage {
 export interface RawAllocChapterPagesArgs {
   chapter_id: string;
   pages: {
-    page_id?: string;
+    page_id?: string | undefined;
     image_hash: string;
-    new_byte_len?: number;
+    new_byte_len?: number | undefined;
     ext: string;
   }[];
 }

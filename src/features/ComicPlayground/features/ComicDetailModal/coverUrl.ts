@@ -2,8 +2,8 @@ import type { PageInfo } from "@/types";
 
 interface Args {
   isCoverUploaded: boolean;
-  comicCoverThumbnailUrl?: string | null;
-  selectedChapterIndex?: number;
+  comicCoverThumbnailUrl?: string | null | undefined;
+  selectedChapterIndex?: number | undefined;
   pages: PageInfo[];
 }
 

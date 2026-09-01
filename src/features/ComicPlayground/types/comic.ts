@@ -8,10 +8,10 @@ export interface ListComicArgs {
   // 必选的作品集 ID 参数，表示要列出哪个作品集下的漫画
   worksetId: string;
 
-  includes?: ComicInclude[];
-  withs?: ComicWith[];
-  fuzzyTitle?: string;
-  stages?: number;
+  includes?: ComicInclude[] | undefined;
+  withs?: ComicWith[] | undefined;
+  fuzzyTitle?: string | undefined;
+  stages?: number | undefined;
 
   offset: number;
   limit: number;
@@ -19,10 +19,10 @@ export interface ListComicArgs {
 
 export interface RawListComicArgs {
   workset_id: string;
-  incl?: ComicInclude[];
-  with?: ComicWith[];
-  fuzzy_title?: string;
-  stages?: number;
+  incl?: ComicInclude[] | undefined;
+  with?: ComicWith[] | undefined;
+  fuzzy_title?: string | undefined;
+  stages?: number | undefined;
 
   offset: number;
   limit: number;
@@ -32,29 +32,29 @@ export interface CreateComicArgs {
   worksetId: string;
   title: string;
   author: string;
-  description?: string;
-  firstChapterTitle?: string;
-  presetAssignmentRoles?: number;
+  description?: string | undefined;
+  firstChapterTitle?: string | undefined;
+  presetAssignmentRoles?: number | undefined;
 }
 
 export interface RawCreateComicArgs {
   workset_id: string;
   title: string;
   author: string;
-  description?: string;
-  first_chapter_subtitle?: string;
-  preset_assignment_roles?: number;
+  description?: string | undefined;
+  first_chapter_subtitle?: string | undefined;
+  preset_assignment_roles?: number | undefined;
 }
 
 export interface UpdateComicArgs {
   title: string;
   author: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export interface RawUpdateComicArgs {
   id: string;
   title: string;
   author: string;
-  description?: string;
+  description?: string | undefined;
 }

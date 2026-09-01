@@ -14,7 +14,7 @@ interface Props {
     offset: number,
     limit: number,
   ) => Promise<Result<MemberInfo[]>>;
-  onMemberClick?: (member: MemberInfo) => void;
+  onMemberClick?: ((member: MemberInfo) => void) | undefined;
 }
 
 export default function MemberList({

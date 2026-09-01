@@ -12,6 +12,11 @@ import type {
 
 const now = Date.now();
 
+function required<T>(value: T | undefined): T {
+  if (value === undefined) {throw new Error("示例数据缺失");}
+  return value;
+}
+
 // ── Mock Builders ─────────────────────────────────
 
 function makeMockComic(idx: number): ComicInfo {
@@ -104,7 +109,7 @@ type Story = StoryObj<typeof ComicList>;
 // ── Interactive (full-featured) ───────────────────
 
 interface InteractiveComicListProps {
-  canCreateComic?: boolean;
+  canCreateComic?: boolean | undefined;
 }
 
 function InteractiveComicList({ canCreateComic = true }: InteractiveComicListProps) {
@@ -296,7 +301,7 @@ function SingleWorksetComicList() {
   return (
     <div className="h-screen w-full">
       <ComicList
-        worksets={[mockWorksets[0]]}
+        worksets={[required(mockWorksets[0])]}
         activeWorksetId="ws-1"
         onChangeWorkset={() => { return; }}
         onCreateWorkset={() => { return; }}

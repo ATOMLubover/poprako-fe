@@ -45,7 +45,7 @@ export function unwrapRawCreateInvitationArgs(
 
 export interface RawUpdateInvitationArgs {
   id: string;
-  roles?: number;
+  roles?: number | undefined;
 }
 export function unwrapRawUpdateInvitationArgs(
   raw: RawUpdateInvitationArgs,

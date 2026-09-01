@@ -32,13 +32,13 @@ function InteractiveWrapper({
   function switchView() {
     setView((current) => {
       const currentIndex = availableModes.indexOf(current);
-      return availableModes[(currentIndex + 1) % availableModes.length];
+      return availableModes[(currentIndex + 1) % availableModes.length] ?? current;
     });
   }
 
   const nextView = availableModes[
     (availableModes.indexOf(view) + 1) % availableModes.length
-  ];
+  ] ?? view;
 
   return (
     <div className="w-64 border border-border rounded">
@@ -58,10 +58,11 @@ function InteractiveWrapper({
         onToggleProofreadPreviewClick={() =>
           { setPreviewVisibility((v) => (v === "visible" ? "dimmed" : "visible")); }
         }
-        onToggleImageQualityClick={() =>
-          { setIsHighResolution((current) => !current); }
-        }
-        onSaveClick={() => { return; }}
+        onToggleImageQualityClick={async () => {
+          await Promise.resolve();
+          setIsHighResolution((current) => !current);
+        }}
+        onSaveClick={() => Promise.resolve()}
         saving={false}
       />
     </div>

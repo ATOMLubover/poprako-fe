@@ -129,7 +129,7 @@ interface Props {
     limit: number,
   ) => Promise<Result<InvitationInfo[]>>;
   onCreateInvitation: (args: CreateInvitationArgs) => Promise<Result<string>>;
-  onDeleteInvitation?: (invitationId: string) => Promise<Result<void>>;
+  onDeleteInvitation?: ((invitationId: string) => Promise<Result<void>>) | undefined;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -431,7 +431,7 @@ export default function MemberInvitorModal({
 interface PendingCardProps {
   invitation: InvitationInfo;
   onCopy: (code: string) => void;
-  onDelete?: (invitationId: string) => void;
+  onDelete?: ((invitationId: string) => void) | undefined;
 }
 
 function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProps) {

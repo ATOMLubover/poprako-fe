@@ -29,7 +29,7 @@ interface RuntimeTask {
   imageHash: string;
   extension: string;
   slot: AllocatedPage["slot"] | undefined;
-  callbacks?: UploadProgressCallbacks;
+  callbacks?: UploadProgressCallbacks | undefined;
   abortController: AbortController;
   cancelled: boolean;
 }
@@ -60,9 +60,9 @@ export interface StartPageUploadResult {
 interface AddChapterPagesArgs {
   chapterId: string;
   files: File[];
-  callbacks?: UploadProgressCallbacks;
-  logPrefix?: string;
-  concurrency?: number;
+  callbacks?: UploadProgressCallbacks | undefined;
+  logPrefix?: string | undefined;
+  concurrency?: number | undefined;
 }
 
 interface PreparedFile {

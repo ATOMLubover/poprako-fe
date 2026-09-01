@@ -1,7 +1,9 @@
 /* eslint-disable no-console -- persistence failures are diagnostic. */
 /* eslint-disable @eslint-react/naming-convention-ref-name -- refs track persistence snapshots. */
-/* eslint-disable unicorn/prefer-simple-condition-first, unicorn/no-computed-property-existence-check, unicorn/no-array-callback-reference, unicorn/max-nested-calls -- persistence diff logic. */
-/* eslint-disable unicorn/consistent-boolean-name, @typescript-eslint/no-non-null-assertion -- established persistence state. */
+/* eslint-disable unicorn/prefer-simple-condition-first */
+/* eslint-disable unicorn/no-computed-property-existence-check */
+/* eslint-disable unicorn/no-array-callback-reference, unicorn/max-nested-calls */
+/* eslint-disable unicorn/consistent-boolean-name, @typescript-eslint/no-non-null-assertion */
 import { useCallback, useRef, useState } from "react";
 import { showLocalCaughtError } from "@/api/util";
 import { normalizeUnitIndexes, unitId, type UnitInfo } from "@/types/unit";
@@ -17,7 +19,7 @@ import type {
 type ShowToast = (message: string, type: ToastType) => void;
 
 export type PendingAction =
-  | { type: "navigate"; newIndex: number; targetUnitId?: string }
+  | { type: "navigate"; newIndex: number; targetUnitId?: string | undefined }
   | { type: "exit" };
 
 interface Args {
@@ -129,7 +131,7 @@ function nextUnitId(
   units: UnitInfo[],
   index: number,
 ): string | null {
-  return units[index + 1] ? unitId(units[index + 1]) : null;
+  return units[index + 1] ? unitId(units[index + 1]!) : null;
 }
 
 function isEmptyPatch(edit: UnitPatchOp): boolean {
@@ -178,7 +180,7 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
 
   if (isOrderChanged) {
     for (let index = current.length - 1; index >= 0; index--) {
-      const unit = current[index];
+      const unit = current[index]!;
       if (!baselineById.has(unitId(unit))) {continue;}
 
       ops.push(buildPatchUnitOp(
@@ -197,7 +199,7 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
   }
 
   for (let index = 0; index < current.length; index++) {
-    const unit = current[index];
+    const unit = current[index]!;
     if (baselineById.has(unitId(unit))) {continue;}
 
     ops.push(buildCreateUnitOp(

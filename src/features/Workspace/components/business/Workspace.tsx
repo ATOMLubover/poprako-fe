@@ -70,14 +70,16 @@ export default function Workspace() {
   const touchStartYRef = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
-    touchStartYRef.current = e.touches[0].clientY;
+    touchStartXRef.current = e.touches[0]?.clientX ?? 0;
+    touchStartYRef.current = e.touches[0]?.clientY ?? 0;
   }, []);
 
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
-      const dx = e.changedTouches[0].clientX - touchStartXRef.current;
-      const dy = e.changedTouches[0].clientY - touchStartYRef.current;
+      const touch = e.changedTouches[0];
+      if (!touch) {return;}
+      const dx = touch.clientX - touchStartXRef.current;
+      const dy = touch.clientY - touchStartYRef.current;
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
         if (dx < 0) {setMobileTab((t) => Math.min(t + 1, 1));}
         else {setMobileTab((t) => Math.max(t - 1, 0));}
@@ -223,7 +225,7 @@ export default function Workspace() {
   const handleLoadAssignableMembers = useCallback(
     async (
       chapterId: string,
-      args: { role: Role; keyword?: string; offset: number; limit: number },
+      args: { role: Role; keyword?: string | undefined; offset: number; limit: number },
     ): Promise<Result<MemberInfo[]>> => {
       void chapterId;
       if (!selectedComicTeamId) {
@@ -312,7 +314,7 @@ export default function Workspace() {
   const handleCreateChapter = useCallback(
     async (args: {
       comicId: string;
-      subtitle?: string;
+      subtitle?: string | undefined;
     }): Promise<Result<string>> => {
       return createChapter(args);
     },
@@ -339,7 +341,7 @@ export default function Workspace() {
   );
 
   const handleExportChapter = useCallback(
-    async (chapterId: string, options?: { signal?: AbortSignal }) => {
+    async (chapterId: string, options?: { signal?: AbortSignal | undefined }) => {
       return exportChapter(chapterId, options);
     },
     [],
@@ -380,7 +382,7 @@ export default function Workspace() {
   );
 
   const handleUpdateComic = useCallback(
-    async (args: { title: string; author: string; description?: string }) => {
+    async (args: { title: string; author: string; description?: string | undefined }) => {
       if (!selectedComic) {
         return { success: false, error: "未选择漫画" } as Result<void>;
       }

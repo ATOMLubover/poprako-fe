@@ -48,7 +48,10 @@ export default function SystemMailViewer() {
 
     if (!result.success) {
       showLocalApiFailure(result, showToast);
-      console.error("[SystemMailViewer] refreshAll:", result.error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[SystemMailViewer] refreshAll:", result.error,
+      );
       setLoadedOnce(true);
       return;
     }
@@ -83,7 +86,10 @@ export default function SystemMailViewer() {
 
     if (!result.success) {
       showLocalApiFailure(result, showToast);
-      console.error("[SystemMailViewer] fetchMore:", result.error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[SystemMailViewer] fetchMore:", result.error,
+      );
       return;
     }
 
@@ -105,7 +111,7 @@ export default function SystemMailViewer() {
     if (!sentinel) {return;}
     const observer = new IntersectionObserver(
       (entries) => {
-        if (hasMore && entries[0].isIntersecting) { void fetchMore(); }
+        if (hasMore && entries[0]?.isIntersecting) { void fetchMore(); }
       },
       { threshold: 0.1 },
     );
@@ -117,7 +123,10 @@ export default function SystemMailViewer() {
     const result = await markSysMailRead(sysMailId);
     if (!result.success) {
       showLocalApiFailure(result, showToast);
-      console.error("[SystemMailViewer] markSysMailRead:", result.error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[SystemMailViewer] markSysMailRead:", result.error,
+      );
       return;
     }
     showToast("已标记为已读", "success");

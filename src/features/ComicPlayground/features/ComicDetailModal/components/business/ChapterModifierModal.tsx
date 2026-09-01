@@ -6,7 +6,7 @@ import type { ChapterInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
 
 interface UpdateChapterArgs {
-  subtitle?: string;
+  subtitle?: string | undefined;
 }
 
 interface Props {

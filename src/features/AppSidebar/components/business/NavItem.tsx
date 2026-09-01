@@ -6,7 +6,7 @@ interface Props {
   label: string;
   isActive: boolean;
   onClick: () => void;
-  hasBadge?: boolean;
+  hasBadge?: boolean | undefined;
 }
 
 export default function NavItem({

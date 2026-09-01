@@ -36,5 +36,7 @@ export function initialTranslatorMode(
 ): TranslatorMode {
   if (requestedMode === "readOnly") {return "readOnly";}
 
-  return availableModes[0];
+  const [firstMode] = availableModes;
+  if (firstMode === undefined) {return "readOnly";}
+  return firstMode;
 }

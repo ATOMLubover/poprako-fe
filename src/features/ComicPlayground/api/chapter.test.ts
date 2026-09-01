@@ -12,7 +12,7 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
 interface FetchCall {
   url: string;
-  init?: RequestInit;
+  init?: RequestInit | undefined;
 }
 
 function okJson(data: unknown): Promise<Response> {

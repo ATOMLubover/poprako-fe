@@ -10,17 +10,17 @@ import LazyImage from
 
 interface Props {
   page: PageInfo;
-  onClick?: () => void;
-  onDelete?: () => void;
-  enableDelete?: boolean;
-  enableClick?: boolean;
-  onReupload?: (file: File) => void;
-  canReupload?: boolean;
-  isReuploading?: boolean;
-  reuploadAccept?: string;
-  uploadProgress?: number;
-  uploadStatus?: PageUploadTaskStatus;
-  uploadError?: string;
+  onClick?: (() => void) | undefined;
+  onDelete?: (() => void) | undefined;
+  enableDelete?: boolean | undefined;
+  enableClick?: boolean | undefined;
+  onReupload?: ((file: File) => void) | undefined;
+  canReupload?: boolean | undefined;
+  isReuploading?: boolean | undefined;
+  reuploadAccept?: string | undefined;
+  uploadProgress?: number | undefined;
+  uploadStatus?: PageUploadTaskStatus | undefined;
+  uploadError?: string | undefined;
 }
 
 export default function PageCard({
@@ -70,7 +70,7 @@ export default function PageCard({
       onKeyDown={enableClick && !isPending ? (event) => {
         if (event.key !== "Enter" && event.key !== " ") {return;}
         event.preventDefault();
-        onClick();
+        onClick?.();
       } : undefined}
       style={{ contentVisibility: "auto", containIntrinsicSize: "auto 150px" }}
       className={clsx(

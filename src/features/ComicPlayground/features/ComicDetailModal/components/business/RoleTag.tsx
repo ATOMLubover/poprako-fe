@@ -28,17 +28,17 @@ interface Props {
   */
   onClickable: boolean;
   onTransiteWorkflow: (t: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveUser?: (userId: string, role: Role) => void;
+  onRemoveUser?: ((userId: string, role: Role) => void) | undefined;
   /**
   Called to open the MemberSelectorModal for this role
   */
-  onAddUser?: () => void;
-  onJoinSelf?: () => void;
-  canJoinSelf?: boolean;
-  isJoiningSelf?: boolean;
-  onLeaveSelf?: () => void;
-  canLeaveSelf?: boolean;
-  isLeavingSelf?: boolean;
+  onAddUser?: (() => void) | undefined;
+  onJoinSelf?: (() => void) | undefined;
+  canJoinSelf?: boolean | undefined;
+  isJoiningSelf?: boolean | undefined;
+  onLeaveSelf?: (() => void) | undefined;
+  canLeaveSelf?: boolean | undefined;
+  isLeavingSelf?: boolean | undefined;
 }
 
 interface StatusConfig {
@@ -111,7 +111,7 @@ export default function RoleTag({
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         role={onClickable ? "button" : undefined}
-        tabIndex={onClickable ? 0 : undefined} // eslint-disable-line jsx-a11y/no-noninteractive-tabindex
+        {...(onClickable ? { tabIndex: 0 } : {})}
         onClick={() => {
           if (onClickable && !transitioningRef.current) {
             setShowTransitionDialog(true);

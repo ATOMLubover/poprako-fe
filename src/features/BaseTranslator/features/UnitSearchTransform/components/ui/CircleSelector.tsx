@@ -5,7 +5,7 @@ export type SelectionState = "checked" | "unchecked" | "mixed";
 interface Props {
   label: string;
   state: SelectionState;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   onClick: () => void;
 }
 

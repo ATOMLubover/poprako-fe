@@ -1,4 +1,4 @@
-/* eslint-disable @eslint-react/use-state, @eslint-react/exhaustive-deps -- contributor lifecycle. */
+/* eslint-disable @eslint-react/use-state, @eslint-react/exhaustive-deps */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UnitInfo } from "@/types/unit";
 import type { UserInfo } from "@/types/user";

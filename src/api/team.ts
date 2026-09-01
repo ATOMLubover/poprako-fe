@@ -88,7 +88,7 @@ export async function updateTeam(
 ): Promise<Result<undefined>> {
   const res = await api.put<
     undefined,
-    { id: string; name?: string; description?: string }
+    { id: string; name?: string | undefined; description?: string | undefined }
   >(
     `/teams/${args.id}`,
     {

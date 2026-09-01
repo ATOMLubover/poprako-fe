@@ -17,7 +17,7 @@ import {
 
 interface FetchCall {
   url: string;
-  init?: RequestInit;
+  init?: RequestInit | undefined;
 }
 
 function okJson(data: unknown, status = 200): Response {

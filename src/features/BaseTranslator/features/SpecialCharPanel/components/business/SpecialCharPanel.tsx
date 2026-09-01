@@ -1,4 +1,5 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- modal. */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events -- modal. */
 /* eslint-disable unicorn/no-unnecessary-global-this -- browser globals are explicit here. */
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";

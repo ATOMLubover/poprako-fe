@@ -20,13 +20,13 @@ type ShowToast = (message: string, type: ToastType) => void;
 interface Args {
   chapterId: string | null;
   comicId: string;
-  currentUserId?: string | null;
+  currentUserId?: string | null | undefined;
   isSelectedChapterAvailable: boolean;
   onLoadPages: ComicDetailModalProps["onLoadPages"];
   onLoadChapters: ComicDetailModalProps["onLoadChapters"];
-  onAddPages?: ComicDetailModalProps["onAddPages"];
-  onDeleteChapterPages?: ComicDetailModalProps["onDeleteChapterPages"];
-  onAllocPageUpload?: ComicDetailModalProps["onAllocPageUpload"];
+  onAddPages?: ComicDetailModalProps["onAddPages"] | undefined;
+  onDeleteChapterPages?: ComicDetailModalProps["onDeleteChapterPages"] | undefined;
+  onAllocPageUpload?: ComicDetailModalProps["onAllocPageUpload"] | undefined;
   reloadLoadedChapters: () => Promise<unknown>;
   showToast: ShowToast;
 }
@@ -71,14 +71,16 @@ export function useComicDetailPages({
 
   useEffect(() => {
     if (chapterId && isSelectedChapterAvailable) {return;}
-    setServerPages([]); // eslint-disable-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+    setServerPages([]);
     setIsPagesLoading(false); // eslint-disable-line @eslint-react/set-state-in-effect
   }, [chapterId, isSelectedChapterAvailable]);
 
   useEffect(() => {
     if (!chapterId || !isSelectedChapterAvailable) {return;}
     let isCancelled = false;
-    setServerPages([]); // eslint-disable-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
+    setServerPages([]);
     setIsPagesLoading(true); // eslint-disable-line @eslint-react/set-state-in-effect
     const loadPages = async () => {
       try {
@@ -249,6 +251,7 @@ export function useComicDetailPages({
       showLocalApiFailure(res, showToast);
       return;
     }
+
 
     setServerPages([]);
     clearChapterUploadTasks(chapterId);

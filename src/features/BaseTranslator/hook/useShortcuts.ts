@@ -113,7 +113,7 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
     }
 
     const record = item as Record<string, unknown>;
-    const rawKeys = record.keys;
+    const rawKeys = record["keys"];
     if (!Array.isArray(rawKeys) || rawKeys.some((key) => typeof key !== "string")) {
       return null;
     }
@@ -122,13 +122,15 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
     );
 
     const action =
-      typeof record.action === "string"
-        ? record.action
+      typeof record["action"] === "string"
+        ? record["action"]
         : undefined;
-    const fallbackByAction = action ? byAction.get(action) : undefined;
+    const fallbackByAction = action
+      ? byAction.get(action as ConfigurableShortcut["action"])
+      : undefined;
     const fallbackByLabel =
-      typeof record.label === "string"
-        ? byLabel.get(record.label)
+      typeof record["label"] === "string"
+        ? byLabel.get(record["label"])
         : undefined;
 
     const fallback = fallbackByAction ?? fallbackByLabel;

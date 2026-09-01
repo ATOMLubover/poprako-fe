@@ -38,7 +38,7 @@ import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 
 interface FetchCall {
   url: string;
-  init?: RequestInit;
+  init?: RequestInit | undefined;
 }
 
 function okJson(data: unknown) {

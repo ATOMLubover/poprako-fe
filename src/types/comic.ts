@@ -10,7 +10,7 @@ export interface ComicInfo {
   id: string;
 
   worksetId: string;
-  workset?: WorksetInfo;
+  workset?: WorksetInfo | undefined;
 
   index: number;
   chapterCount: number;
@@ -20,14 +20,14 @@ export interface ComicInfo {
   description: string;
 
   coverUrl: string;
-  coverThumbnailUrl?: string;
+  coverThumbnailUrl?: string | undefined;
   isCoverUploaded: boolean;
 
   creatorId: string;
-  creator?: UserInfo;
+  creator?: UserInfo | undefined;
 
-  pinnedChapter?: ChapterInfo;
-  pinnedChapterAssignments?: AssignmentInfo[];
+  pinnedChapter?: ChapterInfo | undefined;
+  pinnedChapterAssignments?: AssignmentInfo[] | undefined;
 
   lastActiveAt: number;
 
@@ -69,17 +69,17 @@ export interface CreateComicArgs {
   worksetId: string;
   title: string;
   author: string;
-  description?: string;
-  firstChapterTitle?: string;
+  description?: string | undefined;
+  firstChapterTitle?: string | undefined;
 }
 
 export interface CreateComicResult { id: string }
 
 export interface UpdateComicArgs {
   id: string;
-  title?: string;
-  author?: string;
-  description?: string;
+  title?: string | undefined;
+  author?: string | undefined;
+  description?: string | undefined;
 }
 function toUserInfo(creator: RawUserInfo | undefined): UserInfo | undefined {
   return creator ? unwrapRawUserInfo(creator) : undefined;

@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 interface Props {
   value: string | undefined;
   onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
-  readOnly?: boolean;
-  onFocus?: React.FocusEventHandler<HTMLTextAreaElement>;
+  placeholder?: string | undefined;
+  className?: string | undefined;
+  readOnly?: boolean | undefined;
+  onFocus?: React.FocusEventHandler<HTMLTextAreaElement> | undefined;
 }
 
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, Props>(

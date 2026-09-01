@@ -277,7 +277,8 @@ export default function ComicProgressItem({
       {/* ===== 移动版：紧凑 accent bar ===== */}
       <div className="flex sm:hidden items-center shrink-0">
         <div className="relative">
-          <div // eslint-disable-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+          <button
+            type="button"
             className="flex rounded-xs overflow-hidden cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
@@ -297,7 +298,7 @@ export default function ComicProgressItem({
                 />
               );
             })}
-          </div>
+          </button>
           {showMobileProgress && chapter && (
             <div
               className={clsx(

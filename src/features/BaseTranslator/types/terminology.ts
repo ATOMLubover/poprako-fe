@@ -3,21 +3,21 @@ import type { TermbaseInfo } from "@/types/termbase";
 import type { Result } from "@/types/utils/result";
 
 export interface ListTermbasesArgs {
-  fuzzyName?: string;
+  fuzzyName?: string | undefined;
   offset: number;
   limit: number;
 }
 
 export interface ListTermsArgs {
   termbaseId: string;
-  fuzzySource?: string;
+  fuzzySource?: string | undefined;
   offset: number;
   limit: number;
 }
 
 export interface CreateTermbaseArgs {
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export type UpdateTermbaseArgs = CreateTermbaseArgs;
@@ -26,7 +26,7 @@ export interface CreateTermArgs {
   termbaseId: string;
   source: string;
   targets: string[];
-  comment?: string;
+  comment?: string | undefined;
 }
 
 export type UpdateTermArgs = Omit<CreateTermArgs, "termbaseId">;

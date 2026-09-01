@@ -14,7 +14,7 @@ interface Props {
   dataSource: TerminologyDataSource;
   query: string;
   searchQuery: string;
-  selectedTermbase?: TermbaseInfo;
+  selectedTermbase?: TermbaseInfo | undefined;
   revision: number;
   onQueryChange: (value: string) => void;
   onSelect: (termbase: TermbaseInfo) => void;
@@ -27,7 +27,7 @@ interface RowProps {
   termbase: TermbaseInfo;
   isSelected: boolean;
   onSelect: () => void;
-  onEdit?: () => void;
+  onEdit?: (() => void) | undefined;
 }
 
 function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps) {

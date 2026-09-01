@@ -10,14 +10,14 @@ export type Role =
 
 // 利用 TS 的类型兼容，将任意满足 WithRole 的对象视为具有 Role 的对象
 export interface WithRole {
-  assignedRawProviderAt?: number;
-  assignedTranslatorAt?: number;
-  assignedProofreaderAt?: number;
-  assignedTypesetterAt?: number;
-  assignedRedrawerAt?: number;
-  assignedReviewerAt?: number;
-  assignedPublisherAt?: number;
-  assignedAdminAt?: number;
+  assignedRawProviderAt?: number | undefined;
+  assignedTranslatorAt?: number | undefined;
+  assignedProofreaderAt?: number | undefined;
+  assignedTypesetterAt?: number | undefined;
+  assignedRedrawerAt?: number | undefined;
+  assignedReviewerAt?: number | undefined;
+  assignedPublisherAt?: number | undefined;
+  assignedAdminAt?: number | undefined;
 }
 
 export function hasRole(withRole: WithRole, role: Role) {

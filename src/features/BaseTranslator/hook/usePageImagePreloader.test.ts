@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/require-await, @typescript-eslint/no-empty-function, unicorn/consistent-function-scoping, unicorn/prefer-promise-with-resolvers -- async test doubles match production interfaces. */
+/* eslint-disable @typescript-eslint/require-await, @typescript-eslint/no-empty-function */
+/* eslint-disable unicorn/consistent-function-scoping, unicorn/prefer-promise-with-resolvers */
 import { describe, expect, test, vi } from "vitest";
 import {
   centerOutPageIndexes,
@@ -93,7 +94,9 @@ describe("page image preloader", () => {
     expect(pending).toHaveLength(4);
     expect(maxActiveCount).toBe(4);
 
-    pending[0].resolve();
+    const firstPending = pending[0];
+    if (!firstPending) {throw new Error("预加载任务缺失");}
+    firstPending.resolve();
     await flushTasks();
 
     expect(pending).toHaveLength(5);

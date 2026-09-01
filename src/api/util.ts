@@ -10,8 +10,8 @@ import type { Result, ResultFailure } from "@/types/utils/result";
 
 interface FormatResponse<T> {
   code: number;
-  message?: string;
-  data?: T;
+  message?: string | undefined;
+  data?: T | undefined;
 }
 
 const BASE_URL = appConfig.apiBaseUrl;
@@ -182,7 +182,8 @@ async function request<T>(
     if (response.status === 204) {
       if (response.ok) {
         console.debug(
-          `[API] ${method} ${url} → ${String(response.status)} (${(performance.now() - startTime).toFixed(0)}ms)`,
+          `[API] ${method} ${url} → ${String(response.status)} `
+          + `(${(performance.now() - startTime).toFixed(0)}ms)`,
         );
         return { success: true, data: undefined as T };
       }
@@ -256,7 +257,8 @@ async function request<T>(
     }
 
     console.debug(
-      `[API] ${method} ${url} → ${String(response.status)} (${(performance.now() - startTime).toFixed(0)}ms)`,
+      `[API] ${method} ${url} → ${String(response.status)} `
+      + `(${(performance.now() - startTime).toFixed(0)}ms)`,
     );
     return { success: true, data: body.data as T };
   } catch (error) {
@@ -283,7 +285,7 @@ function buildQueryUrl(
 function resolveQueryAndAuth(
   queryParamsOrNeedAuth?: QueryParams | boolean,
   requiresAuth = true,
-): { queryParams?: QueryParams; requiresAuth: boolean } {
+): { queryParams?: QueryParams | undefined; requiresAuth: boolean } {
   if (typeof queryParamsOrNeedAuth === "boolean") {
     return { requiresAuth: queryParamsOrNeedAuth };
   }

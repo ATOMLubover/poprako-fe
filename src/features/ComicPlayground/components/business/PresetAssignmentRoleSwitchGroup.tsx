@@ -40,7 +40,7 @@ export default function PresetAssignmentRoleSwitchGroup({
       <div className="grid grid-cols-4 gap-1.5">
         {ROLE_OPTIONS.map(({ role, label }) => {
           const isMandatory = role === "admin";
-          const isAvailable = Boolean(activeMember) && hasRole(activeMember, role);
+          const isAvailable = activeMember !== null && hasRole(activeMember, role);
           const isSelected = isMandatory || value.includes(role);
           const isDisabled = isMandatory || !isAvailable;
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-console -- preload failures are diagnostic and non-fatal. */
-/* eslint-disable unicorn/consistent-class-member-order -- public lifecycle methods read top-down. */
+/* eslint-disable unicorn/consistent-class-member-order */
 import { useEffect, useState } from "react";
 import type { Page, PageImageQuality } from "@/types/page";
 
@@ -23,9 +23,9 @@ interface PreloaderConfig {
 
 interface PreloaderDeps {
   resolvePageImage: ResolvePageImage;
-  loadImage?: (url: string) => Promise<void>;
-  concurrency?: number;
-  onError?: (job: PreloadJob, error: unknown) => void;
+  loadImage?: ((url: string) => Promise<void>) | undefined;
+  concurrency?: number | undefined;
+  onError?: ((job: PreloadJob, error: unknown) => void) | undefined;
 }
 
 interface Args {
@@ -119,7 +119,10 @@ export class PageImagePreloader {
     this.stopped = false;
 
     this.queue = centerOutPageIndexes(pageIds.length, centerIndex)
-      .map((index) => ({ pageId: pageIds[index], quality }))
+      .flatMap((index) => {
+        const pageId = pageIds[index];
+        return pageId === undefined ? [] : [{ pageId, quality }];
+      })
       .filter((job) => !this.startedJobs.has(this.jobKey(job)));
     this.pump();
   }

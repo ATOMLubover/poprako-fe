@@ -1,4 +1,6 @@
-/* eslint-disable no-console, unicorn/consistent-boolean-name, unicorn/no-unnecessary-global-this, jsx-a11y/role-supports-aria-props, @typescript-eslint/no-non-null-assertion -- lookup lifecycle. */
+/* eslint-disable no-console, unicorn/consistent-boolean-name */
+/* eslint-disable unicorn/no-unnecessary-global-this, jsx-a11y/role-supports-aria-props */
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- lookup lifecycle. */
 /* eslint-disable @typescript-eslint/no-misused-spread -- code-point aware query display. */
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Search } from "lucide-react";
@@ -25,8 +27,8 @@ const PANEL_ANIMATION_MS = 150;
 type Panel = "closed" | "termbases" | "terms";
 type OpenPanel = Exclude<Panel, "closed">;
 type EditorState =
-  | { kind: "termbase"; termbase?: TermbaseInfo }
-  | { kind: "term"; term?: TermInfo };
+  | { kind: "termbase"; termbase?: TermbaseInfo | undefined }
+  | { kind: "term"; term?: TermInfo | undefined };
 
 interface Props {
   dataSource: TerminologyDataSource;

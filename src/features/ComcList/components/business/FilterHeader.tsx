@@ -7,7 +7,7 @@ import type { Option } from "@/components/ui/HoverSelect";
 import type { BinaryFilter, TripleFilter } from "../../types/types";
 
 interface Props {
-  activeFuzzyTitle?: string;
+  activeFuzzyTitle?: string | undefined;
   // 只有用户按下 enter 后才触发
   onChangeFuzzyTitle: (title: string) => void;
 
@@ -25,9 +25,9 @@ interface Props {
   onChangePublishStatus: (status: BinaryFilter) => void;
 
   // 通知父组件显示创建漫画的 modal
-  onCreateComic?: () => void;
+  onCreateComic?: (() => void) | undefined;
   // 切换侧边栏展开/收起
-  onToggleSidebar?: () => void;
+  onToggleSidebar?: (() => void) | undefined;
 }
 
 function makeTripleOptions(prefix: string): Option[] {

@@ -15,7 +15,8 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-addEventListener("message", async (event: MessageEvent<HashRequest>) => { // eslint-disable-line @typescript-eslint/no-misused-promises
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+addEventListener("message", async (event: MessageEvent<HashRequest>) => {
   const { id, file } = event.data;
 
   try {

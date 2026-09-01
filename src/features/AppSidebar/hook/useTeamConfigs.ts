@@ -7,20 +7,18 @@ function deriveTeamConfigs(
   loginState: ReturnType<typeof useAppStore.getState>["loginState"],
 ): TeamConfig[] {
   if (!loginState?.memberInfos) {return [];}
-  return loginState.memberInfos
-    .filter((m) => m.team)
-    .map((m) => {
-      if (!m.team) {return null;}
-      const team = m.team;
-      return {
+  return loginState.memberInfos.flatMap((member) => {
+      const team = member.team;
+      if (!team) {return [];}
+      return [{
         id: team.id,
         name: team.name,
-        short: team.name[0].toUpperCase(),
+        short: team.name[0]?.toUpperCase() ?? "",
         desc: team.description,
         avatarUrl: team.avatarUrl,
         avatarThumbnailUrl: team.avatarThumbnailUrl,
-      };
-    }).filter((team): team is TeamConfig => team !== null);
+      }];
+    });
 }
 
 export function useTeamConfigs() {

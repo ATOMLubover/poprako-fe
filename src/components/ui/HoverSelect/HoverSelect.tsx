@@ -7,19 +7,19 @@ interface Props {
   /**
   未选中时的提示文本
   */
-  hintText?: string;
+  hintText?: string | undefined;
   checkedOptionId: string;
   options: Option[];
   onSelect: (optionId: string) => void;
   /**
   最大高度，以 tailwind 单位为单位
   */
-  maxHeight?: number;
+  maxHeight?: number | undefined;
   /**
   是否处于 active 状态；active 时显示绿色边框
   */
-  isActive?: boolean;
-  className?: string;
+  isActive?: boolean | undefined;
+  className?: string | undefined;
 }
 
 export default function HoverSelect({

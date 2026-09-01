@@ -4,7 +4,7 @@ export interface TermInfo {
 
   source: string;
   targets: string[];
-  comment?: string;
+  comment?: string | undefined;
 
   creatorId: string;
   createdAt: number;

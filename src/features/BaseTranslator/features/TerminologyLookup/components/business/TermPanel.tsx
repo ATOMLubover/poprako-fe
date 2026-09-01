@@ -23,7 +23,7 @@ interface Props {
 
 interface RowProps {
   term: TermInfo;
-  onEdit?: () => void;
+  onEdit?: (() => void) | undefined;
 }
 
 function TermRow({ term, onEdit }: RowProps) {

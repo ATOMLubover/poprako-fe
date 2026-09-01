@@ -12,6 +12,11 @@ import type { UserInfo } from "@/types/user";
 
 const now = Date.now();
 
+function required<T>(value: T | undefined): T {
+  if (value === undefined) {throw new Error("示例数据缺失");}
+  return value;
+}
+
 // Mock builders
 
 function makeUser(id: string, name: string): UserInfo {
@@ -80,7 +85,7 @@ function makeChapter(
     id: `chapter-${String(idx)}`,
     comicId: "comic-1",
     index: idx,
-    subtitle: hasSubtitle ? SUBTITLE_POOL[idx % SUBTITLE_POOL.length] : "",
+    subtitle: hasSubtitle ? required(SUBTITLE_POOL[idx % SUBTITLE_POOL.length]) : "",
     isPinned: false,
     pageCount: 18 + (idx % 8),
     totalUnitCount: 140 + idx * 8,
@@ -256,23 +261,24 @@ function makeManyAssignments(chapterId: string): AssignmentInfo[] {
   };
 
   // 4x 原始提供者
-  for (const n of ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", LONG_NAMES[0]]) {push(n, "assignedRawProviderAt")
+  for (const n of ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", required(LONG_NAMES[0])]) {
+    push(n, "assignedRawProviderAt")
   ;}
 
   // 6x 翻译
   for (const n of [
     "Aki Translator",
-    LONG_NAMES[2],
-    LONG_NAMES[6],
+    required(LONG_NAMES[2]),
+    required(LONG_NAMES[6]),
     "Mitsuki",
-    LONG_NAMES[9],
+    required(LONG_NAMES[9]),
     "神崎蘭子之友",
   ]) {push(n, "assignedTranslatorAt");}
 
   // 5x 校对
   for (const n of [
-    LONG_NAMES[1],
-    LONG_NAMES[7],
+    required(LONG_NAMES[1]),
+    required(LONG_NAMES[7]),
     "校对博士学位",
     "Proofreader_X",
     "星野",
@@ -280,19 +286,21 @@ function makeManyAssignments(chapterId: string): AssignmentInfo[] {
 
   // 5x 排版
   for (const n of [
-    LONG_NAMES[3],
-    LONG_NAMES[4],
+    required(LONG_NAMES[3]),
+    required(LONG_NAMES[4]),
     "LayoutMaster2077",
     "排版狂魔不知疲倦的人",
-    LONG_NAMES[8],
+    required(LONG_NAMES[8]),
   ]) {push(n, "assignedTypesetterAt");}
 
   // 3x 监修
-  for (const n of [LONG_NAMES[5], "ReviewerElite", "最终boss级监修官"]) {push(n, "assignedReviewerAt")
+  for (const n of [required(LONG_NAMES[5]), "ReviewerElite", "最终boss级监修官"]) {
+    push(n, "assignedReviewerAt")
   ;}
 
   // 3x 发布
-  for (const n of ["Publisher_A", LONG_NAMES[9], "全能发布王者"]) {push(n, "assignedPublisherAt")
+  for (const n of ["Publisher_A", required(LONG_NAMES[9]), "全能发布王者"]) {
+    push(n, "assignedPublisherAt")
   ;}
 
   return assignments;
@@ -737,7 +745,9 @@ export const MobileWorkflow: Story = {
   parameters: {
     viewport: { defaultViewport: "mobile1" },
   },
-  play: WorkflowTimeline.play,
+  play: async (context) => {
+    if (WorkflowTimeline.play) {await WorkflowTimeline.play(context);}
+  },
 };
 
 export const EmptyPages: Story = {

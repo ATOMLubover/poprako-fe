@@ -4,7 +4,9 @@ import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapte
 export function pickFallbackChapterId(chapters: ChapterInfo[]): string | null {
   if (chapters.length === 0) {return null;}
 
-  let fallbackChapter = chapters[0];
+  const firstChapter = chapters[0];
+  if (!firstChapter) {return null;}
+  let fallbackChapter = firstChapter;
   for (const chapter of chapters.slice(1)) {
     if (chapter.index > fallbackChapter.index) {fallbackChapter = chapter;}
   }
@@ -131,7 +133,9 @@ export function getFileExtension(file: File): string | null {
 export function getUniformFileExtension(files: File[]): string | null {
   if (files.length === 0) {return null;}
 
-  const first = getFileExtension(files[0]) ?? "";
+  const firstFile = files[0];
+  if (!firstFile) {return null;}
+  const first = getFileExtension(firstFile) ?? "";
   const isUniform = files.every((file) => (getFileExtension(file) ?? "") === first);
 
   return isUniform ? first : null;

@@ -46,7 +46,10 @@ export default function ComicProgressList({
     try {
       const result = await onLoadComics(requestOffset, pageSize);
       if (!result.success) {
-        console.error("[ComicProgressList] 加载漫画列表失败:", result.error); // eslint-disable-line no-console
+      // eslint-disable-next-line no-console
+      console.error(
+        "[ComicProgressList] 加载漫画列表失败:", result.error,
+      );
         showLocalApiFailure(result, showToast);
         hasMoreRef.current = false;
         setHasMore(false);

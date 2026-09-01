@@ -1,9 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/require-await -- async persistence test doubles. */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/require-await */
 import { describe, expect, test, vi } from "vitest";
 
 import { buildUnitDiff, persistDirtyUnits } from "./useUnitPersistence";
 import type { UnitInfo } from "@/types/unit";
 import { moveUnitToIndex, normalizeUnitIndexes } from "@/types/unit";
+
+function unitAt(units: UnitInfo[], index: number): UnitInfo {
+  const unit = units[index];
+  if (!unit) {throw new Error("测试 Unit 缺失");}
+  return unit;
+}
 
 const localUnit: UnitInfo = {
   id: "local_1",
@@ -91,7 +97,7 @@ describe("unit save persistence", () => {
       proofreaderId: "proofreader_1",
     }];
     const current: UnitInfo[] = [{
-      ...baseline[0],
+      ...unitAt(baseline, 0),
       translatedText: undefined,
       translatorId: undefined,
       proofreadText: undefined,
@@ -119,7 +125,7 @@ describe("unit save persistence", () => {
       isProofread: true,
       proofreadText: "existing revision",
     }];
-    const current: UnitInfo[] = [{ ...baseline[0], isProofread: false }];
+    const current: UnitInfo[] = [{ ...unitAt(baseline, 0), isProofread: false }];
 
     expect(buildUnitDiff(current, baseline)).toEqual({
       ops: [{
@@ -143,7 +149,7 @@ describe("unit save persistence", () => {
       translatorId: "translator_1",
     }];
     const current: UnitInfo[] = [{
-      ...baseline[0],
+      ...unitAt(baseline, 0),
       translatedText: undefined,
       translatorId: undefined,
     }];
@@ -176,9 +182,9 @@ describe("unit save persistence", () => {
       { ...localUnit, id: "unit_c", index: 80 },
     ]);
     const current = normalizeUnitIndexes([
-      { ...baseline[1], xCoord: 0.5, index: 99 },
+      { ...unitAt(baseline, 1), xCoord: 0.5, index: 99 },
       { ...localUnit, id: "local_new", index: 99 },
-      { ...baseline[0], index: 5 },
+      { ...unitAt(baseline, 0), index: 5 },
     ]);
 
     expect(current.map((unit) => unit.index)).toEqual([0, 1, 2]);

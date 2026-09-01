@@ -12,15 +12,15 @@ type ShowToast = (message: string, type: ToastType) => void;
 interface Args {
   selectedChapterId: string | null;
   isSelectedChapterAvailable: boolean;
-  currentUserId?: string | null;
+  currentUserId?: string | null | undefined;
   activeMember: MemberInfo | null;
-  pinnedChapterId?: string | null;
-  pinnedChapterAssignments?: AssignmentInfo[];
+  pinnedChapterId?: string | null | undefined;
+  pinnedChapterAssignments?: AssignmentInfo[] | undefined;
   onLoadAssignments: ComicDetailModalProps["onLoadAssignments"];
-  onAddAssignment?: ComicDetailModalProps["onAddAssignment"];
-  onRemoveAssignment?: ComicDetailModalProps["onRemoveAssignment"];
-  onJoinChapterRole?: ComicDetailModalProps["onJoinChapterRole"];
-  onWorkflowRecordsChanged?: () => void;
+  onAddAssignment?: ComicDetailModalProps["onAddAssignment"] | undefined;
+  onRemoveAssignment?: ComicDetailModalProps["onRemoveAssignment"] | undefined;
+  onJoinChapterRole?: ComicDetailModalProps["onJoinChapterRole"] | undefined;
+  onWorkflowRecordsChanged?: (() => void) | undefined;
   showToast: ShowToast;
 }
 
@@ -122,7 +122,7 @@ export function useComicDetailAssignments({
         (assignment) => assignment.userId === currentUserId,
       );
       setCanCreateChapter( // eslint-disable-line @eslint-react/set-state-in-effect
-        Boolean(pinnedAssignment) && hasRole(pinnedAssignment, "reviewer"),
+        pinnedAssignment !== undefined && hasRole(pinnedAssignment, "reviewer"),
       );
       return;
     }
@@ -133,7 +133,10 @@ export function useComicDetailAssignments({
       try {
         const res = await onLoadAssignments(pinnedChapterId);
         if (!res.success) {
-          console.error("[ComicDetailModal] 加载 pinned 章节分工失败:", res); // eslint-disable-line no-console
+          // eslint-disable-next-line no-console
+          console.error(
+            "[ComicDetailModal] 加载 pinned 章节分工失败:", res,
+          );
           if (!isCancelled) {
             setCanCreateChapter(false);
           }
@@ -146,11 +149,14 @@ export function useComicDetailAssignments({
 
         if (!isCancelled) {
           setCanCreateChapter(
-            Boolean(pinnedAssignment) && hasRole(pinnedAssignment, "reviewer"),
+            pinnedAssignment !== undefined && hasRole(pinnedAssignment, "reviewer"),
           );
         }
       } catch (error) {
-        console.error("[ComicDetailModal] 加载 pinned 章节分工异常:", error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[ComicDetailModal] 加载 pinned 章节分工异常:", error,
+        );
         if (!isCancelled) {
           setCanCreateChapter(false);
         }
@@ -174,14 +180,15 @@ export function useComicDetailAssignments({
     [assignments, currentUserId],
   );
 
-  const canTranslateOrProofread =
-    Boolean(currentAssignment) &&
-    (hasRole(currentAssignment, "translator") ||
-      hasRole(currentAssignment, "proofreader"));
+  const canTranslateOrProofread = currentAssignment !== undefined && (
+    hasRole(currentAssignment, "translator") ||
+    hasRole(currentAssignment, "proofreader")
+  );
   const canReadOnly = activeMember !== null && !canTranslateOrProofread;
   const canManageChapterAssignments =
-    Boolean(currentAssignment) && hasRole(currentAssignment, "admin");
-  const canUploadRawPages = Boolean(currentAssignment) && hasRole(currentAssignment, "rawProvider");
+    currentAssignment !== undefined && hasRole(currentAssignment, "admin");
+  const canUploadRawPages =
+    currentAssignment !== undefined && hasRole(currentAssignment, "rawProvider");
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
 
   const removeRoles = useCallback(
@@ -225,6 +232,7 @@ export function useComicDetailAssignments({
   const handleRemoveAssignment = useCallback(
     (userId: string, role: Role) => {
       const assignment = assignments.find((item) => item.userId === userId);
+      if (!assignment) {return;}
       void removeRoles(userId, assignmentRolesForStage(assignment, role));
     },
     [assignments, removeRoles],
@@ -333,7 +341,8 @@ export function useComicDetailAssignments({
 
   const handleLeaveRole = useCallback(
     async (role: Role) => {
-      if (!selectedChapterId || !currentUserId || !onRemoveAssignment || leavingRoles[role] === true) {
+      if (!selectedChapterId || !currentUserId || !onRemoveAssignment
+        || leavingRoles[role] === true) {
         return;
       }
 

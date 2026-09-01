@@ -17,26 +17,26 @@ import WorksetSidebar from "./WorksetSidebar";
 import ComicProgressList from "@/features/ComicProgressList";
 
 interface Props {
-  initialMode?: ViewMode;
-  refreshKey?: number;
+  initialMode?: ViewMode | undefined;
+  refreshKey?: number | undefined;
   worksets: WorksetInfo[];
   activeWorksetId: string;
   onChangeWorkset: (worksetId: string) => void;
   onCreateWorkset: () => void;
   onDeleteWorkset: (worksetId: string) => void;
-  onUpdateWorkset?: (
+  onUpdateWorkset?: ((
     id: string,
-    args: { name: string; description?: string },
-  ) => Promise<Result<void>>;
+    args: { name: string; description?: string | undefined },
+  ) => Promise<Result<void>>) | undefined;
   onLoadComics: (
     offset: number,
     limit: number,
     mode: ViewMode,
   ) => Promise<Result<ComicInfo[]>>;
-  onComicClick?: (comicInfo: ComicInfo) => void;
-  onCreateComic?: () => void;
+  onComicClick?: ((comicInfo: ComicInfo) => void) | undefined;
+  onCreateComic?: (() => void) | undefined;
   onChangeFuzzyTitle: (title: string) => void;
-  activeFuzzyTitle?: string;
+  activeFuzzyTitle?: string | undefined;
   activeUploadStatus: BinaryFilter;
   activeTranslateStatus: TripleFilter;
   activeProofreadStatus: TripleFilter;

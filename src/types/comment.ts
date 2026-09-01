@@ -4,7 +4,7 @@ export interface CommentInfo {
   id: string;
   teamId: string;
   userId: string;
-  user?: UserInfo;
+  user?: UserInfo | undefined;
   content: string;
   createdAt: number;
 }

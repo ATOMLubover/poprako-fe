@@ -1,11 +1,11 @@
 export interface TermbaseInfo {
   id: string;
 
-  teamId?: string;
-  comicId?: string;
+  teamId?: string | undefined;
+  comicId?: string | undefined;
 
   name: string;
-  description?: string;
+  description?: string | undefined;
   termCount: number;
 
   creatorId: string;

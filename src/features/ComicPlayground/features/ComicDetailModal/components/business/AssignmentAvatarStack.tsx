@@ -3,10 +3,10 @@ import type { AssignmentInfo } from "@/types/assignment";
 
 interface Props {
   assignments: AssignmentInfo[];
-  isLoading?: boolean;
-  showEmpty?: boolean;
-  canRemove?: boolean;
-  onRequestRemove?: (assignment: AssignmentInfo) => void;
+  isLoading?: boolean | undefined;
+  showEmpty?: boolean | undefined;
+  canRemove?: boolean | undefined;
+  onRequestRemove?: ((assignment: AssignmentInfo) => void) | undefined;
 }
 
 const MAX_VISIBLE_AVATARS = 4;
@@ -51,7 +51,7 @@ function AvatarTooltip({ name }: { name: string }) {
 interface MemberAvatarProps {
   assignment: AssignmentInfo;
   canRemove: boolean;
-  onRequestRemove?: (assignment: AssignmentInfo) => void;
+  onRequestRemove?: ((assignment: AssignmentInfo) => void) | undefined;
 }
 
 function MemberAvatar({
@@ -116,7 +116,7 @@ function MemberAvatar({
 interface OverflowMembersProps {
   assignments: AssignmentInfo[];
   canRemove: boolean;
-  onRequestRemove?: (assignment: AssignmentInfo) => void;
+  onRequestRemove?: ((assignment: AssignmentInfo) => void) | undefined;
 }
 
 function OverflowMembers({

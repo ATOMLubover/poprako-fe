@@ -473,10 +473,12 @@ describe("page upload coordinator", () => {
         events.push("put-b");
         return { success: true, data: undefined, httpStatus: 200 };
       });
-    apiMocks.updatePage.mockImplementation((_pageId: string, args: { imageVersion?: number }) => {
+    apiMocks.updatePage.mockImplementation(
+      (_pageId: string, args: { imageVersion?: number | undefined }) => {
       events.push(`mark-${String(args.imageVersion)}`);
       return { success: true, data: undefined };
-    });
+      },
+    );
 
     const first = await startPageReupload("chapter-1", "page-1", file("a.png"));
     await vi.waitFor(() => { expect(events).toEqual(["alloc-a", "put-a"]); });

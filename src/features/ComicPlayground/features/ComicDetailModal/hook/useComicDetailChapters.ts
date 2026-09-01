@@ -11,7 +11,7 @@ type ShowToast = (message: string, type: ToastType) => void;
 interface Args {
   comicId: string;
   pinnedChapter: ChapterInfo | null;
-  initialChapterId?: string | null;
+  initialChapterId?: string | null | undefined;
   onLoadChapters: ComicDetailModalProps["onLoadChapters"];
   showToast: ShowToast;
 }

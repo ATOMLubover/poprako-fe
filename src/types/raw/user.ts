@@ -10,7 +10,7 @@ export interface RawUserInfo {
   qid: string;
   nickname: string;
   avatar_url: string | null;
-  avatar_thumbnail_url?: string | null;
+  avatar_thumbnail_url?: string | null | undefined;
   is_sadmin: boolean;
   last_active_at: number;
   created_at: number;

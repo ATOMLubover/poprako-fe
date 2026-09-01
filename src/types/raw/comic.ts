@@ -15,7 +15,7 @@ export interface RawComicInfo {
   id: string;
 
   workset_id: string;
-  workset?: RawWorksetInfo;
+  workset?: RawWorksetInfo | undefined;
 
   title: string;
   author: string;
@@ -24,10 +24,10 @@ export interface RawComicInfo {
   chapter_count: number;
 
   cover_url: string | null;
-  cover_thumbnail_url?: string | null;
+  cover_thumbnail_url?: string | null | undefined;
 
   creator_id: string;
-  creator?: RawUserInfo;
+  creator?: RawUserInfo | undefined;
 
   last_active_at: number;
   created_at: number;
@@ -65,7 +65,7 @@ export interface RawCreateComicArgs {
   description: string;
   workset_id: string;
   title: string;
-  first_chapter_subtitle?: string;
+  first_chapter_subtitle?: string | undefined;
 }
 export function unwrapRawCreateComicArgs(
   raw: RawCreateComicArgs,
@@ -88,9 +88,9 @@ export function unwrapRawCreateComicResult(
 
 export interface RawUpdateComicArgs {
   id: string;
-  title?: string;
-  author?: string;
-  description?: string;
+  title?: string | undefined;
+  author?: string | undefined;
+  description?: string | undefined;
 }
 export function unwrapRawUpdateComicArgs(
   raw: RawUpdateComicArgs,

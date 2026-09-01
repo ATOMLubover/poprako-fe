@@ -10,27 +10,27 @@ export interface Props {
   /**
   输入框的占位符文本
   */
-  placeholder?: string;
+  placeholder?: string | undefined;
   /**
   输入框的当前值
   */
-  value?: string;
+  value?: string | undefined;
   /**
   输入框值变化时的回调函数
   */
-  onChange?: (newValue: string) => void;
+  onChange?: ((newValue: string) => void) | undefined;
   /**
   当为 true 时，作为密码输入框渲染，右侧显示可切换可见性的眼睛
   */
-  password?: boolean;
+  password?: boolean | undefined;
   /**
   当为 true 时，仅允许输入数字（非 password 模式）
   */
-  numeric?: boolean;
+  numeric?: boolean | undefined;
   /**
   外部注入的样式类
   */
-  className?: string;
+  className?: string | undefined;
 }
 
 export default function IconInputRow({

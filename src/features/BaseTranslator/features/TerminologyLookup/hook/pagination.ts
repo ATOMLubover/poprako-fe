@@ -10,7 +10,7 @@ export interface PaginationState<T extends { id: string }> {
   offset: number;
   hasMore: boolean;
   phase: PaginationPhase;
-  error?: string;
+  error?: string | undefined;
   requestVersion: number;
 }
 

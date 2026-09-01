@@ -19,13 +19,13 @@ export interface RawUnitInfo {
 
   is_bubble: boolean;
 
-  translated_text?: string;
-  last_translator_id?: string;
+  translated_text?: string | undefined;
+  last_translator_id?: string | undefined;
 
   // 仅表示校对流程状态；与 proofread_text 完全独立，二者不得互相推导或隐式修改。
   is_proofread: boolean;
-  proofread_text?: string;
-  last_proofreader_id?: string;
+  proofread_text?: string | undefined;
+  last_proofreader_id?: string | undefined;
 
   created_at: number;
   updated_at: number;
@@ -80,7 +80,7 @@ export interface RawListPageUnitsResult {
   total_unit_count: number;
   translated_unit_count: number;
   proofread_unit_count: number;
-  unit_infos?: RawUnitInfo[];
+  unit_infos?: RawUnitInfo[] | undefined;
 }
 
 export function unwrapRawListPageUnitsResult(
@@ -108,7 +108,7 @@ export interface RawUnitTranslation {
 export interface RawUnitRevision {
   // 仅表示校对流程状态；与 proofread_text 完全独立，二者不得互相推导或隐式修改。
   is_proofread: boolean;
-  proofread_text?: string;
+  proofread_text?: string | undefined;
 }
 
 export type RawPatch<T> =
@@ -118,21 +118,21 @@ export type RawPatch<T> =
 export interface RawUnitCreateEdit {
   edit: "create";
   local_id: string;
-  next_id?: string;
+  next_id?: string | undefined;
   is_bubble: boolean;
   coord: RawUnitCoord;
-  translation?: RawUnitTranslation;
-  revision?: RawUnitRevision;
+  translation?: RawUnitTranslation | undefined;
+  revision?: RawUnitRevision | undefined;
 }
 
 export interface RawUnitPatchEdit {
   edit: "patch";
   id: string;
-  next_id?: RawPatch<string>;
-  is_bubble?: boolean;
-  coord?: RawUnitCoord;
-  translation?: RawPatch<RawUnitTranslation>;
-  revision?: RawPatch<RawUnitRevision>;
+  next_id?: RawPatch<string> | undefined;
+  is_bubble?: boolean | undefined;
+  coord?: RawUnitCoord | undefined;
+  translation?: RawPatch<RawUnitTranslation> | undefined;
+  revision?: RawPatch<RawUnitRevision> | undefined;
 }
 
 export interface RawUnitDeleteEdit {

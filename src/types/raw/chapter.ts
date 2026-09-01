@@ -10,10 +10,10 @@ export interface RawChapterInfo {
   id: string;
 
   comic_id: string;
-  comic?: RawComicInfo;
+  comic?: RawComicInfo | undefined;
 
   creator_id: string;
-  creator?: RawUserInfo;
+  creator?: RawUserInfo | undefined;
 
   index: number;
   subtitle: string;
@@ -50,7 +50,7 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
 }
 
 export interface RawCreateChapterArgs {
-  subtitle?: string;
+  subtitle?: string | undefined;
   comic_id: string;
 }
 export function unwrapRawCreateChapterArgs(

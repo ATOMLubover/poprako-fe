@@ -11,7 +11,7 @@ interface Props {
     offset: number,
     limit: number,
   ) => Promise<Result<MemberInfo[]>>;
-  onMemberClick?: (member: MemberInfo) => void;
+  onMemberClick?: ((member: MemberInfo) => void) | undefined;
 }
 
 // 受控的成员列表展示组件，负责无限下滑加载
@@ -39,7 +39,10 @@ export default function EmbeddedMemberList({
         setMembers((prev) => [...prev, ...result.data]);
         setOffset((prev) => prev + result.data.length);
       } else {
-        console.error("[EmbeddedMemberList] 加载成员列表失败:", result.error); // eslint-disable-line no-console
+        // eslint-disable-next-line no-console
+        console.error(
+          "[EmbeddedMemberList] 加载成员列表失败:", result.error,
+        );
         showLocalApiFailure(result, showToast);
         setHasMore(false);
       }

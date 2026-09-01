@@ -23,7 +23,7 @@ import type { CoverUploadState } from "../../types";
 
 interface Props {
   comicInfo: ComicInfo;
-  selectedChapter?: ChapterInfo;
+  selectedChapter?: ChapterInfo | undefined;
   pagesLength: number;
   canReadOnly: boolean;
   canUploadCover: boolean;
@@ -35,10 +35,10 @@ interface Props {
   isArchivingComic: boolean;
   isDeletingComic: boolean;
   isExportingData: boolean;
-  isImportingData?: boolean;
-  onNavigateReadOnly?: () => void;
-  onExport?: () => void;
-  onImportFileChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isImportingData?: boolean | undefined;
+  onNavigateReadOnly?: (() => void) | undefined;
+  onExport?: (() => void) | undefined;
+  onImportFileChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
   onDeletePages: () => void;
   onArchiveComic: () => void;
   onDeleteComic: () => void;

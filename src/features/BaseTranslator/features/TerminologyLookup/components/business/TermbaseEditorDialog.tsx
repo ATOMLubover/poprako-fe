@@ -7,9 +7,9 @@ import { AppDialogAction } from "@/components/ui/AppDialog";
 import TerminologyDialogFrame from "./TerminologyDialogFrame";
 
 interface Props {
-  termbase?: TermbaseInfo;
+  termbase?: TermbaseInfo | undefined;
   onSave: (args: UpdateTermbaseArgs) => Promise<boolean>;
-  onDelete?: () => Promise<boolean>;
+  onDelete?: (() => Promise<boolean>) | undefined;
   onClose: () => void;
 }
 

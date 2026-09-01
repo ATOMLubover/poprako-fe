@@ -5,6 +5,11 @@ import type { WorksetInfo } from "@/types/workset";
 
 const now = Date.now();
 
+function required<T>(value: T | undefined): T {
+  if (value === undefined) {throw new Error("示例数据缺失");}
+  return value;
+}
+
 const mockWorksets: WorksetInfo[] = [
   {
     id: "ws-1",
@@ -131,7 +136,7 @@ export const SingleWorkset: Story = {
     <div className="flex justify-end h-screen bg-slate-50">
       <WorksetSidebar
         activeWorksetId="ws-1"
-        worksets={[mockWorksets[0]]}
+        worksets={[required(mockWorksets[0])]}
         onClose={() => { return; }}
         onCreateWorkset={() => { return; }}
         onDeleteWorkset={() => { return; }}

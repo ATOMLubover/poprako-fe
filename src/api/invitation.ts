@@ -10,8 +10,8 @@ interface ListInvitationsArgs {
   teamId: string;
   offset: number;
   limit: number;
-  includes?: ("invitor" | "invitee")[];
-  isPending?: boolean;
+  includes?: ("invitor" | "invitee")[] | undefined;
+  isPending?: boolean | undefined;
 }
 
 export async function listInvitations(

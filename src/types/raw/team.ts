@@ -16,7 +16,7 @@ export interface RawTeamInfo {
   name: string;
   description: string;
   avatar_url: string | null;
-  avatar_thumbnail_url?: string | null;
+  avatar_thumbnail_url?: string | null | undefined;
   created_at: number;
   updated_at: number;
 }
@@ -49,8 +49,8 @@ export function unwrapRawCreateTeamResult(
 
 export interface RawUpdateTeamArgs {
   id: string;
-  name?: string;
-  description?: string;
+  name?: string | undefined;
+  description?: string | undefined;
 }
 export function unwrapRawUpdateTeamArgs(
   raw: RawUpdateTeamArgs,

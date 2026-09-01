@@ -5,8 +5,8 @@ import type { MemberInfo } from "@/types/member";
 
 interface ListMyMembersArgs {
   ownerId: string;
-  offset?: number;
-  limit?: number;
+  offset?: number | undefined;
+  limit?: number | undefined;
 }
 
 export async function listMyMembers(args: ListMyMembersArgs) {
@@ -24,9 +24,9 @@ interface ListMembersArgs {
   teamId: string;
   offset: number;
   limit: number;
-  includes?: string[];
-  userNicknameKeyword?: string;
-  role?: number;
+  includes?: string[] | undefined;
+  userNicknameKeyword?: string | undefined;
+  role?: number | undefined;
 }
 
 interface UpdateMemberRoleArgs {

@@ -7,7 +7,7 @@ export interface UserInfo {
   name: string;
 
   avatarUrl: string;
-  avatarThumbnailUrl?: string;
+  avatarThumbnailUrl?: string | undefined;
 
   isSuperAdmin: boolean;
 

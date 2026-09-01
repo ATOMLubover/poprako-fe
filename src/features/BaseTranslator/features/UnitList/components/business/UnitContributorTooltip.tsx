@@ -1,4 +1,5 @@
-/* eslint-disable unicorn/prefer-spread, unicorn/consistent-function-scoping, unicorn/prefer-simple-condition-first -- pointer behavior. */
+/* eslint-disable unicorn/prefer-spread, unicorn/consistent-function-scoping */
+/* eslint-disable unicorn/prefer-simple-condition-first -- pointer behavior. */
 import {
   useEffect,
   useRef,

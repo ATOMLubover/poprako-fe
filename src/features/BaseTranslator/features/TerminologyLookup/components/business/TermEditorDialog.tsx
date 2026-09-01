@@ -14,9 +14,9 @@ import { moveTermTarget, validateTermTargets } from "../../hook/termForm";
 import TerminologyDialogFrame from "./TerminologyDialogFrame";
 
 interface Props {
-  term?: TermInfo;
+  term?: TermInfo | undefined;
   onSave: (args: UpdateTermArgs) => Promise<boolean>;
-  onDelete?: () => Promise<boolean>;
+  onDelete?: (() => Promise<boolean>) | undefined;
   onClose: () => void;
 }
 

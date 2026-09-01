@@ -1,9 +1,10 @@
-/* eslint-disable @eslint-react/dom-no-missing-button-type, @eslint-react/no-array-index-key -- fixed symbol palette. */
+/* eslint-disable @eslint-react/dom-no-missing-button-type */
+/* eslint-disable @eslint-react/no-array-index-key -- fixed symbol palette. */
 import { useSpecialChars } from "@/hook/useSpecialChars";
 
 interface Props {
   onInsert: (char: string) => void;
-  onUseChar?: (char: string) => void;
+  onUseChar?: ((char: string) => void) | undefined;
 }
 
 export default function SpecialCharsBar({ onInsert, onUseChar }: Props) {

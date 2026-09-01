@@ -12,7 +12,7 @@ export interface AssignmentInvitationInfo {
 
 export interface ListAssignmentInvitationsArgs {
   chapterId: string;
-  isPending?: boolean;
+  isPending?: boolean | undefined;
   offset: number;
   limit: number;
 }

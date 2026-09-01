@@ -19,7 +19,7 @@ interface Props {
   name: string;
   userId: string;
   role: Role;
-  onRemove?: (userId: string, role: Role) => void;
+  onRemove?: ((userId: string, role: Role) => void) | undefined;
 }
 
 export default function UserTag({ name, userId, role, onRemove }: Props) {

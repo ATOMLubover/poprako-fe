@@ -12,18 +12,18 @@ export interface RawMemberInfo {
     qid: string;
     nickname: string;
     avatar_url: string | null;
-    avatar_thumbnail_url?: string | null;
+    avatar_thumbnail_url?: string | null | undefined;
     is_sadmin: boolean;
     last_active_at: number;
     created_at: number;
     updated_at: number;
-  };
-  team?: RawTeamInfo;
+  } | undefined;
+  team?: RawTeamInfo | undefined;
   nickname: string;
   last_active_at: number;
   roles: number;
-  created_at?: number;
-  updated_at?: number;
+  created_at?: number | undefined;
+  updated_at?: number | undefined;
 }
 
 export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {

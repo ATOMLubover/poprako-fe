@@ -14,11 +14,11 @@ interface Props {
   totalPageCount: number;
   // 跳转到指定页，newPageIndex 是 0-based 的
   // 如果没有提供，则不将页码显示在可交互输入框中，而是直接显示为文本
-  onPageIndexChange?: (newPageIndex: number) => void;
+  onPageIndexChange?: ((newPageIndex: number) => void) | undefined;
   onPageUp: () => void;
   onPageDown: () => void;
   // 每页的 unit 统计，提供后中间区域变为可点击并展开页列表下拉
-  pageStats?: PageStat[];
+  pageStats?: PageStat[] | undefined;
 }
 
 export default function Paginator({

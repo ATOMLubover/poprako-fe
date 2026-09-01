@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-misused-promises, @eslint-react/dom-no-missing-button-type -- toolbar callbacks. */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @eslint-react/dom-no-missing-button-type -- toolbar callbacks. */
 import {
   CheckCheck,
   CircleSlash,

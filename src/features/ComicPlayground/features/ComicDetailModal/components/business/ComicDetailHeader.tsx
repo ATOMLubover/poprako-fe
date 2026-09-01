@@ -9,22 +9,22 @@ import type { ComicDetailModalProps } from "../../types";
 interface Props {
   comicInfo: ComicInfo;
   chapters: ChapterInfo[];
-  selectedChapter?: ChapterInfo;
+  selectedChapter?: ChapterInfo | undefined;
   selectedChapterId: string | null;
   hasMore: boolean;
   isLoading: boolean;
   canCreateChapter: boolean;
   onLoadMore: () => void;
   onSelect: (chapterId: string | null) => void;
-  onCreateChapter?: ComicDetailModalProps["onCreateChapter"];
+  onCreateChapter?: ComicDetailModalProps["onCreateChapter"] | undefined;
   onCreate: (
     subtitle: string | undefined,
     presetAssignmentRoles: number | undefined,
   ) => Promise<Result<string>>;
-  onDeleteChapter?: ComicDetailModalProps["onDeleteChapter"];
+  onDeleteChapter?: ComicDetailModalProps["onDeleteChapter"] | undefined;
   onDelete: (chapterId: string) => Promise<void>;
-  onLongPressTitle?: () => void;
-  onLongPressChapter?: (chapter: ChapterInfo) => void;
+  onLongPressTitle?: (() => void) | undefined;
+  onLongPressChapter?: ((chapter: ChapterInfo) => void) | undefined;
   onClose: () => void;
 }
 
