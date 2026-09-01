@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
+/* eslint-disable @eslint-react/web-api-no-leaked-event-listener -- cleanup is paired below. */
 import {
   type ConfigurableShortcut,
   type ShortcutAction,
@@ -10,7 +11,7 @@ type ActionMap = Partial<Record<ShortcutAction, () => void>>;
 export function useShortcutActions(
   actions: ActionMap,
   shortcuts: ConfigurableShortcut[],
-  disabled: boolean,
+  isDisabled: boolean,
 ) {
   const actionsRef = useRef(actions);
   useLayoutEffect(() => {
@@ -18,7 +19,7 @@ export function useShortcutActions(
   });
 
   useEffect(() => {
-    if (disabled) return;
+    if (isDisabled) {return;}
 
     function handleKeyDown(e: KeyboardEvent) {
       for (const shortcut of shortcuts) {
@@ -30,9 +31,9 @@ export function useShortcutActions(
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
+    addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      removeEventListener("keydown", handleKeyDown);
     };
-  }, [shortcuts, disabled]);
+  }, [shortcuts, isDisabled]);
 }

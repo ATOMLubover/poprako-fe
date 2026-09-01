@@ -11,18 +11,18 @@ import {
 } from "./assignmentWorkflow";
 import TransitionDialog from "./TransitionDialog";
 
-type Props = {
-  selectedChapter?: ChapterInfo;
+interface Props {
+  selectedChapter?: ChapterInfo | undefined;
   assignments: AssignmentInfo[];
-  currentUserId?: string | null;
+  currentUserId?: string | null | undefined;
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
-};
+}
 
-type QuickAction = {
+interface QuickAction {
   roleDef: AssignmentRoleDef;
   transition: WorkflowTransition;
   direction: "forward" | "revert";
-};
+}
 
 function findQuickAction(
   roleDefs: AssignmentRoleDef[],
@@ -31,14 +31,14 @@ function findQuickAction(
   currentUserId: string | null | undefined,
   direction: "forward" | "revert",
 ): QuickAction | null {
-  if (!chapter || !currentUserId) return null;
+  if (!chapter || !currentUserId) {return null;}
 
   for (const roleDef of roleDefs) {
     const isAssigned = assignments.some(
       (assignment) =>
         assignment.userId === currentUserId && roleDef.matches(assignment),
     );
-    if (!isAssigned) continue;
+    if (!isAssigned) {continue;}
 
     const transition =
       direction === "forward"
@@ -67,8 +67,10 @@ export default function QuickWorkflowActions({
     currentUserId,
     "forward",
   );
+  // eslint-disable-next-line unicorn/no-array-reverse
+  const reversedRoleDefs = [...ASSIGNMENT_ROLE_DEFS].reverse();
   const revertAction = findQuickAction(
-    [...ASSIGNMENT_ROLE_DEFS].reverse(),
+    reversedRoleDefs,
     selectedChapter,
     assignments,
     currentUserId,
@@ -76,13 +78,13 @@ export default function QuickWorkflowActions({
   );
 
   const handleConfirm = async (transition: WorkflowTransition) => {
-    if (transitioningRef.current) return;
+    if (transitioningRef.current) {return;}
     transitioningRef.current = true;
     setPendingAction(null);
     try {
       await onTransiteWorkflow(transition);
     } catch (error) {
-      console.error("[QuickWorkflowActions] 流程操作失败:", error);
+      console.error("[QuickWorkflowActions] 流程操作失败:", error); // eslint-disable-line no-console
     } finally {
       transitioningRef.current = false;
     }
@@ -93,7 +95,9 @@ export default function QuickWorkflowActions({
       <button
         type="button"
         disabled={!revertAction}
-        onClick={() => revertAction && setPendingAction(revertAction)}
+        onClick={() => {
+          if (revertAction) {setPendingAction(revertAction);}
+        }}
         className={clsx(
           "flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 py-2",
           "text-xs font-semibold transition-colors",
@@ -115,7 +119,9 @@ export default function QuickWorkflowActions({
       <button
         type="button"
         disabled={!forwardAction}
-        onClick={() => forwardAction && setPendingAction(forwardAction)}
+        onClick={() => {
+          if (forwardAction) {setPendingAction(forwardAction);}
+        }}
         className={clsx(
           "flex min-w-0 items-center justify-center gap-1.5 rounded-sm px-2 py-2",
           "text-xs font-semibold transition-colors",
@@ -149,8 +155,8 @@ export default function QuickWorkflowActions({
               ? pendingAction.transition
               : null
           }
-          onConfirm={handleConfirm}
-          onCancel={() => setPendingAction(null)}
+          onConfirm={(transition) => { void handleConfirm(transition); }}
+          onCancel={() => { setPendingAction(null); }}
         />
       )}
     </div>

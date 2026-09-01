@@ -35,8 +35,5 @@ export const ReadOnly: Story = {
     currPageIndex: 2,
     totalPageCount: 5,
     // omit handlers to show read-only display
-    onPageUp: undefined,
-    onPageDown: undefined,
-    onPageIndexChange: undefined,
   },
 };

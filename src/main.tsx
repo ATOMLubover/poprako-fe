@@ -12,10 +12,15 @@ import { NotificationToast } from "@/components/ui/NotificationToast";
   const style = document.createElement("style");
   style.textContent =
     "@keyframes poprako-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}";
-  document.head.appendChild(style);
+  document.head.append(style);
 }
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.querySelector("#root");
+if (!rootElement) {
+  throw new Error("Root element was not found");
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <App />
     <NotificationToast />
@@ -26,10 +31,10 @@ createRoot(document.getElementById("root")!).render(
 // requestIdleCallback avoids competing with the initial render + hydrate work;
 // fall back to a short setTimeout in environments that lack it.
 const schedulePreload = (fn: () => void) => {
-  if (typeof requestIdleCallback !== "undefined") {
-    requestIdleCallback(fn);
-  } else {
+  if (typeof requestIdleCallback === "undefined") {
     setTimeout(fn, 200);
+  } else {
+    requestIdleCallback(fn);
   }
 };
 

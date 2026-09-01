@@ -5,49 +5,53 @@ import type { WorksetInfo } from "@/types/workset";
 import type { Result } from "@/types/utils/result";
 import WorksetModifierModal from "@/features/ComicPlayground/components/business/WorksetModifierModal";
 
-type UpdateWorksetArgs = {
+interface UpdateWorksetArgs {
   name: string;
-  description?: string;
-};
+  description?: string | undefined;
+}
 
-type Props = {
+interface Props {
   activeWorksetId: string;
   worksets: WorksetInfo[];
   onClose: () => void;
   onCreateWorkset: () => void;
   onDeleteWorkset: (worksetId: string) => void;
   onChangeWorkset: (worksetId: string) => void;
-  onUpdateWorkset?: (id: string, args: UpdateWorksetArgs) => Promise<Result<void>>;
-};
+  onUpdateWorkset?: ((id: string, args: UpdateWorksetArgs) => Promise<Result<void>>) | undefined;
+}
 
 export default function WorksetSidebar({
   activeWorksetId,
   worksets,
   onClose,
   onCreateWorkset,
+  onDeleteWorkset,
   onChangeWorkset,
   onUpdateWorkset,
 }: Props) {
+  void onDeleteWorkset;
   const [worksetToModify, setWorksetToModify] = useState<WorksetInfo | null>(null);
-  const longPressTimer = useRef<number | null>(null);
-  const longPressWorkset = useRef<WorksetInfo | null>(null);
-  const longPressHandled = useRef(false);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressWorksetRef = useRef<WorksetInfo | null>(null);
+  const longPressHandledRef = useRef(false);
 
   const clearLongPress = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
+    if (!longPressTimerRef.current) {
+      return;
     }
+
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
   }, []);
 
   const handleWorksetPointerDown = useCallback(
     (ws: WorksetInfo) => (e: React.PointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      longPressHandled.current = false;
-      longPressWorkset.current = ws;
-      longPressTimer.current = window.setTimeout(() => {
-        longPressHandled.current = true;
+      longPressHandledRef.current = false;
+      longPressWorksetRef.current = ws;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressHandledRef.current = true;
         setWorksetToModify(ws);
       }, 500);
     },
@@ -59,8 +63,8 @@ export default function WorksetSidebar({
       e.preventDefault();
       e.stopPropagation();
       clearLongPress();
-      if (!longPressHandled.current) {
-        const ws = longPressWorkset.current;
+      if (!longPressHandledRef.current) {
+        const ws = longPressWorksetRef.current;
         if (ws) {
           onChangeWorkset(ws.id);
         }
@@ -90,6 +94,7 @@ export default function WorksetSidebar({
         <div className="flex items-center justify-between px-4 pt-4 pb-3 shrink-0">
           <h2 className="text-md font-bold text-slate-600">作品集</h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded"
           >
@@ -108,6 +113,13 @@ export default function WorksetSidebar({
                   onPointerCancel={handleWorksetPointerCancel()}
                   onPointerLeave={handleWorksetPointerCancel()}
                   onContextMenu={handleWorksetContextMenu()}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter" && e.key !== " ") {return;}
+                    e.preventDefault();
+                    onChangeWorkset(ws.id);
+                  }}
                   className={clsx(
                     "flex-1 flex items-center justify-between",
                     "px-3 py-2 rounded-md transition-colors text-left",
@@ -128,7 +140,8 @@ export default function WorksetSidebar({
                 </div>
               ) : (
                 <button
-                  onClick={() => onChangeWorkset(ws.id)}
+                  type="button"
+                  onClick={() => { onChangeWorkset(ws.id); }}
                   className={clsx(
                     "flex-1 flex items-center justify-between",
                     "px-3 py-2 rounded-md transition-colors text-left",
@@ -164,6 +177,7 @@ export default function WorksetSidebar({
           {/* 新建按钮 */}
           <div className="pt-2 mt-1 border-t border-slate-100">
             <button
+              type="button"
               onClick={onCreateWorkset}
               className={clsx(
                 "w-full flex items-center justify-center gap-1.5",
@@ -184,7 +198,7 @@ export default function WorksetSidebar({
             const res = await onUpdateWorkset(worksetToModify.id, args);
             return res;
           }}
-          onClose={() => setWorksetToModify(null)}
+          onClose={() => { setWorksetToModify(null); }}
         />
       )}
     </>

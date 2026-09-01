@@ -20,7 +20,7 @@ const WORKER_CONCURRENCY = 4;
 const PUT_ATTEMPTS = 3;
 const MARK_ATTEMPTS = 3;
 
-type RuntimeTask = {
+interface RuntimeTask {
   taskId: string;
   batchId: string;
   chapterId: string;
@@ -29,71 +29,73 @@ type RuntimeTask = {
   imageHash: string;
   extension: string;
   slot: AllocatedPage["slot"] | undefined;
-  callbacks?: UploadProgressCallbacks;
+  callbacks?: UploadProgressCallbacks | undefined;
   abortController: AbortController;
   cancelled: boolean;
-};
+}
 
-type QueueEntry = {
+interface QueueEntry {
   task: RuntimeTask;
   resolve: (outcome: TaskOutcome) => void;
-};
+}
 
-type TaskOutcome = {
+interface TaskOutcome {
   succeeded: boolean;
   reportedValidationError: boolean;
-};
+}
 
-export type PageUploadBatchSummary = {
+export interface PageUploadBatchSummary {
   succeeded: number;
   failed: number;
   reportedValidationFailures: number;
-};
+}
 
-export type StartPageUploadResult = {
+export interface StartPageUploadResult {
   batchId: string;
   allocatedCount: number;
   skippedCount: number;
   completion: Promise<PageUploadBatchSummary>;
-};
+}
 
-type AddChapterPagesArgs = {
+interface AddChapterPagesArgs {
   chapterId: string;
   files: File[];
-  callbacks?: UploadProgressCallbacks;
-  logPrefix?: string;
-  concurrency?: number;
-};
+  callbacks?: UploadProgressCallbacks | undefined;
+  logPrefix?: string | undefined;
+  concurrency?: number | undefined;
+}
 
-type PreparedFile = {
+interface PreparedFile {
   taskId: string;
   file: File;
   imageHash: string;
   extension: string;
   fileIndex: number;
-};
+}
 
-type ExistingManifestEntry = {
+interface ExistingManifestEntry {
   pageId: string;
   imageHash: string;
   extension: string;
-};
+}
 
 const queue: QueueEntry[] = [];
 const activeTasks = new Map<string, RuntimeTask>();
 const chapterAllocTails = new Map<string, Promise<void>>();
 const pageTaskTails = new Map<string, Promise<void>>();
 
-let activeWorkerCount = 0;
-let taskSequence = 0;
+function noop(): void {return;}
+
+const activeWorkerCount = { value: 0 };
+const taskSequence = { value: 0 };
 
 function nextId(prefix: string): string {
-  taskSequence += 1;
-  return `${prefix}-${Date.now()}-${taskSequence}`;
+  taskSequence.value += 1;
+  return `${prefix}-${String(Date.now())}-${String(taskSequence.value)}`;
 }
 
 function sleep(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => globalThis.setTimeout(resolve, milliseconds));
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 async function serialize<T>(
@@ -102,21 +104,38 @@ async function serialize<T>(
   operation: () => Promise<T>,
 ): Promise<T> {
   const previous = tails.get(key) ?? Promise.resolve();
-  let release = () => {};
+  let release: () => void = noop;
+  // eslint-disable-next-line unicorn/prefer-promise-with-resolvers
   const gate = new Promise<void>((resolve) => {
     release = resolve;
   });
-  const current = previous.catch(() => undefined).then(() => gate);
+  const current = continueAfterPrevious(previous, gate);
 
   tails.set(key, current);
-  await previous.catch(() => undefined);
+  await settle(previous);
 
   try {
     return await operation();
   } finally {
     release();
-    if (tails.get(key) === current) tails.delete(key);
+    if (tails.get(key) === current) {tails.delete(key);}
   }
+}
+
+async function settle(promise: Promise<void>): Promise<void> {
+  try {
+    await promise;
+  } catch {
+    return;
+  }
+}
+
+async function continueAfterPrevious(
+  previous: Promise<void>,
+  gate: Promise<void>,
+): Promise<void> {
+  await settle(previous);
+  return gate;
 }
 
 function serializeChapterAlloc<T>(
@@ -137,9 +156,13 @@ function imageIdentity(imageHash: string, extension: string): string {
   return JSON.stringify([imageHash, extension.toLowerCase()]);
 }
 
+function isTaskCancelled(task: RuntimeTask): boolean {
+  return task.cancelled;
+}
+
 function validateFile(file: File): string {
   const extension = getFileExtension(file);
-  if (!extension) throw new Error("请选择带后缀的图片文件");
+  if (!extension) {throw new Error("请选择带后缀的图片文件");}
   return extension;
 }
 
@@ -167,14 +190,14 @@ async function retryMarkUploaded(
   let lastError = "等待对象存储确认失败";
 
   for (let attempt = 1; attempt <= MARK_ATTEMPTS; attempt += 1) {
-    if (task.cancelled) throw new Error("上传已取消");
+    if (task.cancelled) {throw new Error("上传已取消");}
 
     try {
       const result = await updatePage(task.pageId, {
         isUploaded: true,
         imageVersion,
       });
-      if (result.success) return;
+      if (result.success) {return;}
       lastError = result.error;
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
@@ -189,9 +212,9 @@ async function retryMarkUploaded(
 }
 
 function canRetryPut(httpStatus?: number, failureKind?: string): boolean {
-  if (failureKind === "aborted") return false;
-  if (httpStatus === 403) return true;
-  if (typeof httpStatus !== "number") return true;
+  if (failureKind === "aborted") {return false;}
+  if (httpStatus === 403) {return true;}
+  if (typeof httpStatus !== "number") {return true;}
   return httpStatus >= 500;
 }
 
@@ -205,7 +228,7 @@ async function allocRetrySlot(
       newByteLen: task.file.size,
       extension: task.extension,
     });
-    if (!result.success) throw toApiRequestError(result);
+    if (!result.success) {throw toApiRequestError(result);}
     return result.data.slot;
   });
 }
@@ -218,14 +241,14 @@ async function allocInitialPage(task: RuntimeTask): Promise<AllocatedPage> {
       newByteLen: task.file.size,
       extension: task.extension,
     });
-    if (!result.success) throw toApiRequestError(result);
+    if (!result.success) {throw toApiRequestError(result);}
     return result.data;
   });
 }
 
 async function executeTask(task: RuntimeTask): Promise<TaskOutcome> {
   try {
-    if (task.cancelled) throw new Error("上传已取消");
+    if (task.cancelled) {throw new Error("上传已取消");}
 
     let slot = task.slot;
     if (slot === undefined) {
@@ -287,7 +310,7 @@ async function executeTask(task: RuntimeTask): Promise<TaskOutcome> {
       }
 
       await sleep(2 ** (attempt - 1) * 1000);
-      if (task.cancelled) throw new Error("上传已取消");
+      if (isTaskCancelled(task)) {throw new Error("上传已取消");}
 
       slot = await allocRetrySlot(task);
       task.slot = slot;
@@ -309,21 +332,38 @@ async function executeTask(task: RuntimeTask): Promise<TaskOutcome> {
 }
 
 function pumpQueue(): void {
-  while (activeWorkerCount < WORKER_CONCURRENCY && queue.length > 0) {
+  while (activeWorkerCount.value < WORKER_CONCURRENCY && queue.length > 0) {
     const entry = queue.shift();
-    if (!entry) return;
+    if (!entry) {return;}
 
-    activeWorkerCount += 1;
+    activeWorkerCount.value += 1;
     activeTasks.set(entry.task.taskId, entry.task);
 
-    void serializePageTask(entry.task.pageId, () => executeTask(entry.task))
-      .then(entry.resolve)
-      .finally(() => {
-        activeWorkerCount -= 1;
-        activeTasks.delete(entry.task.taskId);
-        pumpQueue();
-      });
+    void runQueuedTask(entry);
   }
+}
+
+async function runQueuedTask(entry: QueueEntry): Promise<void> {
+  try {
+    const outcome = await serializePageTask(entry.task.pageId, () => executeTask(entry.task));
+    entry.resolve(outcome);
+  } finally {
+    activeWorkerCount.value -= 1;
+    activeTasks.delete(entry.task.taskId);
+    pumpQueue();
+  }
+}
+
+async function summarizeTaskCompletions(
+  completions: Promise<TaskOutcome>[],
+): Promise<PageUploadBatchSummary> {
+  return completionSummary(await Promise.all(completions));
+}
+
+async function summarizeSingleTask(
+  completion: Promise<TaskOutcome>,
+): Promise<PageUploadBatchSummary> {
+  return completionSummary([await completion]);
 }
 
 function enqueueTask(task: RuntimeTask): Promise<TaskOutcome> {
@@ -417,7 +457,7 @@ export async function startChapterPageUpload(
   try {
     return await serializeChapterAlloc(chapterId, async () => {
       const pagesResult = await listPages({ chapterId });
-      if (!pagesResult.success) throw toApiRequestError(pagesResult);
+      if (!pagesResult.success) {throw toApiRequestError(pagesResult);}
 
       const manifest = existingManifest(pagesResult.data);
       const pagesByIdentity = new Map<string, ExistingManifestEntry[]>();
@@ -471,7 +511,7 @@ export async function startChapterPageUpload(
           })),
         ],
       });
-      if (!allocResult.success) throw toApiRequestError(allocResult);
+      if (!allocResult.success) {throw toApiRequestError(allocResult);}
 
       if (
         allocResult.data.pages.length !==
@@ -480,12 +520,12 @@ export async function startChapterPageUpload(
         throw new Error("分配页面数量与清单数量不一致");
       }
 
-      const uploadPages: Array<{ page: AllocatedPage; prepared: PreparedFile }> = [];
+      const uploadPages: { page: AllocatedPage; prepared: PreparedFile }[] = [];
       for (const [index, page] of allocResult.data.pages.entries()) {
         const prepared = index < manifest.length
           ? preparedFilesByPageId.get(page.pageId)
           : newFiles[index - manifest.length];
-        if (!prepared) continue;
+        if (!prepared) {continue;}
         if (!page.slot) {
           patchPageUploadTask(prepared.taskId, {
             pageId: page.pageId,
@@ -536,7 +576,7 @@ export async function startChapterPageUpload(
         batchId,
         allocatedCount: uploadPages.length,
         skippedCount: preparedFiles.length - uploadPages.length,
-        completion: Promise.all(taskCompletions).then(completionSummary),
+        completion: summarizeTaskCompletions(taskCompletions),
       };
     });
   } catch (error) {
@@ -580,9 +620,7 @@ export async function startPageReupload(
     batchId,
     allocatedCount: 1,
     skippedCount: 0,
-    completion: enqueueTask(runtimeTask).then((outcome) =>
-      completionSummary([outcome]),
-    ),
+    completion: summarizeSingleTask(enqueueTask(runtimeTask)),
   };
 }
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-export type ToolboxOption = {
+export interface ToolboxOption {
   icon: ReactNode;
   title: string;
   onClick: () => Promise<void> | void;
-};
+}

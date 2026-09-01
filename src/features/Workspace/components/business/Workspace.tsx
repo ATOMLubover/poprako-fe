@@ -66,21 +66,23 @@ export default function Workspace() {
   const [comments, setComments] = useState<CommentInfo[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [mobileTab, setMobileTab] = useState(0);
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
+  const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
+    touchStartXRef.current = e.touches[0]?.clientX ?? 0;
+    touchStartYRef.current = e.touches[0]?.clientY ?? 0;
   }, []);
 
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
-      const dx = e.changedTouches[0].clientX - touchStartX.current;
-      const dy = e.changedTouches[0].clientY - touchStartY.current;
+      const touch = e.changedTouches[0];
+      if (!touch) {return;}
+      const dx = touch.clientX - touchStartXRef.current;
+      const dy = touch.clientY - touchStartYRef.current;
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
-        if (dx < 0) setMobileTab((t) => Math.min(t + 1, 1));
-        else setMobileTab((t) => Math.max(t - 1, 0));
+        if (dx < 0) {setMobileTab((t) => Math.min(t + 1, 1));}
+        else {setMobileTab((t) => Math.max(t - 1, 0));}
       }
     },
     [],
@@ -99,21 +101,21 @@ export default function Workspace() {
     restoreComic: getComic,
   });
 
-  const userName = loginState?.userInfo.name ?? "用户";
+  const username = loginState?.userInfo.name ?? "用户";
   const selectedTeamId = useAppStore((s) => s.selectedTeamId);
   const onlineUserIds = useOnlineUserIds(selectedTeamId);
   const onlineUsers = useOnlineUsers(selectedTeamId, onlineUserIds);
   const selectedComicTeamId = selectedComic?.workset?.teamId ?? null;
 
   const activeMember = useMemo(() => {
-    if (!selectedTeamId) return null;
+    if (!selectedTeamId) {return null;}
     return (
       loginState?.memberInfos.find((m) => m.teamId === selectedTeamId) ?? null
     );
   }, [loginState?.memberInfos, selectedTeamId]);
 
   const isAdmin = useMemo(() => {
-    return activeMember ? !!activeMember.assignedAdminAt : false;
+    return activeMember ? Boolean(activeMember.assignedAdminAt) : false;
   }, [activeMember]);
 
   const loadComments = useCallback(async (teamId: string) => {
@@ -121,25 +123,26 @@ export default function Workspace() {
     const result = await listComments({ teamId, offset: 0, limit: 15, includes: ["user"] });
     setCommentsLoading(false);
     if (!result.success) {
-      console.error("[Workspace] 加载留言失败:", result.error);
+      console.error("[Workspace] 加载留言失败:", result.error); // eslint-disable-line no-console
       showLocalApiFailure(result, showToast, "加载留言失败");
       return;
     }
+    // eslint-disable-next-line unicorn/no-array-reverse
     setComments([...result.data].reverse());
   }, [showToast]);
 
   useEffect(() => {
-    if (!selectedTeamId) return;
+    if (!selectedTeamId) {return;}
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadComments(selectedTeamId);
+    void loadComments(selectedTeamId);
   }, [selectedTeamId, loadComments]);
 
   const handleSendComment = useCallback(
     async (content: string) => {
-      if (!selectedTeamId || !currentUserId) return;
+      if (!selectedTeamId || !currentUserId) {return;}
       const result = await createComment({ teamId: selectedTeamId, content });
       if (!result.success) {
-        console.error("[Workspace] 发送留言失败:", result.error);
+        console.error("[Workspace] 发送留言失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast, "发送留言失败");
         return;
       }
@@ -162,14 +165,14 @@ export default function Workspace() {
       const member = loginState?.memberInfos.find(
         (m) => m.teamId === selectedComicTeamId,
       );
-      if (member) return member;
+      if (member) {return member;}
     }
     // 2. fallback：全局选中的团队
     if (selectedTeamId) {
       const member = loginState?.memberInfos.find(
         (m) => m.teamId === selectedTeamId,
       );
-      if (member) return member;
+      if (member) {return member;}
     }
     // 3. 最终兜底：任一可用成员身份
     return loginState?.memberInfos[0] ?? null;
@@ -212,7 +215,7 @@ export default function Workspace() {
     async (chapterId: string, role: Role): Promise<Result<void>> => {
       const result = await joinChapter(chapterId, roleMask([role]));
       if (!result.success) {
-        console.error("[Workspace] 加入章节分工失败:", result.error);
+        console.error("[Workspace] 加入章节分工失败:", result.error); // eslint-disable-line no-console
       }
       return result;
     },
@@ -222,7 +225,7 @@ export default function Workspace() {
   const handleLoadAssignableMembers = useCallback(
     async (
       chapterId: string,
-      args: { role: Role; keyword?: string; offset: number; limit: number },
+      args: { role: Role; keyword?: string | undefined; offset: number; limit: number },
     ): Promise<Result<MemberInfo[]>> => {
       void chapterId;
       if (!selectedComicTeamId) {
@@ -256,7 +259,7 @@ export default function Workspace() {
         (assignment) => assignment.userId === userId,
       );
       const mergedRoles = existing
-        ? Array.from(new Set([...assignmentRoles(existing), role]))
+        ? [...new Set([...assignmentRoles(existing), role])]
         : [role];
 
       const result = await upsertAssignment({
@@ -265,7 +268,7 @@ export default function Workspace() {
         roles: roleMask(mergedRoles),
       });
 
-      if (!result.success) return result;
+      if (!result.success) {return result;}
       return { success: true, data: undefined };
     },
     [handleLoadAssignmentsForChapter],
@@ -292,7 +295,7 @@ export default function Workspace() {
       const remainingRoles = assignmentRoles(target).filter((r) => r !== role);
       if (remainingRoles.length === 0) {
         const result = await deleteAssignment(target.id);
-        if (!result.success) return result;
+        if (!result.success) {return result;}
         return { success: true, data: undefined };
       }
 
@@ -302,7 +305,7 @@ export default function Workspace() {
         roles: roleMask(remainingRoles),
       });
 
-      if (!result.success) return result;
+      if (!result.success) {return result;}
       return { success: true, data: undefined };
     },
     [handleLoadAssignmentsForChapter],
@@ -311,7 +314,7 @@ export default function Workspace() {
   const handleCreateChapter = useCallback(
     async (args: {
       comicId: string;
-      subtitle?: string;
+      subtitle?: string | undefined;
     }): Promise<Result<string>> => {
       return createChapter(args);
     },
@@ -338,7 +341,7 @@ export default function Workspace() {
   );
 
   const handleExportChapter = useCallback(
-    async (chapterId: string, options?: { signal?: AbortSignal }) => {
+    async (chapterId: string, options?: { signal?: AbortSignal | undefined }) => {
       return exportChapter(chapterId, options);
     },
     [],
@@ -379,13 +382,13 @@ export default function Workspace() {
   );
 
   const handleUpdateComic = useCallback(
-    async (args: { title: string; author: string; description?: string }) => {
+    async (args: { title: string; author: string; description?: string | undefined }) => {
       if (!selectedComic) {
         return { success: false, error: "未选择漫画" } as Result<void>;
       }
       const result = await updateComic(selectedComic.id, args);
       if (!result.success) {
-        console.error("[Workspace] 更新漫画信息失败:", result.error);
+        console.error("[Workspace] 更新漫画信息失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast);
         return result;
       }
@@ -400,7 +403,7 @@ export default function Workspace() {
     async (chapterId: string, subtitle?: string) => {
       const result = await updateChapter(chapterId, { subtitle });
       if (!result.success) {
-        console.error("[Workspace] 更新章节信息失败:", result.error);
+        console.error("[Workspace] 更新章节信息失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast);
         return result;
       }
@@ -414,7 +417,7 @@ export default function Workspace() {
     async (comicId: string): Promise<Result<void>> => {
       const result = await deleteComic(comicId);
       if (!result.success) {
-        console.error("[Workspace] 删除漫画失败:", result.error);
+        console.error("[Workspace] 删除漫画失败:", result.error); // eslint-disable-line no-console
         return result;
       }
 
@@ -430,7 +433,7 @@ export default function Workspace() {
     async (comicId: string): Promise<Result<void>> => {
       const result = await archiveComic(comicId);
       if (!result.success) {
-        console.error("[Workspace] 归档漫画失败:", result.error);
+        console.error("[Workspace] 归档漫画失败:", result.error); // eslint-disable-line no-console
         return result;
       }
 
@@ -455,7 +458,7 @@ export default function Workspace() {
         <div>
           <p className={clsx("text-md text-slate-400")}>欢迎回来</p>
           <h1 className={clsx("mt-0.5 ml-1 text-3xl font-bold text-slate-700")}>
-            {userName}
+            {username}
           </h1>
         </div>
         {selectedTeamId && (
@@ -554,7 +557,7 @@ export default function Workspace() {
           >
             <button
               type="button"
-              onClick={() => setMobileTab(0)}
+              onClick={() => { setMobileTab(0); }}
               className="flex items-center gap-2"
             >
               <span
@@ -576,7 +579,7 @@ export default function Workspace() {
             </button>
             <button
               type="button"
-              onClick={() => setMobileTab(1)}
+              onClick={() => { setMobileTab(1); }}
               className="flex items-center gap-2"
             >
               <span
@@ -674,7 +677,7 @@ export default function Workspace() {
           onUpdateComic={handleUpdateComic}
           onUpdateChapter={handleUpdateChapter}
           onResolveActiveMember={resolveActiveMember}
-          onClose={() => clearComicDetail(true)}
+          onClose={() => { clearComicDetail(true); }}
         />
       )}
     </>

@@ -79,13 +79,14 @@ function createDataSource({
   termbaseItems = termbases,
   termItems = terms,
 }: {
-  termbaseItems?: TermbaseInfo[];
-  termItems?: TermInfo[];
+  termbaseItems?: TermbaseInfo[] | undefined;
+  termItems?: TermInfo[] | undefined;
 } = {}): TerminologyDataSource {
   const currentTermbases = [...termbaseItems];
   const currentTerms = [...termItems];
 
   return {
+    // eslint-disable-next-line @typescript-eslint/require-await
     listTermbases: async ({ fuzzyName, offset, limit }) => {
       const query = fuzzyName?.toLocaleLowerCase();
       const filtered = query
@@ -93,6 +94,7 @@ function createDataSource({
         : currentTermbases;
       return { success: true, data: filterPage(filtered, offset, limit) };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     listTerms: async ({ fuzzySource, offset, limit }) => {
       const query = fuzzySource?.toLocaleLowerCase();
       const filtered = query
@@ -100,8 +102,9 @@ function createDataSource({
         : currentTerms;
       return { success: true, data: filterPage(filtered, offset, limit) };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     createTermbase: async (args) => {
-      const id = `termbase-created-${currentTermbases.length + 1}`;
+      const id = `termbase-created-${String(currentTermbases.length + 1)}`;
       currentTermbases.unshift({
         id,
         comicId: "comic-1",
@@ -114,18 +117,21 @@ function createDataSource({
       });
       return { success: true, data: id };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     updateTermbase: async (id, args) => {
       const item = currentTermbases.find((termbase) => termbase.id === id);
-      if (item) Object.assign(item, args, { description: args.description ?? "" });
+      if (item) {Object.assign(item, args, { description: args.description ?? "" });}
       return { success: true, data: undefined };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     deleteTermbase: async (id) => {
       const index = currentTermbases.findIndex((termbase) => termbase.id === id);
-      if (index >= 0) currentTermbases.splice(index, 1);
+      if (index !== -1) {currentTermbases.splice(index, 1);}
       return { success: true, data: undefined };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     createTerm: async (args) => {
-      const id = `term-created-${currentTerms.length + 1}`;
+      const id = `term-created-${String(currentTerms.length + 1)}`;
       currentTerms.unshift({
         id,
         termbaseId: args.termbaseId,
@@ -138,23 +144,25 @@ function createDataSource({
       });
       return { success: true, data: id };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     updateTerm: async (id, args) => {
       const item = currentTerms.find((term) => term.id === id);
-      if (item) Object.assign(item, args);
+      if (item) {Object.assign(item, args);}
       return { success: true, data: undefined };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     deleteTerm: async (id) => {
       const index = currentTerms.findIndex((term) => term.id === id);
-      if (index >= 0) currentTerms.splice(index, 1);
+      if (index !== -1) {currentTerms.splice(index, 1);}
       return { success: true, data: undefined };
     },
   };
 }
 
-type CanvasFrameProps = {
+interface CanvasFrameProps {
   children: ReactNode;
   width: number;
-};
+}
 
 function CanvasFrame({ children, width }: CanvasFrameProps) {
   return (
@@ -205,8 +213,8 @@ type Story = StoryObj<typeof TerminologyLookupBar>;
 export const Unselected: Story = {
   args: { dataSource: createDataSource() },
   play: async ({ canvasElement }) => {
-    await waitFor(() => {
-      expect(Math.round(lookupWidth(canvasElement))).toBe(180);
+    await waitFor(async () => {
+      await expect(Math.round(lookupWidth(canvasElement))).toBe(180);
     }, { timeout: 1000 });
   },
 };
@@ -216,11 +224,11 @@ export const MixedTermbases: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    await waitFor(() => {
-      expect(canvas.getByText("角色称谓")).toBeVisible();
-      expect(canvas.getByText("团队")).toBeVisible();
-      expect(canvas.getAllByText("本作")).toHaveLength(2);
-      expect(Math.round(lookupWidth(canvasElement))).toBe(360);
+    await waitFor(async () => {
+      await expect(canvas.getByText("角色称谓")).toBeVisible();
+      await expect(canvas.getByText("团队")).toBeVisible();
+      await expect(canvas.getAllByText("本作")).toHaveLength(2);
+      await expect(Math.round(lookupWidth(canvasElement))).toBe(360);
     }, { timeout: 3000 });
   },
 };
@@ -231,11 +239,13 @@ export const TermList: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
     const option = await canvas.findByRole("option", { name: /角色称谓/ });
-    await waitFor(() => expect(option).toBeVisible(), { timeout: 3000 });
+    await waitFor(async () => {
+      await expect(option).toBeVisible();
+    }, { timeout: 3000 });
     await userEvent.click(option);
     await userEvent.click(canvas.getByRole("textbox", { name: "搜索术语原文" }));
-    await waitFor(() => {
-      expect(canvas.getByText("アリシア")).toBeVisible();
+    await waitFor(async () => {
+      await expect(canvas.getByText("アリシア")).toBeVisible();
     }, { timeout: 3000 });
   },
 };
@@ -247,9 +257,9 @@ export const DebouncedSearch: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
     const search = canvas.getByRole("textbox", { name: "搜索术语库名称" });
     await userEvent.type(search, "地名");
-    await waitFor(() => {
-      expect(canvas.getByRole("option", { name: /地名/ })).toBeVisible();
-      expect(canvas.queryByRole("option", { name: /角色称谓/ })).toBeNull();
+    await waitFor(async () => {
+      await expect(canvas.getByRole("option", { name: /地名/ })).toBeVisible();
+      await expect(canvas.queryByRole("option", { name: /角色称谓/ })).toBeNull();
     }, { timeout: 3000 });
   },
 };
@@ -263,8 +273,8 @@ export const CreateTermbase: Story = {
     await userEvent.click(await canvas.findByRole("button", { name: "新建术语库" }));
     await userEvent.type(page.getByRole("textbox", { name: "名称" }), "战斗用语");
     await userEvent.click(page.getByRole("button", { name: "保存" }));
-    await waitFor(() => {
-      expect(canvas.getByRole("option", { name: /战斗用语/ })).toBeVisible();
+    await waitFor(async () => {
+      await expect(canvas.getByRole("option", { name: /战斗用语/ })).toBeVisible();
     }, { timeout: 3000 });
   },
 };
@@ -277,12 +287,12 @@ export const EditTermbaseByLongPress: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
     const option = await canvas.findByRole("option", { name: /角色称谓/ });
     await longPress(option);
-    await waitFor(() => {
-      expect(page.getByRole("dialog", { name: "编辑术语库" })).toBeVisible();
+    await waitFor(async () => {
+      await expect(page.getByRole("dialog", { name: "编辑术语库" })).toBeVisible();
     });
     await userEvent.click(page.getByRole("button", { name: "删除术语库" }));
-    expect(page.getByRole("dialog", { name: "删除术语库" })).toBeVisible();
-    expect(page.getByText("删除后，其中全部术语也会一并删除。")).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "删除术语库" })).toBeVisible();
+    await expect(page.getByText("删除后，其中全部术语也会一并删除。")).toBeVisible();
   },
 };
 
@@ -298,8 +308,8 @@ export const CreateTerm: Story = {
     await userEvent.type(page.getByRole("textbox", { name: "原文" }), "副団長");
     await userEvent.type(page.getByRole("textbox", { name: "译名 1" }), "副团长");
     await userEvent.click(page.getByRole("button", { name: "保存" }));
-    await waitFor(() => {
-      expect(canvas.getByText("副団長")).toBeVisible();
+    await waitFor(async () => {
+      await expect(canvas.getByText("副団長")).toBeVisible();
     }, { timeout: 3000 });
   },
 };
@@ -311,9 +321,9 @@ export const TeamTermbaseReadOnly: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
     await userEvent.click(await canvas.findByRole("option", { name: /奇幻世界共用词/ }));
     await userEvent.click(canvas.getByRole("textbox", { name: "搜索术语原文" }));
-    await waitFor(() => {
-      expect(canvas.getByText("奇幻世界共用词")).toBeVisible();
-      expect(canvas.queryByRole("button", { name: "新建术语" })).toBeNull();
+    await waitFor(async () => {
+      await expect(canvas.getByText("奇幻世界共用词")).toBeVisible();
+      await expect(canvas.queryByRole("button", { name: "新建术语" })).toBeNull();
     }, { timeout: 3000 });
   },
 };
@@ -322,7 +332,7 @@ export const Loading: Story = {
   args: {
     dataSource: {
       ...createDataSource(),
-      listTermbases: () => new Promise(() => undefined),
+      listTermbases: () => new Promise(() => { return; }),
     },
   },
   play: async ({ canvasElement }) => {
@@ -336,8 +346,8 @@ export const Empty: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    await waitFor(() => {
-      expect(canvas.getByText("没有找到术语库")).toBeVisible();
+    await waitFor(async () => {
+      await expect(canvas.getByText("没有找到术语库")).toBeVisible();
     }, { timeout: 3000 });
   },
 };
@@ -346,14 +356,15 @@ export const ErrorWithRetry: Story = {
   args: {
     dataSource: {
       ...createDataSource(),
+      // eslint-disable-next-line @typescript-eslint/require-await
       listTermbases: async () => ({ success: false, error: "术语库暂时不可用" }),
     },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    await waitFor(() => {
-      expect(canvas.getByText("术语库暂时不可用")).toBeVisible();
+    await waitFor(async () => {
+      await expect(canvas.getByText("术语库暂时不可用")).toBeVisible();
     }, { timeout: 3000 });
   },
 };
@@ -364,9 +375,9 @@ export const Mobile390: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    await waitFor(() => {
-      expect(canvas.getByText("角色称谓")).toBeVisible();
-      expect(Math.round(lookupWidth(canvasElement))).toBe(374);
+    await waitFor(async () => {
+      await expect(canvas.getByText("角色称谓")).toBeVisible();
+      await expect(Math.round(lookupWidth(canvasElement))).toBe(374);
     }, { timeout: 3000 });
   },
 };
@@ -377,9 +388,9 @@ export const Tablet768: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "选择术语库" }));
-    await waitFor(() => {
-      expect(canvas.getByText("角色称谓")).toBeVisible();
-      expect(Math.round(lookupWidth(canvasElement))).toBe(307);
+    await waitFor(async () => {
+      await expect(canvas.getByText("角色称谓")).toBeVisible();
+      await expect(Math.round(lookupWidth(canvasElement))).toBe(307);
     }, { timeout: 3000 });
   },
 };

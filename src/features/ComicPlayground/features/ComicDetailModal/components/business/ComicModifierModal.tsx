@@ -5,17 +5,17 @@ import IconInputRow from "@/components/ui/IconInputRow";
 import type { ComicInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
 
-type UpdateComicArgs = {
+interface UpdateComicArgs {
   title: string;
   author: string;
-  description?: string;
-};
+  description?: string | undefined;
+}
 
-type Props = {
+interface Props {
   comicInfo: ComicInfo;
   onUpdate: (args: UpdateComicArgs) => Promise<Result<void>>;
   onClose: () => void;
-};
+}
 
 export default function ComicModifierModal({
   comicInfo,
@@ -23,17 +23,17 @@ export default function ComicModifierModal({
   onClose,
 }: Props) {
   const [formData, setFormData] = useState({
-    title: comicInfo.title ?? "",
-    author: comicInfo.author ?? "",
-    description: comicInfo.description ?? "",
+    title: comicInfo.title,
+    author: comicInfo.author,
+    description: comicInfo.description,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isValid = formData.title.trim().length > 0 && formData.author.trim().length > 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {return;}
     setIsSubmitting(true);
     const result = await onUpdate({
       title: formData.title.trim(),
@@ -41,7 +41,7 @@ export default function ComicModifierModal({
       description: formData.description.trim() || undefined,
     });
     setIsSubmitting(false);
-    if (result.success) onClose();
+    if (result.success) {onClose();}
   };
 
   return (
@@ -70,20 +70,20 @@ export default function ComicModifierModal({
           <h3 className="text-lg font-bold text-slate-800">修改作品信息</h3>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+        <form onSubmit={(event) => { void handleSubmit(event); }} className="px-5 pb-5 pt-3">
           <div className="space-y-2.5">
             <IconInputRow
               icon={<Type size={14} />}
               placeholder="标题"
               value={formData.title}
-              onChange={(v) => setFormData({ ...formData, title: v })}
+              onChange={(v) => { setFormData({ ...formData, title: v }); }}
             />
 
             <IconInputRow
               icon={<User size={14} />}
               placeholder="作者"
               value={formData.author}
-              onChange={(v) => setFormData({ ...formData, author: v })}
+              onChange={(v) => { setFormData({ ...formData, author: v }); }}
             />
 
             <div
@@ -104,7 +104,7 @@ export default function ComicModifierModal({
                 )}
                 value={formData.description}
                 onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                  { setFormData({ ...formData, description: e.target.value }); }
                 }
               />
             </div>

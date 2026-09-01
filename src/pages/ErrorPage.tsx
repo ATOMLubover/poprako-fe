@@ -2,14 +2,20 @@ import clsx from "clsx";
 import { TreePine } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export type Props = {
-  /** 错误状态码，例如 404, 500 */
-  code?: string | number;
-  /** 错误标题 */
-  title?: string;
-  /** 详细描述信息 */
-  message?: string;
-};
+export interface Props {
+  /**
+  错误状态码，例如 404, 500
+  */
+  code?: string | number | undefined;
+  /**
+  错误标题
+  */
+  title?: string | undefined;
+  /**
+  详细描述信息
+  */
+  message?: string | undefined;
+}
 
 export default function ErrorPage({
   code = "404",
@@ -19,7 +25,7 @@ export default function ErrorPage({
   const navigate = useNavigate();
 
   const onGoHome = () => {
-    navigate("/");
+    void navigate("/");
   };
 
   const styles = {
@@ -109,11 +115,9 @@ export default function ErrorPage({
 
       {/* 按钮区域 */}
       <div className={styles.buttonGroup}>
-        {onGoHome && (
-          <button onClick={onGoHome} className={styles.primaryButton}>
+        <button type="button" onClick={onGoHome} className={styles.primaryButton}>
             返回首页
-          </button>
-        )}
+        </button>
       </div>
     </div>
   );

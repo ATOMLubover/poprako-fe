@@ -3,10 +3,10 @@ import { Menu } from "lucide-react";
 import type { ToolboxOption } from "../../types/types";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   options: ToolboxOption[];
-  direction?: "up" | "down";
-};
+  direction?: "up" | "down" | undefined;
+}
 
 export default function ToolboxDropdown({ options, direction = "down" }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -40,7 +40,7 @@ export default function ToolboxDropdown({ options, direction = "down" }: Props) 
       >
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => { setIsOpen(!isOpen); }}
           className={clsx(
             "w-8 h-8 flex items-center justify-center rounded-md transition-all duration-300 border",
             isOpen
@@ -65,16 +65,16 @@ export default function ToolboxDropdown({ options, direction = "down" }: Props) 
             )}
           >
             <div className="flex flex-col divide-y divide-gray-50">
-              {options.map((item, index) => (
+              {options.map((item) => (
                 <button
                   type="button"
-                  key={index}
+                  key={item.title}
                   className={clsx(
                     "w-8 h-8 flex items-center justify-center",
                     "transition-all duration-200 hover:bg-gray-50 group",
                   )}
                   onClick={() => {
-                    item.onClick();
+                    void item.onClick();
                     setIsOpen(false);
                   }}
                   title={item.title}

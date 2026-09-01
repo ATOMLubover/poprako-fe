@@ -8,10 +8,10 @@ import type { CreateWorksetArgs } from "../types/workset";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
-type Args = {
+interface Args {
   teamId: string | null;
   showToast: ShowToast;
-};
+}
 
 export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
   const [worksets, setWorksets] = useState<WorksetInfo[]>([]);
@@ -26,7 +26,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
 
     const result = await listWorksets({ teamId, offset: 0, limit: 20 });
     if (!result.success) {
-      console.error("[ComicPlayground] 加载作品集失败:", result.error);
+      console.error("[ComicPlayground] 加载作品集失败:", result.error); // eslint-disable-line no-console
       showLocalApiFailure(result, showToast);
       return;
     }
@@ -35,7 +35,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
     setActiveWorksetId((prev) =>
       result.data.some((workset) => workset.id === prev)
         ? prev
-        : result.data[0]?.id || "",
+        : result.data[0]?.id ?? "",
     );
   }, [showToast, teamId]);
 
@@ -48,7 +48,7 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
     async (worksetId: string) => {
       const result = await deleteWorkset(worksetId);
       if (!result.success) {
-        console.error("[ComicPlayground] 删除作品集失败:", result.error);
+        console.error("[ComicPlayground] 删除作品集失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast);
         return;
       }
@@ -61,11 +61,11 @@ export function useComicPlaygroundWorksets({ teamId, showToast }: Args) {
   const handleCreateWorkset = useCallback(
     async (args: CreateWorksetArgs): Promise<Result<string>> => {
       const result = await createWorkset(args);
-      if (!result.success) {
-        console.error("[ComicPlayground] 创建作品集失败:", result.error);
-        showLocalApiFailure(result, showToast);
-      } else {
+      if (result.success) {
         await loadWorksets();
+      } else {
+        console.error("[ComicPlayground] 创建作品集失败:", result.error); // eslint-disable-line no-console
+        showLocalApiFailure(result, showToast);
       }
 
       return result;

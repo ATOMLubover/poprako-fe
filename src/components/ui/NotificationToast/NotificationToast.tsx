@@ -40,14 +40,14 @@ export default function NotificationToast() {
   }, [hideToast]);
 
   useEffect(() => {
-    if (!toast) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!toast) {return;}
+    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
     setIsLeaving(false);
     const timer = setTimeout(handleClose, TOAST_DURATION);
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [toast, handleClose]);
 
-  if (!toast) return null;
+  if (!toast) {return null;}
 
   return createPortal(
     <div
@@ -91,6 +91,7 @@ export default function NotificationToast() {
         </span>
 
         <button
+          type="button"
           onClick={handleClose}
           className={clsx(
             "ml-2 p-1 rounded-md shrink-0",

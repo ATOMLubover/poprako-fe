@@ -3,12 +3,12 @@ import { persist } from "zustand/middleware";
 import type { LoginState } from "@/types/loginState";
 import type { SysMailInfo } from "@/types/sysMail";
 
-export type SysMailCache = {
+export interface SysMailCache {
   mails: SysMailInfo[];
   hasMore: boolean;
-};
+}
 
-type AppStore = {
+interface AppStore {
   accessToken: string | null;
   getAccessToken: () => string | null;
   setAccessToken: (token: string | null) => void;
@@ -21,7 +21,7 @@ type AppStore = {
   sysMailCache: SysMailCache | null;
   setSysMailCache: (cache: SysMailCache | null) => void;
   markSysMailCacheRead: (mailId: string) => void;
-};
+}
 
 export const useAppStore = create<AppStore>()(
   persist(
@@ -35,9 +35,9 @@ export const useAppStore = create<AppStore>()(
         set((curr) => ({
           loginState: state,
           selectedTeamId: state
-            ? state.memberInfos.some((m) => m.teamId === curr.selectedTeamId)
+            ? (state.memberInfos.some((m) => m.teamId === curr.selectedTeamId)
               ? curr.selectedTeamId
-              : state.memberInfos[0]?.teamId ?? null
+              : state.memberInfos[0]?.teamId ?? null)
             : null,
         })),
       selectedTeamId: null,
@@ -47,7 +47,7 @@ export const useAppStore = create<AppStore>()(
       setSysMailCache: (cache) => set({ sysMailCache: cache }),
       markSysMailCacheRead: (mailId) =>
         set((curr) => {
-          if (!curr.sysMailCache) return curr;
+          if (!curr.sysMailCache) {return curr;}
           return {
             sysMailCache: {
               ...curr.sysMailCache,

@@ -1,7 +1,7 @@
-type HashRequest = {
+interface HashRequest {
   id: number;
   file: File;
-};
+}
 
 type HashResponse =
   | { id: number; imageHash: string }
@@ -10,12 +10,13 @@ type HashResponse =
 function toBase64(bytes: Uint8Array): string {
   let binary = "";
 
-  for (const byte of bytes) binary += String.fromCharCode(byte);
+  for (const byte of bytes) {binary += String.fromCodePoint(byte);}
 
   return btoa(binary);
 }
 
-self.onmessage = async (event: MessageEvent<HashRequest>) => {
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+addEventListener("message", async (event: MessageEvent<HashRequest>) => {
   const { id, file } = event.data;
 
   try {
@@ -26,13 +27,13 @@ self.onmessage = async (event: MessageEvent<HashRequest>) => {
       imageHash: toBase64(new Uint8Array(digest)),
     };
 
-    self.postMessage(response);
+    postMessage(response);
   } catch (error) {
     const response: HashResponse = {
       id,
       error: error instanceof Error ? error.message : "计算图片哈希失败",
     };
 
-    self.postMessage(response);
+    postMessage(response);
   }
-};
+});

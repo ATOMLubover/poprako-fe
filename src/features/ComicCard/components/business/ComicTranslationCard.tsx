@@ -11,26 +11,26 @@ import {
 import type { ChapterInfo, ComicInfo } from "@/types";
 import MultiProgressBar from "@/components/ui/MultiProgressBar";
 
-type Props = {
+interface Props {
   comicInfo: ComicInfo;
-  chapter?: ChapterInfo;
+  chapter?: ChapterInfo | undefined;
   onClick: () => void;
-};
+}
 
 function getActivityStatusColor(lastActiveAt: number | undefined): string {
-  if (!lastActiveAt) return "bg-stone-300 text-stone-600";
+  if (!lastActiveAt) {return "bg-stone-300 text-stone-600";}
   const diff = Date.now() - lastActiveAt;
   const threeMonths = 1000 * 60 * 60 * 24 * 90;
+  if (diff <= threeMonths) {return "bg-green-800/60 text-white/85";}
   const sixMonths = 1000 * 60 * 60 * 24 * 180;
-  if (diff <= threeMonths) return "bg-green-800/60 text-white/85";
-  if (diff <= sixMonths) return "bg-amber-200 text-amber-700";
+  if (diff <= sixMonths) {return "bg-amber-200 text-amber-700";}
   return "bg-stone-300 text-stone-600";
 }
 
 function formatDate(ts: number | undefined): string {
-  if (!ts) return "";
+  if (!ts) {return "";}
   const d = new Date(ts);
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  return `${String(d.getFullYear())}/${String(d.getMonth() + 1)}/${String(d.getDate())}`;
 }
 
 function DataTag({ icon, value }: { icon: React.ReactNode; value: number }) {
@@ -69,10 +69,12 @@ export default function ComicTranslationCard({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
+        if (!(e.key === "Enter" || e.key === " ")) {
+          return;
         }
+
+        e.preventDefault();
+        onClick();
       }}
       className={clsx(
         "w-full h-26 flex",

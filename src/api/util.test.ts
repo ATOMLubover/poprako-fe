@@ -26,7 +26,7 @@ describe("api util", () => {
 
   test("serializes array query params as repeated keys for poprako-r incl", async () => {
     const fetchMock = installFetch(
-      new Response(JSON.stringify({ code: 0, data: [] }), {
+      Response.json({ code: 0, data: [] }, {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -39,14 +39,14 @@ describe("api util", () => {
       limit: 100,
     });
 
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "/api/v1/members?owner_id=user_1&incl=team&incl=user&offset=0&limit=100",
     );
   });
 
   test("rejects non-zero application codes even when HTTP status is ok", async () => {
     installFetch(
-      new Response(JSON.stringify({ code: 3, message: "auth failed" }), {
+      Response.json({ code: 3, message: "auth failed" }, {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -61,7 +61,7 @@ describe("api util", () => {
   test("reports backend 422 messages exactly once at the HTTP boundary", async () => {
     const showToast = vi.spyOn(useToastStore.getState(), "showToast");
     installFetch(
-      new Response(JSON.stringify({ code: 422, message: "后端校验消息" }), {
+      Response.json({ code: 422, message: "后端校验消息" }, {
         status: 422,
         headers: { "Content-Type": "application/json" },
       }),
@@ -97,10 +97,10 @@ describe("api util", () => {
   });
 
   test("logs a protocol error when a 422 response omits message", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, "error").mockImplementation(vi.fn());
     const showToast = vi.spyOn(useToastStore.getState(), "showToast");
     installFetch(
-      new Response(JSON.stringify({ code: 422 }), {
+      Response.json({ code: 422 }, {
         status: 422,
         statusText: "Unprocessable Entity",
         headers: { "Content-Type": "application/json" },
@@ -134,13 +134,13 @@ describe("api util", () => {
   test("accepts empty 204 responses as undefined data", async () => {
     installFetch(new Response(null, { status: 204 }));
 
-    await expect(api.post<void, Record<string, never>>("/auth/logout", {}))
+    await expect(api.post<undefined, Record<string, never>>("/auth/logout", {}))
       .resolves.toEqual({ success: true, data: undefined });
   });
 
   test("does not send cookies that can override authorization headers", async () => {
     const fetchMock = installFetch(
-      new Response(JSON.stringify({ code: 0, data: {} }), {
+      Response.json({ code: 0, data: {} }, {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),

@@ -6,11 +6,11 @@ import type { ChapterInfo } from "./chapter";
 import type { AssignmentInfo } from "./assignment";
 import { ensureHttpsUrl } from "@/utils/url";
 
-export type ComicInfo = {
+export interface ComicInfo {
   id: string;
 
   worksetId: string;
-  workset?: WorksetInfo;
+  workset?: WorksetInfo | undefined;
 
   index: number;
   chapterCount: number;
@@ -20,23 +20,23 @@ export type ComicInfo = {
   description: string;
 
   coverUrl: string;
-  coverThumbnailUrl?: string;
+  coverThumbnailUrl?: string | undefined;
   isCoverUploaded: boolean;
 
   creatorId: string;
-  creator?: UserInfo;
+  creator?: UserInfo | undefined;
 
-  pinnedChapter?: ChapterInfo;
-  pinnedChapterAssignments?: AssignmentInfo[];
+  pinnedChapter?: ChapterInfo | undefined;
+  pinnedChapterAssignments?: AssignmentInfo[] | undefined;
 
   lastActiveAt: number;
 
   createdAt: number;
   updatedAt: number;
-};
+}
 
 export function toComicInfo(raw?: RawComicInfo) {
-  if (!raw) return undefined;
+  if (!raw) {return;}
 
   return {
     id: raw.id,
@@ -53,7 +53,7 @@ export function toComicInfo(raw?: RawComicInfo) {
 
     coverUrl: ensureHttpsUrl(raw.cover_url),
     coverThumbnailUrl: ensureHttpsUrl(raw.cover_thumbnail_url),
-    isCoverUploaded: !!raw.cover_url,
+    isCoverUploaded: Boolean(raw.cover_url),
 
     creatorId: raw.creator_id,
     creator: toUserInfo(raw.creator),
@@ -65,22 +65,22 @@ export function toComicInfo(raw?: RawComicInfo) {
   } as ComicInfo;
 }
 
-export type CreateComicArgs = {
+export interface CreateComicArgs {
   worksetId: string;
   title: string;
   author: string;
-  description?: string;
-  firstChapterTitle?: string;
-};
+  description?: string | undefined;
+  firstChapterTitle?: string | undefined;
+}
 
-export type CreateComicResult = { id: string };
+export interface CreateComicResult { id: string }
 
-export type UpdateComicArgs = {
+export interface UpdateComicArgs {
   id: string;
-  title?: string;
-  author?: string;
-  description?: string;
-};
+  title?: string | undefined;
+  author?: string | undefined;
+  description?: string | undefined;
+}
 function toUserInfo(creator: RawUserInfo | undefined): UserInfo | undefined {
   return creator ? unwrapRawUserInfo(creator) : undefined;
 }

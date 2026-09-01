@@ -1,17 +1,17 @@
-export type LoginUserArgs = { qq: string; password: string };
-export type LoginUserResult = { accessToken: string; userId: string };
+export interface LoginUserArgs { qq: string; password: string }
+export interface LoginUserResult { accessToken: string; userId: string }
 
-export type RegisterUserArgs = {
+export interface RegisterUserArgs {
   qq: string;
   password: string;
   name: string;
   invitationCode: string;
-};
+}
 export type RegisterUserResult = LoginUserResult;
 
-export type UpdateUserArgs = {
+export interface UpdateUserArgs {
   userId: string;
-  qq?: string;
-  name?: string;
-  password?: string;
-};
+  qq?: string | undefined;
+  name?: string | undefined;
+  password?: string | undefined;
+}

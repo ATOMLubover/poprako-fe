@@ -5,32 +5,32 @@ import IconInputRow from "@/components/ui/IconInputRow";
 import type { ChapterInfo } from "@/types";
 import type { Result } from "@/types/utils/result";
 
-type UpdateChapterArgs = {
-  subtitle?: string;
-};
+interface UpdateChapterArgs {
+  subtitle?: string | undefined;
+}
 
-type Props = {
+interface Props {
   chapter: ChapterInfo;
   onUpdate: (args: UpdateChapterArgs) => Promise<Result<void>>;
   onClose: () => void;
-};
+}
 
 export default function ChapterModifierModal({
   chapter,
   onUpdate,
   onClose,
 }: Props) {
-  const [subtitle, setSubtitle] = useState(chapter.subtitle ?? "");
+  const [subtitle, setSubtitle] = useState(chapter.subtitle);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     const result = await onUpdate({
       subtitle: subtitle.trim() || undefined,
     });
     setIsSubmitting(false);
-    if (result.success) onClose();
+    if (result.success) {onClose();}
   };
 
   return (
@@ -62,7 +62,7 @@ export default function ChapterModifierModal({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+        <form onSubmit={(event) => { void handleSubmit(event); }} className="px-5 pb-5 pt-3">
           <IconInputRow
             icon={<AlignLeft size={14} />}
             placeholder="章节副标题"

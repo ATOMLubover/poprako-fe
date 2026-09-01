@@ -2,6 +2,7 @@ import type { ChangeEvent } from "react";
 import type {
   ChapterInfo,
   ComicInfo,
+  AllocatedPage,
   PageInfo,
   UploadProgressCallbacks,
 } from "@/types";
@@ -20,11 +21,11 @@ import type {
 import type { ChapterWorkflowRecord } from "@/types/chapterWorkflowRecord";
 import type { UserInfo } from "@/types/user";
 
-export type ExportProgressState = {
+export interface ExportProgressState {
   title: string;
   description: string;
   progress: number;
-};
+}
 
 export const DEFAULT_EXPORT_PROGRESS: ExportProgressState = {
   title: "正在准备下载",
@@ -43,11 +44,11 @@ export const ROLE_TITLE_LABEL: Record<Role, string> = {
   admin: "管理员",
 };
 
-export type ComicDetailModalProps = {
+export interface ComicDetailModalProps {
   comicInfo: ComicInfo;
   pinnedChapter: ChapterInfo | null;
-  pinnedChapterAssignments?: AssignmentInfo[];
-  initialChapterId?: string | null;
+  pinnedChapterAssignments?: AssignmentInfo[] | undefined;
+  initialChapterId?: string | null | undefined;
   onLoadChapters: (args: ListChapterArgs) => Promise<Result<ChapterInfo[]>>;
   onLoadAssignments: (chapterId: string) => Promise<Result<AssignmentInfo[]>>;
   onLoadPages: (chapterId: string) => Promise<Result<PageInfo[]>>;
@@ -61,74 +62,74 @@ export type ComicDetailModalProps = {
     chapterId: string,
     transition: WorkflowTransition,
   ) => Promise<Result<void>>;
-  onRemoveAssignment?: (
+  onRemoveAssignment?: ((
     chapterId: string,
     userId: string,
     role: Role,
-  ) => Promise<Result<void>>;
-  onLoadAssignableMembers?: (
+  ) => Promise<Result<void>>) | undefined;
+  onLoadAssignableMembers?: ((
     chapterId: string,
     args: {
       role: Role;
-      keyword?: string;
+      keyword?: string | undefined;
       offset: number;
       limit: number;
     },
-  ) => Promise<Result<MemberInfo[]>>;
-  onAddAssignment?: (
+  ) => Promise<Result<MemberInfo[]>>) | undefined;
+  onAddAssignment?: ((
     chapterId: string,
     userId: string,
     role: Role,
-  ) => Promise<Result<void>>;
-  onCreateChapter?: (args: {
+  ) => Promise<Result<void>>) | undefined;
+  onCreateChapter?: ((args: {
     comicId: string;
-    subtitle?: string;
-    presetAssignmentRoles?: number;
-  }) => Promise<Result<string>>;
-  onDeleteChapter?: (chapterId: string) => Promise<Result<void>>;
-  onNavigateToTranslator?: (
+    subtitle?: string | undefined;
+    presetAssignmentRoles?: number | undefined;
+  }) => Promise<Result<string>>) | undefined;
+  onDeleteChapter?: ((chapterId: string) => Promise<Result<void>>) | undefined;
+  onNavigateToTranslator?: ((
     chapterId: string,
     pageId: string,
-    readOnly?: boolean,
-  ) => void;
-  currentUserId?: string | null;
-  onAddPages?: (
+    isReadOnly?: boolean,
+  ) => void) | undefined;
+  currentUserId?: string | null | undefined;
+  onAddPages?: ((
     chapterId: string,
     files: File[],
     callbacks?: UploadProgressCallbacks,
-  ) => Promise<void>;
-  onDeleteChapterPages?: (chapterId: string) => Promise<Result<void>>;
-  onAllocPageUpload?: (args: {
+  ) => Promise<void>) | undefined;
+  onDeleteChapterPages?: ((chapterId: string) => Promise<Result<void>>) | undefined;
+  onAllocPageUpload?: ((args: {
     pageId: string;
     imageHash: string;
     newByteLen: number;
     extension: string;
-  }) => Promise<Result<import("@/types").AllocatedPage>>;
-  onJoinChapterRole?: (chapterId: string, role: Role) => Promise<Result<void>>;
-  onImportChapter?: (args: {
+  }) => Promise<Result<AllocatedPage>>) | undefined;
+  onJoinChapterRole?: ((chapterId: string, role: Role) => Promise<Result<void>>) | undefined;
+  onImportChapter?: ((args: {
     chapterId: string;
     content: string;
     format: ImportChapterFormat;
-  }) => Promise<Result<ImportChapterResult>>;
-  onExportChapter?: (
+  }) => Promise<Result<ImportChapterResult>>) | undefined;
+  onExportChapter?: ((
     chapterId: string,
-    options?: { signal?: AbortSignal },
-  ) => Promise<Result<ChapterExports>>;
-  onArchiveComic?: (comicId: string) => Promise<Result<void>>;
-  onDeleteComic?: (comicId: string) => Promise<Result<void>>;
-  onUpdateComic?: (args: {
+    options?: { signal?: AbortSignal | undefined },
+  ) => Promise<Result<ChapterExports>>) | undefined;
+  onArchiveComic?: ((comicId: string) => Promise<Result<void>>) | undefined;
+  onDeleteComic?: ((comicId: string) => Promise<Result<void>>) | undefined;
+  onUpdateComic?: ((args: {
     title: string;
     author: string;
-    description?: string;
-  }) => Promise<Result<void>>;
-  onUpdateChapter?: (chapterId: string, subtitle?: string) => Promise<Result<void>>;
+    description?: string | undefined;
+  }) => Promise<Result<void>>) | undefined;
+  onUpdateChapter?: ((chapterId: string, subtitle?: string) => Promise<Result<void>>) | undefined;
   onResolveActiveMember: () => MemberInfo | null | Promise<MemberInfo | null>;
   onClose: () => void;
-};
+}
 
-export type CoverUploadState = {
+export interface CoverUploadState {
   isUploadingCover: boolean;
   coverUploadProgress: number | null;
   localCoverUrl: string | null;
   handleCoverFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
-};
+}

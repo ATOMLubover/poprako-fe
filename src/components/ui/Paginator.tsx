@@ -2,24 +2,24 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 
-export type PageStat = {
+export interface PageStat {
   totalUnits: number;
   translatedUnits: number;
   proofreadUnits: number;
-};
+}
 
-type Props = {
+interface Props {
   // 0-based，显示时会自动加 1
   currPageIndex: number;
   totalPageCount: number;
   // 跳转到指定页，newPageIndex 是 0-based 的
   // 如果没有提供，则不将页码显示在可交互输入框中，而是直接显示为文本
-  onPageIndexChange?: (newPageIndex: number) => void;
+  onPageIndexChange?: ((newPageIndex: number) => void) | undefined;
   onPageUp: () => void;
   onPageDown: () => void;
   // 每页的 unit 统计，提供后中间区域变为可点击并展开页列表下拉
-  pageStats?: PageStat[];
-};
+  pageStats?: PageStat[] | undefined;
+}
 
 export default function Paginator({
   currPageIndex,
@@ -39,12 +39,12 @@ export default function Paginator({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
     setInputValue(displayPage.toString());
   }, [displayPage]);
 
   useEffect(() => {
-    if (!isDropdownOpen) return;
+    if (!isDropdownOpen) {return;}
     const handlePointerDown = (e: PointerEvent) => {
       if (
         containerRef.current &&
@@ -54,11 +54,11 @@ export default function Paginator({
       }
     };
     document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
+    return () => { document.removeEventListener("pointerdown", handlePointerDown); };
   }, [isDropdownOpen]);
 
   useEffect(() => {
-    if (!isDropdownOpen || !dropdownRef.current) return;
+    if (!isDropdownOpen || !dropdownRef.current) {return;}
     requestAnimationFrame(() => {
       const activeItem = dropdownRef.current?.children[
         currPageIndex
@@ -69,9 +69,9 @@ export default function Paginator({
 
   const commitInput = useCallback(
     (v: string) => {
-      if (!onPageIndexChange) return;
-      const page = parseInt(v, 10);
-      if (isNaN(page)) {
+      if (!onPageIndexChange) {return;}
+      const page = Number(v.trim());
+      if (Number.isNaN(page)) {
         setInputValue(displayPage.toString());
         return;
       }
@@ -95,6 +95,7 @@ export default function Paginator({
           )}
         >
           <button
+            type="button"
             onClick={onPageUp}
             disabled={isFirst}
             aria-label="Previous page"
@@ -120,7 +121,8 @@ export default function Paginator({
           >
             {pageStats ? (
               <button
-                onClick={() => setIsDropdownOpen((v) => !v)}
+                type="button"
+                onClick={() => { setIsDropdownOpen((v) => !v); }}
                 aria-label="Open page list"
                 aria-expanded={isDropdownOpen}
                 className={clsx(
@@ -140,22 +142,24 @@ export default function Paginator({
                   {totalPageCount}
                 </span>
               </button>
-            ) : onPageIndexChange ? (
+            ) : (onPageIndexChange ? (
               <>
                 <input
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e) => { setInputValue(e.target.value); }}
                   className={clsx(
                     "w-6 h-full text-center text-xs font-bold",
                     "bg-transparent border-none focus:outline-none",
                     "text-gray-900 p-0",
                   )}
-                  onBlur={(e) => commitInput(e.target.value)}
+                  onBlur={(e) => { commitInput(e.target.value); }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      commitInput(e.currentTarget.value);
-                      e.currentTarget.blur();
+                    if (e.key !== "Enter") {
+                      return;
                     }
+
+                    commitInput(e.currentTarget.value);
+                    e.currentTarget.blur();
                   }}
                   aria-label="Current page"
                 />
@@ -178,10 +182,11 @@ export default function Paginator({
                   {totalPageCount}
                 </span>
               </>
-            )}
+            ))}
           </div>
 
           <button
+            type="button"
             onClick={onPageDown}
             disabled={isLast}
             aria-label="Next page"
@@ -215,12 +220,13 @@ export default function Paginator({
               const dotColor =
                 stat.totalUnits > 0 && stat.proofreadUnits >= stat.totalUnits
                   ? "bg-green-500"
-                  : stat.totalUnits > 0 && stat.translatedUnits >= stat.totalUnits
+                  : (stat.totalUnits > 0 && stat.translatedUnits >= stat.totalUnits
                     ? "bg-orange-400"
-                    : "bg-gray-400";
+                    : "bg-gray-400");
               return (
               <button
-                key={idx}
+                type="button"
+                key={JSON.stringify(stat)}
                 onClick={() => {
                   onPageIndexChange?.(idx);
                   setIsDropdownOpen(false);
@@ -250,9 +256,11 @@ export default function Paginator({
         )}
       </div>
       {isDropdownOpen && pageStats && (
-        <div
+        <button
+          type="button"
+          aria-label="Close page list"
           className="fixed inset-0 z-40 bg-black/25"
-          onClick={() => setIsDropdownOpen(false)}
+          onClick={() => { setIsDropdownOpen(false); }}
         />
       )}
     </>

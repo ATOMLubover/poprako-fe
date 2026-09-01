@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   header: ReactNode;
   content: ReactNode;
   sidebar: ReactNode;
   isSidebarOpen: boolean;
   onCloseSidebar: () => void;
-};
+}
 
 export default function ComicListLayout({
   header,
@@ -31,7 +31,8 @@ export default function ComicListLayout({
 
       {/* sm 下遮罩层 */}
       {isSidebarOpen && (
-        <div
+        <button
+          type="button"
           className={clsx(
             "fixed inset-0 z-40 bg-slate-900/10",
             "transition-opacity md:hidden",

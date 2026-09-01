@@ -9,20 +9,20 @@ import type { AllocImageArgs } from "@/types/image";
 import type { Result } from "@/types/utils/result";
 import { api, toApiRequestError } from "./util";
 
-type UpdateUserPasswordArgs = {
+interface UpdateUserPasswordArgs {
   currentPassword: string;
   newPassword: string;
-};
+}
 
 export async function getMyUser() {
   const userInfo = await api.get<RawUserInfo>("/users/me");
-  if (!userInfo.success) throw toApiRequestError(userInfo);
+  if (!userInfo.success) {throw toApiRequestError(userInfo);}
   return unwrapRawUserInfo(userInfo.data);
 }
 
 export async function getUser(userId: string): Promise<Result<UserInfo>> {
   const result = await api.get<RawUserInfo>(`/users/${userId}`);
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return { success: true, data: unwrapRawUserInfo(result.data) };
 }
@@ -30,9 +30,9 @@ export async function getUser(userId: string): Promise<Result<UserInfo>> {
 export async function updateUserPassword(
   userId: string,
   args: UpdateUserPasswordArgs,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   return api.put<
-    void,
+    undefined,
     { current_password: string; new_password: string }
   >(`/users/${userId}/password`, {
     current_password: args.currentPassword,
@@ -52,7 +52,7 @@ export async function allocUserAvatarUpload(
     `/users/${userId}/avatar/alloc`,
     { image_hash: args.imageHash, new_byte_len: args.newByteLen, ext: args.extension },
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   return {
     success: true,
@@ -63,11 +63,11 @@ export async function allocUserAvatarUpload(
 export async function confirmUserAvatarUploaded(
   userId: string,
   imageVersion: number,
-): Promise<Result<void>> {
-  const res = await api.post<void, { image_version: number }>(
+): Promise<Result<undefined>> {
+  const res = await api.post<undefined, { image_version: number }>(
     `/users/${userId}/avatar/mark-uploaded`,
     { image_version: imageVersion },
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }

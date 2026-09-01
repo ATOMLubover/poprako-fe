@@ -1,10 +1,10 @@
 import type { RawTeamInfo } from "./team";
 
-export type RawWorksetInfo = {
+export interface RawWorksetInfo {
   id: string;
 
   team_id: string;
-  team?: RawTeamInfo;
+  team?: RawTeamInfo | undefined;
 
   index: number;
   comic_count: number;
@@ -14,4 +14,4 @@ export type RawWorksetInfo = {
 
   created_at: number;
   updated_at: number;
-};
+}

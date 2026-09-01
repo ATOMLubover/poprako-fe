@@ -1,3 +1,4 @@
+/* eslint-disable @eslint-react/exhaustive-deps, unicorn/no-useless-undefined */
 import {
   useEffect,
   useRef,
@@ -19,28 +20,28 @@ import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
 import type { SpecialCharInsertRequest } from "./UnitList";
 
-type Props = {
+interface Props {
   unit: UnitInfo;
   isFocused: boolean;
-  onSelect?: (unitId: string) => void;
-  onIndexActivate?: (unitId: string) => void;
-  canToggleBubble?: boolean;
-  onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
-  onIndexPointerDown?: (
+  onSelect?: ((unitId: string) => void) | undefined;
+  onIndexActivate?: ((unitId: string) => void) | undefined;
+  canToggleBubble?: boolean | undefined;
+  onModifyUnit?: ((unitId: string, updates: UnitEdit) => void) | undefined;
+  onIndexPointerDown?: ((
     event: ReactPointerEvent<HTMLButtonElement>,
     unitId: string,
-  ) => void;
-  isDragging?: boolean;
-  isDragDimmed?: boolean;
-  showDropIndicator?: boolean;
-  dataUnitId?: string;
-  enableReadOnly?: boolean;
-  translator?: UserInfo;
-  proofreader?: UserInfo;
-  specialCharInsertRequest?: SpecialCharInsertRequest;
-  onSpecialCharUse?: (char: string) => void;
-  onSpecialCharInserted?: (requestId: number, char: string) => void;
-};
+  ) => void) | undefined;
+  isDragging?: boolean | undefined;
+  isDragDimmed?: boolean | undefined;
+  showDropIndicator?: boolean | undefined;
+  dataUnitId?: string | undefined;
+  enableReadOnly?: boolean | undefined;
+  translator?: UserInfo | undefined;
+  proofreader?: UserInfo | undefined;
+  specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  onSpecialCharUse?: ((char: string) => void) | undefined;
+  onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
+}
 
 export default function ProofreadModeUnitItem({
   unit,
@@ -62,14 +63,14 @@ export default function ProofreadModeUnitItem({
   onSpecialCharInserted,
 }: Props) {
   const proofRef = useRef<HTMLTextAreaElement>(null);
-  const hasProofreadText = !!unitProofreadText(unit);
-  const hasTranslatedText = !!unitTranslatedText(unit);
-  const showProofreadField = enableReadOnly
+  const hasProofreadText = Boolean(unitProofreadText(unit));
+  const hasTranslatedText = Boolean(unitTranslatedText(unit));
+  const isShowProofreadField = enableReadOnly
     ? hasProofreadText
     : isFocused || hasProofreadText;
   const contributors = [
     ...(translator ? [{ role: "translator" as const, user: translator }] : []),
-    ...(showProofreadField && proofreader
+    ...(isShowProofreadField && proofreader
       ? [{ role: "proofreader" as const, user: proofreader }]
       : []),
   ];
@@ -92,18 +93,18 @@ export default function ProofreadModeUnitItem({
 
   function insertChar(char: string) {
     const textarea = proofRef.current;
-    if (!textarea) return;
+    if (!textarea) {return;}
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = unitProofreadText(unit) ?? "";
     const next =
-      text.substring(0, start) + char + text.substring(end);
+      text.slice(0, Math.max(0, start)) + char + text.slice(Math.max(0, end));
     // 校对文本与校对状态完全独立：输入文本不得切换 isProofread。
     onModifyUnit?.(unitId(unit), {
       proofreadText: next,
     });
     setTimeout(() => {
-      if (document.activeElement !== textarea) return;
+      if (document.activeElement !== textarea) {return;}
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
     }, 0);
   }
@@ -112,8 +113,7 @@ export default function ProofreadModeUnitItem({
     if (
       !isFocused ||
       enableReadOnly ||
-      !specialCharInsertRequest ||
-      specialCharInsertRequest.targetUnitId !== unitId(unit)
+      specialCharInsertRequest?.targetUnitId !== unitId(unit)
     ) {
       return;
     }
@@ -146,16 +146,16 @@ export default function ProofreadModeUnitItem({
             <AutoResizeTextarea
               value={unitTranslatedText(unit) ?? undefined}
               readOnly
-              onChange={() => {}}
+              onChange={() => undefined}
               onFocus={() => onSelect?.(unitId(unit))}
               placeholder="无翻译内容"
               className={clsx(
                 "cursor-default text-base leading-relaxed placeholder:text-gray-300",
                 hasProofreadText
                   ? "text-gray-400"
-                  : isFocused
+                  : (isFocused
                     ? "text-gray-900 font-medium"
-                    : "text-gray-700",
+                    : "text-gray-700"),
               )}
             />
           </div>
@@ -173,7 +173,7 @@ export default function ProofreadModeUnitItem({
 
         {/* 校对框仅在聚焦或已有内容时显示。 */}
         {/* 只读模式下，有校对内容就始终显示。 */}
-        {showProofreadField && (
+        {isShowProofreadField && (
           <>
             <div className="h-[1.5px] bg-gray-300 my-1 mr-10" />
             <div className="flex items-start gap-1">
@@ -198,6 +198,7 @@ export default function ProofreadModeUnitItem({
               </div>
               {!enableReadOnly && !hasProofreadText && hasTranslatedText && (
                 <button
+                  type="button"
                   title="从初翻复制"
                   onClick={() => {
                     const text = unitTranslatedText(unit);
@@ -219,6 +220,7 @@ export default function ProofreadModeUnitItem({
               )}
               {!enableReadOnly && isFocused && (
                 <button
+                  type="button"
                   title={unitIsProofread(unit) ? "取消校对" : "确认校对"}
                   onClick={() =>
                     // 校对状态与校对文本完全独立：此操作不得修改 proofreadText。

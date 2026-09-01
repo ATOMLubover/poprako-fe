@@ -12,14 +12,19 @@ import type {
 
 const now = Date.now();
 
+function required<T>(value: T | undefined): T {
+  if (value === undefined) {throw new Error("示例数据缺失");}
+  return value;
+}
+
 // ── Mock Builders ─────────────────────────────────
 
 function makeMockComic(idx: number): ComicInfo {
   return {
-    id: `comic-${idx}`,
+    id: `comic-${String(idx)}`,
     worksetId: "ws-1",
-    title: `测试漫画 ${idx + 1}`,
-    author: `作者 ${idx + 1}`,
+    title: `测试漫画 ${String(idx + 1)}`,
+    author: `作者 ${String(idx + 1)}`,
     description: "这是一部测试用的漫画",
     index: idx,
     chapterCount: 10 + idx,
@@ -40,8 +45,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Personal Collection",
     description: "个人收藏",
     comicCount: 124,
-    createdAt: now - 86400000 * 30,
-    updatedAt: now - 86400000,
+    createdAt: now - 86_400_000 * 30,
+    updatedAt: now - 86_400_000,
   },
   {
     id: "ws-2",
@@ -50,8 +55,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Team Shared",
     description: "团队共享",
     comicCount: 45,
-    createdAt: now - 86400000 * 20,
-    updatedAt: now - 86400000 * 2,
+    createdAt: now - 86_400_000 * 20,
+    updatedAt: now - 86_400_000 * 2,
   },
   {
     id: "ws-3",
@@ -60,8 +65,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Archive 2024",
     description: "2024年归档",
     comicCount: 890,
-    createdAt: now - 86400000 * 10,
-    updatedAt: now - 86400000 * 3,
+    createdAt: now - 86_400_000 * 10,
+    updatedAt: now - 86_400_000 * 3,
   },
   {
     id: "ws-4",
@@ -70,8 +75,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Public Library",
     description: "公共库",
     comicCount: 12,
-    createdAt: now - 86400000 * 5,
-    updatedAt: now - 3600000,
+    createdAt: now - 86_400_000 * 5,
+    updatedAt: now - 3_600_000,
   },
 ];
 
@@ -103,9 +108,9 @@ type Story = StoryObj<typeof ComicList>;
 
 // ── Interactive (full-featured) ───────────────────
 
-type InteractiveComicListProps = {
-  canCreateComic?: boolean;
-};
+interface InteractiveComicListProps {
+  canCreateComic?: boolean | undefined;
+}
 
 function InteractiveComicList({ canCreateComic = true }: InteractiveComicListProps) {
   const [worksets, setWorksets] = useState(mockWorksets);
@@ -119,12 +124,12 @@ function InteractiveComicList({ canCreateComic = true }: InteractiveComicListPro
   const [publish, setPublish] = useState<BinaryFilter>("unset");
 
   const handleCreateWorkset = () => {
-    const id = `ws-${Date.now()}`;
+    const id = `ws-${String(Date.now())}`;
     const ws: WorksetInfo = {
       id,
       teamId: "team-1",
       index: worksets.length,
-      name: `新工作区 ${worksets.length + 1}`,
+      name: `新工作区 ${String(worksets.length + 1)}`,
       description: "",
       comicCount: 0,
       createdAt: Date.now(),
@@ -138,7 +143,7 @@ function InteractiveComicList({ canCreateComic = true }: InteractiveComicListPro
     setWorksets((prev) => prev.filter((ws) => ws.id !== wsId));
     if (activeWsId === wsId && worksets.length > 1) {
       const next = worksets.find((ws) => ws.id !== wsId);
-      if (next) setActiveWsId(next.id);
+      if (next) {setActiveWsId(next.id);}
     }
   };
   return (
@@ -146,12 +151,12 @@ function InteractiveComicList({ canCreateComic = true }: InteractiveComicListPro
       <ComicList
         worksets={worksets}
         activeWorksetId={activeWsId}
-        onChangeWorkset={(id) => setActiveWsId(id)}
+        onChangeWorkset={(id) => { setActiveWsId(id); }}
         onCreateWorkset={handleCreateWorkset}
         onDeleteWorkset={handleDeleteWorkset}
         onLoadComics={makePagedLoader(FULL_COMICS, 400)}
-        onComicClick={(c) => console.log("click comic:", c.title)}
-        onCreateComic={canCreateComic ? () => console.log("create comic") : undefined}
+        onComicClick={() => { return; }}
+        onCreateComic={canCreateComic ? () => { return; } : undefined}
         activeFuzzyTitle={title}
         onChangeFuzzyTitle={setTitle}
         activeUploadStatus={upload}
@@ -175,7 +180,7 @@ export const Interactive: Story = {
   name: "交互式 (完整功能)",
   render: () => <InteractiveComicList />,
   play: async ({ canvasElement }) => {
-    expect(
+    await expect(
       within(canvasElement).getByRole("button", { name: "创建漫画" }),
     ).toBeVisible();
   },
@@ -185,7 +190,7 @@ export const NonAdmin: Story = {
   name: "非管理员",
   render: () => <InteractiveComicList canCreateComic={false} />,
   play: async ({ canvasElement }) => {
-    expect(within(canvasElement).queryByRole("button", { name: "创建漫画" })).toBeNull();
+    await expect(within(canvasElement).queryByRole("button", { name: "创建漫画" })).toBeNull();
   },
 };
 
@@ -207,12 +212,12 @@ function ReviewerComicList() {
         initialMode="reviewer"
         worksets={mockWorksets}
         activeWorksetId={activeWsId}
-        onChangeWorkset={(id) => setActiveWsId(id)}
-        onCreateWorkset={() => console.log("create workset")}
-        onDeleteWorkset={(id) => console.log("delete:", id)}
+        onChangeWorkset={(id) => { setActiveWsId(id); }}
+        onCreateWorkset={() => { return; }}
+        onDeleteWorkset={() => { return; }}
         onLoadComics={makePagedLoader(FULL_COMICS)}
-        onComicClick={(c) => console.log("click:", c.title)}
-        onCreateComic={() => console.log("create comic")}
+        onComicClick={() => { return; }}
+        onCreateComic={() => { return; }}
         activeFuzzyTitle={title}
         onChangeFuzzyTitle={setTitle}
         activeUploadStatus={upload}
@@ -239,86 +244,90 @@ export const ReviewerMode: Story = {
 
 // ── Empty State ───────────────────────────────────
 
+function EmptyComicList() {
+  const [title, setTitle] = useState("");
+  const [upload, setUpload] = useState<BinaryFilter>("unset");
+  const [translate, setTranslate] = useState<TripleFilter>("unset");
+  const [proofread, setProofread] = useState<TripleFilter>("unset");
+  const [typeset, setTypeset] = useState<TripleFilter>("unset");
+  const [review, setReview] = useState<BinaryFilter>("unset");
+  const [publish, setPublish] = useState<BinaryFilter>("unset");
+
+  return (
+    <div className="h-screen w-full">
+      <ComicList
+        worksets={mockWorksets}
+        activeWorksetId="ws-1"
+        onChangeWorkset={() => { return; }}
+        onCreateWorkset={() => { return; }}
+        onDeleteWorkset={() => { return; }}
+        onLoadComics={() => Promise.resolve({ success: true, data: [] })}
+        onCreateComic={() => { return; }}
+        activeFuzzyTitle={title}
+        onChangeFuzzyTitle={setTitle}
+        activeUploadStatus={upload}
+        activeTranslateStatus={translate}
+        activeProofreadStatus={proofread}
+        activeTypesetStatus={typeset}
+        activeReviewStatus={review}
+        activePublishStatus={publish}
+        onChangeUploadStatus={setUpload}
+        onChangeTranslateStatus={setTranslate}
+        onChangeProofreadStatus={setProofread}
+        onChangeTypesetStatus={setTypeset}
+        onChangeReviewStatus={setReview}
+        onChangePublishStatus={setPublish}
+      />
+    </div>
+  );
+}
+
 export const EmptyState: Story = {
   name: "空数据",
-  render: () => {
-    const [title, setTitle] = useState("");
-    const [upload, setUpload] = useState<BinaryFilter>("unset");
-    const [translate, setTranslate] = useState<TripleFilter>("unset");
-    const [proofread, setProofread] = useState<TripleFilter>("unset");
-    const [typeset, setTypeset] = useState<TripleFilter>("unset");
-    const [review, setReview] = useState<BinaryFilter>("unset");
-    const [publish, setPublish] = useState<BinaryFilter>("unset");
-
-    return (
-      <div className="h-screen w-full">
-        <ComicList
-          worksets={mockWorksets}
-          activeWorksetId="ws-1"
-          onChangeWorkset={() => {}}
-          onCreateWorkset={() => {}}
-          onDeleteWorkset={() => {}}
-          onLoadComics={async () => ({ success: true, data: [] })}
-          onCreateComic={() => {}}
-          activeFuzzyTitle={title}
-          onChangeFuzzyTitle={setTitle}
-          activeUploadStatus={upload}
-          activeTranslateStatus={translate}
-          activeProofreadStatus={proofread}
-          activeTypesetStatus={typeset}
-          activeReviewStatus={review}
-          activePublishStatus={publish}
-          onChangeUploadStatus={setUpload}
-          onChangeTranslateStatus={setTranslate}
-          onChangeProofreadStatus={setProofread}
-          onChangeTypesetStatus={setTypeset}
-          onChangeReviewStatus={setReview}
-          onChangePublishStatus={setPublish}
-        />
-      </div>
-    );
-  },
+  render: () => <EmptyComicList />,
 };
 
 // ── Single Workset ────────────────────────────────
 
+function SingleWorksetComicList() {
+  const [title, setTitle] = useState("");
+  const [upload, setUpload] = useState<BinaryFilter>("unset");
+  const [translate, setTranslate] = useState<TripleFilter>("unset");
+  const [proofread, setProofread] = useState<TripleFilter>("unset");
+  const [typeset, setTypeset] = useState<TripleFilter>("unset");
+  const [review, setReview] = useState<BinaryFilter>("unset");
+  const [publish, setPublish] = useState<BinaryFilter>("unset");
+
+  return (
+    <div className="h-screen w-full">
+      <ComicList
+        worksets={[required(mockWorksets[0])]}
+        activeWorksetId="ws-1"
+        onChangeWorkset={() => { return; }}
+        onCreateWorkset={() => { return; }}
+        onDeleteWorkset={() => { return; }}
+        onLoadComics={makePagedLoader(FULL_COMICS.slice(0, 5), 400)}
+        onCreateComic={() => { return; }}
+        activeFuzzyTitle={title}
+        onChangeFuzzyTitle={setTitle}
+        activeUploadStatus={upload}
+        activeTranslateStatus={translate}
+        activeProofreadStatus={proofread}
+        activeTypesetStatus={typeset}
+        activeReviewStatus={review}
+        activePublishStatus={publish}
+        onChangeUploadStatus={setUpload}
+        onChangeTranslateStatus={setTranslate}
+        onChangeProofreadStatus={setProofread}
+        onChangeTypesetStatus={setTypeset}
+        onChangeReviewStatus={setReview}
+        onChangePublishStatus={setPublish}
+      />
+    </div>
+  );
+}
+
 export const SingleWorkset: Story = {
   name: "单个工作区",
-  render: () => {
-    const [title, setTitle] = useState("");
-    const [upload, setUpload] = useState<BinaryFilter>("unset");
-    const [translate, setTranslate] = useState<TripleFilter>("unset");
-    const [proofread, setProofread] = useState<TripleFilter>("unset");
-    const [typeset, setTypeset] = useState<TripleFilter>("unset");
-    const [review, setReview] = useState<BinaryFilter>("unset");
-    const [publish, setPublish] = useState<BinaryFilter>("unset");
-
-    return (
-      <div className="h-screen w-full">
-        <ComicList
-          worksets={[mockWorksets[0]]}
-          activeWorksetId="ws-1"
-          onChangeWorkset={() => {}}
-          onCreateWorkset={() => console.log("create workset")}
-          onDeleteWorkset={() => {}}
-          onLoadComics={makePagedLoader(FULL_COMICS.slice(0, 5), 400)}
-          onCreateComic={() => console.log("create comic")}
-          activeFuzzyTitle={title}
-          onChangeFuzzyTitle={setTitle}
-          activeUploadStatus={upload}
-          activeTranslateStatus={translate}
-          activeProofreadStatus={proofread}
-          activeTypesetStatus={typeset}
-          activeReviewStatus={review}
-          activePublishStatus={publish}
-          onChangeUploadStatus={setUpload}
-          onChangeTranslateStatus={setTranslate}
-          onChangeProofreadStatus={setProofread}
-          onChangeTypesetStatus={setTypeset}
-          onChangeReviewStatus={setReview}
-          onChangePublishStatus={setPublish}
-        />
-      </div>
-    );
-  },
+  render: () => <SingleWorksetComicList />,
 };

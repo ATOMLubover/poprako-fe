@@ -1,3 +1,4 @@
+
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import {
@@ -35,18 +36,16 @@ import {
 } from "@/features/WebTranslator/api/translator";
 import type { UnitDiff } from "@/features/BaseTranslator/types/type";
 
-type FetchCall = {
+interface FetchCall {
   url: string;
-  init?: RequestInit;
-};
+  init?: RequestInit | undefined;
+}
 
 function okJson(data: unknown) {
-  return Promise.resolve(
-    new Response(JSON.stringify({ code: 0, data }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    }),
-  );
+  return Response.json({ code: 0, data }, {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 function noContent() {
@@ -54,10 +53,11 @@ function noContent() {
 }
 
 function installFetch(response: Response | Promise<Response> = okJson([])) {
-  const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     void input;
     void init;
-    return Promise.resolve(response).then((res) => res.clone());
+    const resolvedResponse = await response;
+    return resolvedResponse.clone();
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -65,15 +65,23 @@ function installFetch(response: Response | Promise<Response> = okJson([])) {
 
 function lastFetchCall(fetchMock: ReturnType<typeof installFetch>): FetchCall {
   const call = fetchMock.mock.calls.at(-1);
-  expect(call).toBeDefined();
+  if (!call) {
+    throw new Error("Expected a fetch call");
+  }
   return {
-    url: String(call![0]),
-    init: call![1] as RequestInit | undefined,
+    url: typeof call[0] === "string"
+      ? call[0]
+      : (call[0] instanceof Request ? call[0].url : call[0].href),
+    init: call[1] ?? {},
   };
 }
 
 function bodyOf(call: FetchCall): unknown {
-  return JSON.parse(String(call.init?.body));
+  const body = call.init?.body;
+  if (typeof body !== "string") {
+    throw new TypeError("Expected a string request body");
+  }
+  return JSON.parse(body);
 }
 
 describe("poprako-r API migration", () => {
@@ -88,7 +96,7 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/teams/team_1/worksets?offset=1&limit=20");
 
     fetchMock.mockResolvedValueOnce(
-      (await okJson({ comics: [], pinned_chapters: [], pinned_chapter_assignments: [] })).clone(),
+      okJson({ comics: [], pinned_chapters: [], pinned_chapter_assignments: [] }).clone(),
     );
     await listComics({
       worksetId: "workset_1",
@@ -267,7 +275,7 @@ describe("poprako-r API migration", () => {
     });
 
     fetchMock.mockResolvedValueOnce(
-      (await okJson({
+      okJson({
         page_id: "page_1",
         index: 0,
         image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -279,7 +287,7 @@ describe("poprako-r API migration", () => {
             "content-type": "image/png",
           },
         },
-      })).clone(),
+      }).clone(),
     );
     await allocExistingPageUpload({
       pageId: "page_1",
@@ -317,7 +325,7 @@ describe("poprako-r API migration", () => {
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/members/join");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({ code: "invite-code" });
 
-    fetchMock.mockResolvedValueOnce((await okJson({ code: "invite-code" })).clone());
+    fetchMock.mockResolvedValueOnce(okJson({ code: "invite-code" }).clone());
     await createInvitation({ teamId: "team_1", inviteeQq: "12345", roles: 7 });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/member-invitations");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
@@ -395,7 +403,7 @@ describe("poprako-r API migration", () => {
   });
 
   test("maps renamed poprako-r response fields", async () => {
-    let fetchMock = installFetch(okJson({
+    installFetch(okJson({
       unit_infos: [{
         id: "unit_1",
         page_id: "page_1",
@@ -415,7 +423,7 @@ describe("poprako-r API migration", () => {
     const units = await listUnits("page_1");
     expect(units.success && units.data.units[0]?.id).toBe("unit_1");
 
-    fetchMock = installFetch(okJson([{
+    let fetchMock: ReturnType<typeof installFetch> = installFetch(okJson([{
       id: "member_1",
       user_id: "user_1",
       nickname: "member",
@@ -454,14 +462,14 @@ describe("poprako-r API migration", () => {
     expect(mails.success && mails.data[0]?.isRead).toBe(false);
 
     fetchMock = installFetch(Promise.resolve(
-      new Response(JSON.stringify({
+      Response.json({
         label_plus: "text",
         poprako: {
           comic_id: "comic_1",
           chapter_id: "chapter_1",
           pages: [],
         },
-      }), {
+      }, {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -500,10 +508,10 @@ describe("poprako-r API migration", () => {
       oper: "advance",
     });
 
-    fetchMock.mockResolvedValueOnce((await okJson({
+    fetchMock.mockResolvedValueOnce(okJson({
       imported_page_count: 1,
       imported_unit_count: 2,
-    })).clone());
+    }).clone());
     await importChapter({ chapterId: "chapter_1", content: "x", format: "lp" });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/chapters/chapter_1/translations/import");
 
@@ -570,7 +578,7 @@ describe("poprako-r API migration", () => {
     });
 
     expect(result.success).toBe(true);
-    if (!result.success) throw new Error("unreachable");
+    if (!result.success) {throw new Error("unreachable");}
 
     expect(result.data).toHaveLength(2);
     expect(result.data[0]?.id).toBe("comic_1");

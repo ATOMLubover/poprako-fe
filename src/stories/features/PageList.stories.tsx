@@ -7,7 +7,7 @@ const now = Date.now();
 
 function makePages(count: number): PageInfo[] {
   return Array.from({ length: count }, (_, i) => ({
-    id: `page-${i + 1}`,
+    id: `page-${String(i + 1)}`,
     chapterId: "ch-1",
     index: i + 1,
     imageUrl: "",
@@ -40,7 +40,7 @@ export const Default: Story = {
   name: "默认（无操作）",
   args: {
     pages: makePages(12),
-    onClickPage: (id) => console.log("clicked page:", id),
+    onClickPage: () => { return; },
   },
 };
 
@@ -48,9 +48,9 @@ export const WithDelete: Story = {
   name: "可删除（hover 显示垃圾桶）",
   args: {
     pages: makePages(12),
-    onClickPage: (id) => console.log("clicked page:", id),
+    onClickPage: () => { return; },
     enableDelete: true,
-    onDeletePage: (id) => console.log("delete page:", id),
+    onDeletePage: () => { return; },
   },
 };
 
@@ -58,12 +58,10 @@ export const WithUpload: Story = {
   name: "可上传（拖放 Drop Area）",
   args: {
     pages: makePages(8),
-    onClickPage: (id) => console.log("clicked page:", id),
+    onClickPage: () => { return; },
+    // eslint-disable-next-line @typescript-eslint/require-await
     onAddPages: async (files) => {
-      console.log(
-        "uploaded files:",
-        files.map((f) => f.name),
-      );
+      void files;
     },
   },
 };
@@ -72,12 +70,10 @@ export const Empty: Story = {
   name: "空列表（显示上传引导）",
   args: {
     pages: [],
-    onClickPage: (id) => console.log("clicked page:", id),
+    onClickPage: () => { return; },
+    // eslint-disable-next-line @typescript-eslint/require-await
     onAddPages: async (files) => {
-      console.log(
-        "uploaded files:",
-        files.map((f) => f.name),
-      );
+      void files;
     },
   },
 };
@@ -86,14 +82,12 @@ export const WithDeleteAndUpload: Story = {
   name: "全功能（删除 + 上传）",
   args: {
     pages: makePages(10),
-    onClickPage: (id) => console.log("clicked page:", id),
+    onClickPage: () => { return; },
     enableDelete: true,
-    onDeletePage: (id) => console.log("delete page:", id),
+    onDeletePage: () => { return; },
+    // eslint-disable-next-line @typescript-eslint/require-await
     onAddPages: async (files) => {
-      console.log(
-        "uploaded files:",
-        files.map((f) => f.name),
-      );
+      void files;
     },
   },
 };
@@ -121,21 +115,24 @@ export const PendingUploadFailed: Story = {
 
     const canvas = within(canvasElement);
     const pageBadge = canvas.getAllByText("P2")[0];
-    const pageCard = pageBadge.closest(".aspect-3\\/4");
-    expect(pageCard).not.toBeNull();
+    if (!pageBadge) {throw new Error("页面标记缺失");}
+    const pageCard = pageBadge.closest(String.raw`.aspect-3\/4`);
+    await expect(pageCard).not.toBeNull();
 
-    await userEvent.click(pageCard!);
-    expect(navigatePendingPage).not.toHaveBeenCalled();
+    if (!pageCard) {return;}
+    await userEvent.click(pageCard);
+    await expect(navigatePendingPage).not.toHaveBeenCalled();
 
     const fileInput = canvasElement.querySelector<HTMLInputElement>(
       'input[type="file"]:not([multiple])',
     );
-    expect(fileInput).not.toBeNull();
+    await expect(fileInput).not.toBeNull();
+    if (!fileInput) {return;}
 
     const replacement = new File(["replacement"], "replacement.png", {
       type: "image/png",
     });
-    await userEvent.upload(fileInput!, replacement);
-    expect(reuploadPendingPage).toHaveBeenCalledWith("page-1", replacement);
+    await userEvent.upload(fileInput, replacement);
+    await expect(reuploadPendingPage).toHaveBeenCalledWith("page-1", replacement);
   },
 };

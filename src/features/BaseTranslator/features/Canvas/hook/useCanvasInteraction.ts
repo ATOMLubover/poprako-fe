@@ -1,3 +1,4 @@
+/* eslint-disable @eslint-react/set-state-in-effect -- sync transform follows container metrics. */
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const PAN_THRESHOLD = 8;
@@ -6,33 +7,33 @@ const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const ZOOM_STEP = 0.08;
 
-type Transform = {
+interface Transform {
   scale: number;
   offsetX: number;
   offsetY: number;
-};
+}
 
-type DragState = {
+interface DragState {
   type: "pan" | "marker";
   startX: number;
   startY: number;
   startOffsetX: number;
   startOffsetY: number;
-  unitId?: string;
-  startUnitX?: number;
-  startUnitY?: number;
+  unitId?: string | undefined;
+  startUnitX?: number | undefined;
+  startUnitY?: number | undefined;
   exceeded: boolean;
-};
+}
 
-type Args = {
+interface Args {
   imageSrc: string | null;
   isUnitCreationEnabled: boolean;
   enableReadOnly: boolean;
-  onFocusUnit?: (unitId: string) => void;
-  onMoveUnit?: (unitId: string, xCoord: number, yCoord: number) => void;
-  onAddUnit?: (xCoord: number, yCoord: number, isBubble: boolean) => void;
-  onDeleteUnit?: (unitId: string) => void;
-};
+  onFocusUnit?: ((unitId: string) => void) | undefined;
+  onMoveUnit?: ((unitId: string, xCoord: number, yCoord: number) => void) | undefined;
+  onAddUnit?: ((xCoord: number, yCoord: number, isBubble: boolean) => void) | undefined;
+  onDeleteUnit?: ((unitId: string) => void) | undefined;
+}
 
 export function useCanvasInteraction({
   imageSrc,
@@ -72,21 +73,23 @@ export function useCanvasInteraction({
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el) {return;}
     const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
+      const entry = entries[0];
+      if (!entry) {return;}
+      const { width, height } = entry.contentRect;
       setContainerSize({ w: width, h: height });
     });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, []);
 
   const tryAddUnit = useCallback(
     (clientX: number, clientY: number, isBubble: boolean) => {
-      if (!isUnitCreationEnabled) return;
+      if (!isUnitCreationEnabled) {return;}
 
       const img = imgRef.current;
-      if (!img) return;
+      if (!img) {return;}
 
       const rect = img.getBoundingClientRect();
       const x = (clientX - rect.left) / rect.width;
@@ -124,15 +127,15 @@ export function useCanvasInteraction({
 
       const handleMoveAt = (clientX: number, clientY: number) => {
         const drag = dragRef.current;
-        if (!drag) return;
+        if (!drag) {return;}
 
         const dx = clientX - drag.startX;
         const dy = clientY - drag.startY;
 
         if (!drag.exceeded) {
-          if (Math.sqrt(dx * dx + dy * dy) > threshold) {
+          if (Math.hypot(dx, dy) > threshold) {
             drag.exceeded = true;
-            if (drag.type === "pan") setIsPanning(true);
+            if (drag.type === "pan") {setIsPanning(true);}
           } else {
             return;
           }
@@ -148,11 +151,11 @@ export function useCanvasInteraction({
         }
 
         const img = imgRef.current;
-        if (!img) return;
+        if (!img) {return;}
 
         const rect = img.getBoundingClientRect();
         const nextMarker = {
-          id: drag.unitId!,
+          id: drag.unitId ?? "",
           x: Math.max(0, Math.min(1, (drag.startUnitX ?? 0) + dx / rect.width)),
           y: Math.max(0, Math.min(1, (drag.startUnitY ?? 0) + dy / rect.height)),
         };
@@ -162,10 +165,10 @@ export function useCanvasInteraction({
       };
 
       const cleanup = () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-        window.removeEventListener("touchmove", handleTouchMove);
-        window.removeEventListener("touchend", handleTouchEnd);
+        removeEventListener("mousemove", handleMouseMove);
+        removeEventListener("mouseup", handleMouseUp);
+        removeEventListener("touchmove", handleTouchMove);
+        removeEventListener("touchend", handleTouchEnd);
         windowHandlersRef.current = null;
       };
 
@@ -175,46 +178,46 @@ export function useCanvasInteraction({
         setIsPanning(false);
         cleanup();
 
-        if (!drag) return;
+        if (!drag) {return;}
 
         if (!drag.exceeded) {
           if (drag.type === "pan") {
             tryAddUnit(clientX, clientY, true);
           } else {
-            onFocusUnit?.(drag.unitId!);
+            if (drag.unitId) {onFocusUnit?.(drag.unitId);}
           }
           return;
         }
 
-        if (drag.type !== "marker") return;
+        if (drag.type !== "marker") {return;}
 
         const preview = dragMarkerRef.current;
         const nextX = preview && preview.id === drag.unitId ? preview.x : drag.startUnitX;
         const nextY = preview && preview.id === drag.unitId ? preview.y : drag.startUnitY;
 
-        if (nextX !== undefined && nextY !== undefined) {
-          onMoveUnit?.(drag.unitId!, nextX, nextY);
+        if (nextX !== undefined && nextY !== undefined && drag.unitId) {
+          onMoveUnit?.(drag.unitId, nextX, nextY);
         }
 
         dragMarkerRef.current = null;
         setDragMarker(null);
       };
 
-      const handleMouseMove = (e: MouseEvent) => handleMoveAt(e.clientX, e.clientY);
-      const handleMouseUp = (e: MouseEvent) => handleEndAt(e.clientX, e.clientY);
+      const handleMouseMove = (e: MouseEvent) => { handleMoveAt(e.clientX, e.clientY); };
+      const handleMouseUp = (e: MouseEvent) => { handleEndAt(e.clientX, e.clientY); };
       const handleTouchMove = (e: TouchEvent) => {
         const touch = e.touches[0];
-        if (touch) handleMoveAt(touch.clientX, touch.clientY);
+        if (touch) {handleMoveAt(touch.clientX, touch.clientY);}
       };
       const handleTouchEnd = (e: TouchEvent) => {
         const touch = e.changedTouches[0];
-        if (touch) handleEndAt(touch.clientX, touch.clientY);
+        if (touch) {handleEndAt(touch.clientX, touch.clientY);}
       };
 
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-      window.addEventListener("touchmove", handleTouchMove, { passive: true });
-      window.addEventListener("touchend", handleTouchEnd);
+      addEventListener("mousemove", handleMouseMove);
+      addEventListener("mouseup", handleMouseUp);
+      addEventListener("touchmove", handleTouchMove, { passive: true });
+      addEventListener("touchend", handleTouchEnd);
       windowHandlersRef.current = {
         mouseMove: handleMouseMove,
         mouseUp: handleMouseUp,
@@ -227,12 +230,12 @@ export function useCanvasInteraction({
 
   const handleCanvasTouchStart = useCallback(
     (e: TouchEvent) => {
-      if ((e.target as HTMLElement).closest("[data-marker]")) return;
+      if ((e.target as HTMLElement).closest("[data-marker]")) {return;}
       const touch = e.touches[0];
-      if (!touch) return;
+      if (!touch) {return;}
 
       const img = imgRef.current;
-      if (!img) return;
+      if (!img) {return;}
       const rect = img.getBoundingClientRect();
       if (
         touch.clientX < rect.left ||
@@ -251,29 +254,31 @@ export function useCanvasInteraction({
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el) {return;}
     el.addEventListener("touchstart", handleCanvasTouchStart, { passive: false });
-    return () => el.removeEventListener("touchstart", handleCanvasTouchStart);
+    return () => { el.removeEventListener("touchstart", handleCanvasTouchStart); };
   }, [handleCanvasTouchStart]);
 
   useEffect(() => {
     return () => {
-      if (windowHandlersRef.current) {
-        window.removeEventListener("mousemove", windowHandlersRef.current.mouseMove);
-        window.removeEventListener("mouseup", windowHandlersRef.current.mouseUp);
-        window.removeEventListener("touchmove", windowHandlersRef.current.touchMove);
-        window.removeEventListener("touchend", windowHandlersRef.current.touchEnd);
+      if (!windowHandlersRef.current) {
+        return;
       }
+
+      removeEventListener("mousemove", windowHandlersRef.current.mouseMove);
+      removeEventListener("mouseup", windowHandlersRef.current.mouseUp);
+      removeEventListener("touchmove", windowHandlersRef.current.touchMove);
+      removeEventListener("touchend", windowHandlersRef.current.touchEnd);
     };
   }, []);
 
   const handleCanvasMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      if ((e.target as HTMLElement).closest("[data-marker]")) return;
-      if (e.button !== 0) return;
+      if ((e.target as HTMLElement).closest("[data-marker]")) {return;}
+      if (e.button !== 0) {return;}
 
       const img = imgRef.current;
-      if (!img) return;
+      if (!img) {return;}
       const rect = img.getBoundingClientRect();
       if (
         e.clientX < rect.left ||
@@ -292,7 +297,7 @@ export function useCanvasInteraction({
 
   const handleMarkerMouseDown = useCallback(
     (e: React.MouseEvent, unitId: string, xCoord: number, yCoord: number) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0) {return;}
       e.preventDefault();
       e.stopPropagation();
       if (enableReadOnly) {
@@ -309,7 +314,7 @@ export function useCanvasInteraction({
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
-      if (!touch) return;
+      if (!touch) {return;}
       startDrag("marker", touch.clientX, touch.clientY, unitId, xCoord, yCoord);
     },
     [startDrag],
@@ -318,12 +323,16 @@ export function useCanvasInteraction({
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      if (enableReadOnly) return;
+      if (enableReadOnly) {return;}
 
-      const markerEl = (e.target as HTMLElement).closest("[data-marker]");
+      const markerEl = e.target instanceof HTMLElement
+        ? e.target.closest("[data-marker]")
+        : null;
       if (markerEl) {
-        const unitId = markerEl.getAttribute("data-marker")!;
-        onDeleteUnit?.(unitId);
+        const markerId = markerEl instanceof HTMLElement
+          ? markerEl.dataset["marker"]
+          : undefined;
+        if (markerId) {onDeleteUnit?.(markerId);}
         return;
       }
 
@@ -335,7 +344,7 @@ export function useCanvasInteraction({
   const handleWheel = useCallback((e: WheelEvent) => {
     const img = imgRef.current;
     const container = containerRef.current;
-    if (!img || !container) return;
+    if (!img || !container) {return;}
 
     const imgRect = img.getBoundingClientRect();
     if (
@@ -354,7 +363,7 @@ export function useCanvasInteraction({
 
     setTransform((prev) => {
       const newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, prev.scale * factor));
-      if (newScale === prev.scale) return prev;
+      if (newScale === prev.scale) {return prev;}
 
       const actualFactor = newScale / prev.scale;
       const containerRect = container.getBoundingClientRect();

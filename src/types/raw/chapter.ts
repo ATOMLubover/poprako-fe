@@ -6,14 +6,14 @@ import type {
 import { unwrapRawComicInfo, type RawComicInfo } from "./comic";
 import { unwrapRawUserInfo, type RawUserInfo } from "./user";
 
-export type RawChapterInfo = {
+export interface RawChapterInfo {
   id: string;
 
   comic_id: string;
-  comic?: RawComicInfo;
+  comic?: RawComicInfo | undefined;
 
   creator_id: string;
-  creator?: RawUserInfo;
+  creator?: RawUserInfo | undefined;
 
   index: number;
   subtitle: string;
@@ -27,7 +27,7 @@ export type RawChapterInfo = {
 
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
   return {
@@ -49,10 +49,10 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
   } as ChapterInfo;
 }
 
-export type RawCreateChapterArgs = {
-  subtitle?: string;
+export interface RawCreateChapterArgs {
+  subtitle?: string | undefined;
   comic_id: string;
-};
+}
 export function unwrapRawCreateChapterArgs(
   raw: RawCreateChapterArgs,
 ): CreateChapterArgs {
@@ -62,7 +62,7 @@ export function unwrapRawCreateChapterArgs(
   } as CreateChapterArgs;
 }
 
-export type RawCreateChapterResult = { id: string };
+export interface RawCreateChapterResult { id: string }
 export function unwrapRawCreateChapterResult(
   raw: RawCreateChapterResult,
 ): CreateChapterResult {

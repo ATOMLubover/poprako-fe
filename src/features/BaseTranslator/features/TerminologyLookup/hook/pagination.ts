@@ -5,14 +5,14 @@ export type PaginationPhase =
   | "ready"
   | "error";
 
-export type PaginationState<T extends { id: string }> = {
+export interface PaginationState<T extends { id: string }> {
   items: T[];
   offset: number;
   hasMore: boolean;
   phase: PaginationPhase;
-  error?: string;
+  error?: string | undefined;
   requestVersion: number;
-};
+}
 
 export type PaginationAction<T extends { id: string }> =
   | { type: "reset"; requestVersion: number }
@@ -22,7 +22,7 @@ export type PaginationAction<T extends { id: string }> =
       requestVersion: number;
       items: T[];
       pageSize: number;
-      append: boolean;
+      shouldAppend: boolean;
     }
   | {
       type: "reject";
@@ -30,7 +30,8 @@ export type PaginationAction<T extends { id: string }> =
       error: string;
     };
 
-export function initialPaginationState<T extends { id: string }>() {
+export function initialPaginationState<T extends { id: string }>()
+  : PaginationState<T> {
   return {
     items: [],
     offset: 0,
@@ -62,7 +63,7 @@ export function paginationReducer<T extends { id: string }>(
     };
   }
 
-  if (action.requestVersion !== state.requestVersion) return state;
+  if (action.requestVersion !== state.requestVersion) {return state;}
 
   if (action.type === "load-more") {
     return { ...state, phase: "loading-more", error: undefined };
@@ -72,10 +73,10 @@ export function paginationReducer<T extends { id: string }>(
     return { ...state, phase: "error", error: action.error };
   }
 
-  const items = action.append
+  const items = action.shouldAppend
     ? mergeUniqueItems(state.items, action.items)
     : action.items;
-  const offset = action.append
+  const offset = action.shouldAppend
     ? state.offset + action.items.length
     : action.items.length;
 

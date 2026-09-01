@@ -7,7 +7,7 @@ import type { Page } from "@/types/page";
 import type { UnitInfo } from "@/types/unit";
 
 const pages: Page[] = [0, 1, 2].map((index) => ({
-  id: `page-${index + 1}`,
+  id: `page-${String(index + 1)}`,
   chapterId: "chapter-1",
   index,
   imageUrl: "",
@@ -22,7 +22,7 @@ const pages: Page[] = [0, 1, 2].map((index) => ({
 
 function makeMatch(index: number): UnitSearchMatch {
   const unit: UnitInfo = {
-    id: `unit-${index + 1}`,
+    id: `unit-${String(index + 1)}`,
     index,
     xCoord: 0.2,
     yCoord: 0.3,
@@ -33,7 +33,7 @@ function makeMatch(index: number): UnitSearchMatch {
       : "另一条包含旧词的译文。",
   };
 
-  return { pageId: `page-${(index % 3) + 1}`, unit };
+  return { pageId: `page-${String((index % 3) + 1)}`, unit };
 }
 
 const groupedMatches = Array.from({ length: 8 }, (_, index) => makeMatch(index));
@@ -46,9 +46,9 @@ const meta: Meta<typeof UnitSearchTransformDialog> = {
     pages,
     part: "translatedText",
     currentPageId: "page-1",
-    onBeforeSearch: fn(async () => undefined),
-    onRefreshCurrentPage: fn(async () => undefined),
-    onNavigate: fn(async () => undefined),
+    onBeforeSearch: fn(() => Promise.resolve()),
+    onRefreshCurrentPage: fn(() => Promise.resolve()),
+    onNavigate: fn(async () => { return; }), // eslint-disable-line @typescript-eslint/require-await
     onClose: fn(),
   },
 };
@@ -59,8 +59,11 @@ type Story = StoryObj<typeof UnitSearchTransformDialog>;
 export const GroupedResults: Story = {
   args: {
     dataSource: {
+      // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({ success: true, data: groupedMatches }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       transform: async () => ({ success: true, data: undefined }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
     },
   },
@@ -68,67 +71,80 @@ export const GroupedResults: Story = {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.type(page.getByRole("textbox", { name: "查找短语" }), "旧词");
     await userEvent.click(page.getByRole("button", { name: "搜索" }));
-    expect(await page.findByText("8 个匹配 Unit")).toBeVisible();
+    await expect(await page.findByText("8 个匹配 Unit")).toBeVisible();
     const pageSelector = page.getByRole("checkbox", {
       name: "选择第 1 页全部匹配项",
     });
-    expect(pageSelector).toHaveAttribute("aria-checked", "true");
-    await userEvent.click(page.getAllByRole("button", { name: "展开页面" })[0]);
-    expect(page.getAllByText("旧词").length).toBeGreaterThan(0);
-    expect(page.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
-    await userEvent.click(page.getAllByRole("checkbox", { name: "选择该 Unit" })[0]);
-    expect(pageSelector).toHaveAttribute("aria-checked", "mixed");
+    await expect(pageSelector).toHaveAttribute("aria-checked", "true");
+    const expandButton = page.getAllByRole("button", { name: "展开页面" })[0];
+    if (!expandButton) {throw new Error("展开按钮缺失");}
+    await userEvent.click(expandButton);
+    await expect(page.getAllByText("旧词").length).toBeGreaterThan(0);
+    await expect(page.getByRole("textbox", { name: "替换短语" })).toBeEnabled();
+    const unitCheckbox = page.getAllByRole("checkbox", { name: "选择该 Unit" })[0];
+    if (!unitCheckbox) {throw new Error("Unit 复选框缺失");}
+    await userEvent.click(unitCheckbox);
+    await expect(pageSelector).toHaveAttribute("aria-checked", "mixed");
     await userEvent.click(pageSelector);
-    expect(pageSelector).toHaveAttribute("aria-checked", "true");
+    await expect(pageSelector).toHaveAttribute("aria-checked", "true");
     await userEvent.click(pageSelector);
-    expect(pageSelector).toHaveAttribute("aria-checked", "false");
+    await expect(pageSelector).toHaveAttribute("aria-checked", "false");
   },
 };
 
 export const MoreThanOneHundred: Story = {
   args: {
     dataSource: {
+      // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({
         success: true,
         data: Array.from({ length: 105 }, (_, index) => makeMatch(index)),
       }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       transform: async () => ({ success: true, data: undefined }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
     },
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(page.getByRole("button", { name: "搜索" }));
-    expect(await page.findByText("已选 100 · 上限 100")).toBeVisible();
+    await expect(await page.findByText("已选 100 · 上限 100")).toBeVisible();
   },
 };
 
 export const Empty: Story = {
   args: {
     dataSource: {
+      // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({ success: true, data: [] }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       transform: async () => ({ success: true, data: undefined }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
     },
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(page.getByRole("button", { name: "搜索" }));
-    expect(await page.findByText("没有找到匹配内容")).toBeVisible();
+    await expect(await page.findByText("没有找到匹配内容")).toBeVisible();
   },
 };
 
 export const SearchError: Story = {
   args: {
     dataSource: {
+      // eslint-disable-next-line @typescript-eslint/require-await
       search: async () => ({ success: false, error: "搜索失败，请稍后重试" }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       transform: async () => ({ success: true, data: undefined }),
+      // eslint-disable-next-line @typescript-eslint/require-await
       reloadPage: async () => ({ success: true, data: [] }),
     },
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(page.getByRole("button", { name: "搜索" }));
-    expect(await page.findByText("搜索失败，请稍后重试")).toBeVisible();
+    await expect(await page.findByText("搜索失败，请稍后重试")).toBeVisible();
   },
 };

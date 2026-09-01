@@ -14,10 +14,10 @@ export function useRefreshLoginState() {
 
       setLoginState({ userInfo, memberInfos });
       return { success: true, data: undefined };
-    } catch (err) {
+    } catch (error) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : "刷新登录状态失败",
+        error: error instanceof Error ? error.message : "刷新登录状态失败",
       };
     }
   }, [setLoginState]);

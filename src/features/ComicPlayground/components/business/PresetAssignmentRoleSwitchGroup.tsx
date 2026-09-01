@@ -13,11 +13,11 @@ const ROLE_OPTIONS: { role: Role; label: string }[] = [
   { role: "admin", label: "管理" },
 ];
 
-type Props = {
+interface Props {
   activeMember: MemberInfo | null;
   value: Role[];
   onChange: (roles: Role[]) => void;
-};
+}
 
 export default function PresetAssignmentRoleSwitchGroup({
   activeMember,
@@ -26,7 +26,7 @@ export default function PresetAssignmentRoleSwitchGroup({
 }: Props) {
   function handleToggle(role: Role) {
     if (role === "admin" || !activeMember || !hasRole(activeMember, role))
-      return;
+      {return;}
 
     onChange(
       value.includes(role)
@@ -40,7 +40,7 @@ export default function PresetAssignmentRoleSwitchGroup({
       <div className="grid grid-cols-4 gap-1.5">
         {ROLE_OPTIONS.map(({ role, label }) => {
           const isMandatory = role === "admin";
-          const isAvailable = !!activeMember && hasRole(activeMember, role);
+          const isAvailable = activeMember !== null && hasRole(activeMember, role);
           const isSelected = isMandatory || value.includes(role);
           const isDisabled = isMandatory || !isAvailable;
 
@@ -53,11 +53,11 @@ export default function PresetAssignmentRoleSwitchGroup({
               title={
                 isMandatory
                   ? "创建者固定拥有管理权限"
-                  : !isAvailable
-                    ? "当前成员不具备该职位"
-                    : undefined
+                  : (isAvailable
+                    ? undefined
+                    : "当前成员不具备该职位")
               }
-              onClick={() => handleToggle(role)}
+              onClick={() => { handleToggle(role); }}
               className={clsx(
                 "min-w-0 rounded-sm border px-2 py-1",
                 "text-xs font-medium transition-colors duration-150",

@@ -14,18 +14,18 @@ import {
 } from "@/api/announcement";
 import AnnouncementCreatorModal from "./AnnouncementCreatorModal";
 
-type Props = {
+interface Props {
   teamId: string;
   teamName: string;
   isAdmin: boolean;
-};
+}
 
 function formatDate(ts: number): string {
   const d = new Date(ts);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  return `${y}/${m}/${day}`;
+  return `${String(y)}/${m}/${day}`;
 }
 
 function avatarChar(name: string | undefined): string {
@@ -53,7 +53,7 @@ export default function AnnouncementTable({
     const result = await listAnnouncements({ teamId, offset: 0, limit: 3 });
     setLoading(false);
     if (!result.success) {
-      console.error("[AnnouncementTable] 加载公告失败:", result.error);
+      console.error("[AnnouncementTable] 加载公告失败:", result.error); // eslint-disable-line no-console
       showLocalApiFailure(result, showToast, "加载公告失败");
       return;
     }
@@ -62,7 +62,7 @@ export default function AnnouncementTable({
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    load();
+    void load();
   }, [load]);
 
   const handleSubmit = useCallback(
@@ -73,7 +73,10 @@ export default function AnnouncementTable({
         content: args.content,
       });
       if (!result.success) {
-        console.error("[AnnouncementTable] 发布公告失败:", result.error);
+        // eslint-disable-next-line no-console
+        console.error(
+          "[AnnouncementTable] 发布公告失败:", result.error,
+        );
         showLocalApiFailure(result, showToast, "发布公告失败");
         return result;
       }
@@ -96,7 +99,7 @@ export default function AnnouncementTable({
   };
 
   const handleStartEditing = () => {
-    if (!selected) return;
+    if (!selected) {return;}
     setDraft({ title: selected.title, content: selected.content });
     setIsEditing(true);
   };
@@ -106,17 +109,17 @@ export default function AnnouncementTable({
   };
 
   const handleUpdate = async () => {
-    if (!selected) return;
+    if (!selected) {return;}
 
     const title = draft.title.trim();
     const content = draft.content.trim();
-    if (!title || !content) return;
+    if (!title || !content) {return;}
 
     setIsSaving(true);
     const result = await updateAnnouncement(selected.id, { title, content });
     setIsSaving(false);
     if (!result.success) {
-      console.error("[AnnouncementTable] 修改公告失败:", result.error);
+      console.error("[AnnouncementTable] 修改公告失败:", result.error); // eslint-disable-line no-console
       showLocalApiFailure(result, showToast, "修改公告失败");
       return;
     }
@@ -135,13 +138,13 @@ export default function AnnouncementTable({
   };
 
   const handleDelete = async () => {
-    if (!selected) return;
+    if (!selected) {return;}
 
     setIsDeleting(true);
     const result = await deleteAnnouncement(selected.id);
     setIsDeleting(false);
     if (!result.success) {
-      console.error("[AnnouncementTable] 删除公告失败:", result.error);
+      console.error("[AnnouncementTable] 删除公告失败:", result.error); // eslint-disable-line no-console
       showLocalApiFailure(result, showToast, "删除公告失败");
       return;
     }
@@ -169,7 +172,8 @@ export default function AnnouncementTable({
         <div className="flex-1 mx-2 h-0.5 bg-slate-200" />
         {isAdmin && (
           <button
-            onClick={() => setShowCreate(true)}
+            type="button"
+            onClick={() => { setShowCreate(true); }}
             className={clsx(
               "inline-flex items-center gap-1 px-2 py-1",
               "hover:text-slate-700 bg-slate-50 hover:bg-green-100",
@@ -187,7 +191,7 @@ export default function AnnouncementTable({
         <div className="flex items-center justify-center h-24 text-slate-400">
           <LoadingCircle size={18} />
         </div>
-      ) : announcements.length === 0 ? (
+      ) : (announcements.length === 0 ? (
         <div
           className={clsx(
             "flex items-center justify-center h-20",
@@ -202,17 +206,18 @@ export default function AnnouncementTable({
           className={clsx(
             announcements.length === 1
               ? "grid grid-cols-1"
-              : announcements.length === 2
+              : (announcements.length === 2
                 ? "grid grid-cols-1 sm:grid-cols-2"
-                : "grid grid-cols-1 sm:grid-cols-3",
+                : "grid grid-cols-1 sm:grid-cols-3"),
             "border border-slate-200 rounded-md overflow-hidden",
             "divide-y sm:divide-y-0 sm:divide-x divide-slate-100",
           )}
         >
           {announcements.map((ann, i) => (
             <button
+              type="button"
               key={ann.id}
-              onClick={() => handleOpenDetail(ann)}
+              onClick={() => { handleOpenDetail(ann); }}
               className={clsx(
                 i > 0 && "hidden sm:block",
                 "group w-full text-left px-3 py-2.5",
@@ -274,7 +279,7 @@ export default function AnnouncementTable({
             </button>
           ))}
         </div>
-      )}
+      ))}
 
       {/* Detail drawer */}
       {selected && (
@@ -284,7 +289,12 @@ export default function AnnouncementTable({
             "bg-black/5 backdrop-blur-[1px]",
           )}
         >
-          <div className="fixed inset-0" onClick={handleCloseDetail} />
+          <button
+            type="button"
+            aria-label="关闭公告详情"
+            className="fixed inset-0"
+            onClick={handleCloseDetail}
+          />
           <div
             className={clsx(
               "relative w-full max-w-xs bg-stone-50 h-full",
@@ -304,6 +314,7 @@ export default function AnnouncementTable({
                 ANNOUNCEMENT DETAIL
               </span>
               <button
+                type="button"
                 onClick={handleCloseDetail}
                 className={clsx(
                   "p-1 rounded hover:bg-slate-50",
@@ -326,7 +337,7 @@ export default function AnnouncementTable({
                 )}
                 value={draft.title}
                 onChange={(event) =>
-                  setDraft((current) => ({ ...current, title: event.target.value }))
+                  { setDraft((current) => ({ ...current, title: event.target.value })); }
                 }
               />
             ) : (
@@ -350,7 +361,7 @@ export default function AnnouncementTable({
                 )}
                 value={draft.content}
                 onChange={(event) =>
-                  setDraft((current) => ({ ...current, content: event.target.value }))
+                  { setDraft((current) => ({ ...current, content: event.target.value })); }
                 }
               />
             ) : (
@@ -445,11 +456,11 @@ export default function AnnouncementTable({
               >
                   {isSaving ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : isEditing ? (
+                  ) : (isEditing ? (
                     "发布"
                   ) : (
                     "修改"
-                  )}
+                  ))}
                 </button>
               </div>
             )}
@@ -461,7 +472,7 @@ export default function AnnouncementTable({
               confirmLabel="删除"
               loading={isDeleting}
               onConfirm={() => void handleDelete()}
-              onCancel={() => setIsDeleteConfirmOpen(false)}
+              onCancel={() => { setIsDeleteConfirmOpen(false); }}
             />
           )}
         </div>
@@ -472,7 +483,7 @@ export default function AnnouncementTable({
         <AnnouncementCreatorModal
           teamName={teamName}
           onSubmit={handleSubmit}
-          onClose={() => setShowCreate(false)}
+          onClose={() => { setShowCreate(false); }}
         />
       )}
     </div>

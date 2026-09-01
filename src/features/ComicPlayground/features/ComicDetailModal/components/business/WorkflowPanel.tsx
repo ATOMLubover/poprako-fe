@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
-type Props = {
+interface Props {
   assignmentPanel: ReactNode;
   recordList: ReactNode;
-};
+}
 
 export default function WorkflowPanel({
   assignmentPanel,

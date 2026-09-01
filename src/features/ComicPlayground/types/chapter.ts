@@ -24,51 +24,51 @@ export type WorkflowTransition =
   | "typeset_revert"
   | "review_revert";
 
-export type ListChapterArgs = {
+export interface ListChapterArgs {
   comicId: string;
-  includes?: ChapterInclude[];
+  includes?: ChapterInclude[] | undefined;
   offset: number;
   limit: number;
-};
+}
 
-export type ListChapterWorkflowRecordsArgs = {
+export interface ListChapterWorkflowRecordsArgs {
   chapterId: string;
   offset: number;
   limit: number;
-};
+}
 
-export type RawListChapterArgs = {
+export interface RawListChapterArgs {
   comic_id: string;
-  incl?: ChapterInclude[];
+  incl?: ChapterInclude[] | undefined;
   offset: number;
   limit: number;
-};
+}
 
-export type CreateChapterArgs = {
+export interface CreateChapterArgs {
   comicId: string;
-  subtitle?: string;
-  presetAssignmentRoles?: number;
-};
+  subtitle?: string | undefined;
+  presetAssignmentRoles?: number | undefined;
+}
 
-export type RawCreateChapterArgs = {
+export interface RawCreateChapterArgs {
   comic_id: string;
-  subtitle?: string;
-  preset_assignment_roles?: number;
-};
+  subtitle?: string | undefined;
+  preset_assignment_roles?: number | undefined;
+}
 
-export type UpdateChapterArgs = {
-  subtitle?: string;
-  isPinned?: boolean;
-  workflowTransition?: WorkflowTransition;
-  revertTransition?: WorkflowTransition;
-};
+export interface UpdateChapterArgs {
+  subtitle?: string | undefined;
+  isPinned?: boolean | undefined;
+  workflowTransition?: WorkflowTransition | undefined;
+  revertTransition?: WorkflowTransition | undefined;
+}
 
-export type RawUpdateChapterArgs = {
+export interface RawUpdateChapterArgs {
   id: string;
-  subtitle?: string;
-};
+  subtitle?: string | undefined;
+}
 
-export type RawUpdateChapterStageArgs = {
+export interface RawUpdateChapterStageArgs {
   id: string;
   stage:
     | "raw_provide"
@@ -78,104 +78,104 @@ export type RawUpdateChapterStageArgs = {
     | "review"
     | "publish";
   oper: "advance" | "revert";
-};
+}
 
-export type ChapterExportUnit = {
-  unitId?: string;
-  unitIndex?: number;
-  pageId?: string;
-  pageIndex?: number;
-  translatedText?: string;
-  proofreadText?: string;
-  translatorId?: string;
-  proofreaderId?: string;
-  translatorComment?: string;
-  proofreaderComment?: string;
-  xCoord?: number;
-  yCoord?: number;
-  isBubble?: boolean;
-  isProofread?: boolean;
-};
+export interface ChapterExportUnit {
+  unitId?: string | undefined;
+  unitIndex?: number | undefined;
+  pageId?: string | undefined;
+  pageIndex?: number | undefined;
+  translatedText?: string | undefined;
+  proofreadText?: string | undefined;
+  translatorId?: string | undefined;
+  proofreaderId?: string | undefined;
+  translatorComment?: string | undefined;
+  proofreaderComment?: string | undefined;
+  xCoord?: number | undefined;
+  yCoord?: number | undefined;
+  isBubble?: boolean | undefined;
+  isProofread?: boolean | undefined;
+}
 
-export type ChapterExportPage = {
+export interface ChapterExportPage {
   pageId: string;
   pageIndex: number;
   units: ChapterExportUnit[];
-};
+}
 
-export type ChapterExport = {
+export interface ChapterExport {
   comicId: string;
   comicTitle: string;
   chapterId: string;
   chapterIndex: number;
   chapterSubtitle: string;
   pages: ChapterExportPage[];
-};
+}
 
-export type RawChapterExportUnit = {
-  unit_id?: string;
-  unit_index?: number;
-  page_id?: string;
-  page_index?: number;
-  translated_text?: string;
-  proofread_text?: string;
-  translator_id?: string;
-  proofreader_id?: string;
-  translator_comment?: string;
-  proofreader_comment?: string;
-  x_coord?: number;
-  y_coord?: number;
-  is_bubble?: boolean;
-  is_proofread?: boolean;
-};
+export interface RawChapterExportUnit {
+  unit_id?: string | undefined;
+  unit_index?: number | undefined;
+  page_id?: string | undefined;
+  page_index?: number | undefined;
+  translated_text?: string | undefined;
+  proofread_text?: string | undefined;
+  translator_id?: string | undefined;
+  proofreader_id?: string | undefined;
+  translator_comment?: string | undefined;
+  proofreader_comment?: string | undefined;
+  x_coord?: number | undefined;
+  y_coord?: number | undefined;
+  is_bubble?: boolean | undefined;
+  is_proofread?: boolean | undefined;
+}
 
-export type RawChapterExportPage = {
+export interface RawChapterExportPage {
   page_id: string;
   page_index: number;
   units: RawChapterExportUnit[];
-};
+}
 
-export type RawChapterExport = {
+export interface RawChapterExport {
   comic_id: string;
   comic_title: string;
   chapter_id: string;
   chapter_index: number;
   chapter_subtitle: string;
   pages: RawChapterExportPage[];
-};
+}
 
-export type ChapterExports = {
+export interface ChapterExports {
   labelPlus: string;
   poprako: ChapterExport;
-};
+}
 
-export type RawChapterExports = {
+export interface RawChapterExports {
   label_plus: string | null;
   poprako: RawChapterExport | null;
-};
+}
 
 export type ImportChapterFormat = "json" | "lp";
 
 export type RawImportChapterFormat = "poprako" | "label_plus";
 
-export type ImportChapterArgs = {
+export interface ImportChapterArgs {
   chapterId: string;
   content: string;
   format: ImportChapterFormat;
-};
+}
 
-export type RawImportChapterArgs = {
+export interface RawImportChapterArgs {
   chapter_id: string;
   content: string;
   format: RawImportChapterFormat;
-};
+}
 
-export type ImportChapterResult = {
+export interface ImportChapterResult {
   importedPageCount: number;
   importedUnitCount: number;
-};
+}
 
-export type RawImportChapterResult = {
+export interface RawImportChapterResult {
   imported_page_count: number;
   imported_unit_count: number;
-};
+}

@@ -4,20 +4,20 @@ import { History, Images } from "lucide-react";
 
 export type ComicDetailView = "pages" | "workflow";
 
-type Props = {
+interface Props {
   activeView: ComicDetailView;
   chapterId: string | null;
   pageList: ReactNode;
   workflowPanel: ReactNode;
   onChangeView: (view: ComicDetailView) => void;
-};
+}
 
-type ViewButtonProps = {
+interface ViewButtonProps {
   active: boolean;
   label: string;
   onClick: () => void;
   children: ReactNode;
-};
+}
 
 function ViewButton({
   active,
@@ -59,19 +59,19 @@ export default function ComicDetailContent({
 
   useEffect(() => {
     if (activeView === displayedView) {
-      const frameId = window.requestAnimationFrame(() => setIsFading(false));
-      return () => window.cancelAnimationFrame(frameId);
+      const frameId = requestAnimationFrame(() => { setIsFading(false); });
+      return () => { cancelAnimationFrame(frameId); };
     }
 
-    const frameId = window.requestAnimationFrame(() => setIsFading(true));
-    const timeoutId = window.setTimeout(() => {
+    const frameId = requestAnimationFrame(() => { setIsFading(true); });
+    const timeoutId = setTimeout(() => {
       setDisplayedView(activeView);
       setIsFading(false);
     }, 120);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
-      window.clearTimeout(timeoutId);
+      cancelAnimationFrame(frameId);
+      clearTimeout(timeoutId);
     };
   }, [activeView, displayedView]);
 
@@ -93,14 +93,14 @@ export default function ComicDetailContent({
           <ViewButton
             active={activeView === "pages"}
             label="页面列表"
-            onClick={() => onChangeView("pages")}
+            onClick={() => { onChangeView("pages"); }}
           >
             <Images size={14} aria-hidden="true" />
           </ViewButton>
           <ViewButton
             active={activeView === "workflow"}
             label="工作流记录"
-            onClick={() => onChangeView("workflow")}
+            onClick={() => { onChangeView("workflow"); }}
           >
             <History size={14} aria-hidden="true" />
           </ViewButton>

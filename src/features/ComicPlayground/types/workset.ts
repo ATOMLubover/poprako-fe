@@ -1,34 +1,34 @@
-export type ListWorksetArgs = {
+export interface ListWorksetArgs {
   teamId: string;
   offset: number;
   limit: number;
-};
+}
 
-export type RawListWorksetArgs = {
+export interface RawListWorksetArgs {
   team_id: string;
   offset: number;
   limit: number;
-};
+}
 
-export type CreateWorksetArgs = {
+export interface CreateWorksetArgs {
   teamId: string;
   name: string;
-  description?: string;
-};
+  description?: string | undefined;
+}
 
-export type RawCreateWorksetArgs = {
+export interface RawCreateWorksetArgs {
   team_id: string;
   name: string;
-  description?: string;
-};
+  description?: string | undefined;
+}
 
-export type UpdateWorksetArgs = {
+export interface UpdateWorksetArgs {
   name: string;
-  description?: string;
-};
+  description?: string | undefined;
+}
 
-export type RawUpdateWorksetArgs = {
+export interface RawUpdateWorksetArgs {
   id: string;
   name: string;
-  description?: string;
-};
+  description?: string | undefined;
+}

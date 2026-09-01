@@ -6,10 +6,10 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { updateUserPassword } from "@/api/user";
 import { showLocalApiFailure } from "@/api/util";
 
-type Props = {
+interface Props {
   userId: string;
   onClose: () => void;
-};
+}
 
 export default function PasswordResetDialog({ userId, onClose }: Props) {
   const { showToast } = useToastStore();
@@ -22,7 +22,7 @@ export default function PasswordResetDialog({ userId, onClose }: Props) {
   const isMatching = newPassword === confirmedPassword;
 
   const handleConfirm = async () => {
-    if (!isComplete || !isMatching) return;
+    if (!isComplete || !isMatching) {return;}
 
     setIsSubmitting(true);
     const result = await updateUserPassword(userId, {
@@ -32,7 +32,7 @@ export default function PasswordResetDialog({ userId, onClose }: Props) {
     setIsSubmitting(false);
 
     if (!result.success) {
-      console.error("Failed to reset password", result.error);
+      console.error("Failed to reset password", result.error); // eslint-disable-line no-console
       showLocalApiFailure(result, showToast);
       return;
     }
@@ -46,7 +46,7 @@ export default function PasswordResetDialog({ userId, onClose }: Props) {
       title="重置密码"
       description="验证当前密码后设置一个新密码"
       confirmLabel="确认重置"
-      onConfirm={handleConfirm}
+      onConfirm={() => { void handleConfirm(); }}
       onCancel={onClose}
       loading={isSubmitting}
       confirmDisabled={!isComplete || !isMatching}

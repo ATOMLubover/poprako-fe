@@ -1,9 +1,9 @@
 export type ChapterWorkflowRecordTranslationFormat = "label_plus" | "poprako";
 
-export type ChapterWorkflowRecordExportFormats = {
+export interface ChapterWorkflowRecordExportFormats {
   labelPlus: boolean;
   poprako: boolean;
-};
+}
 
 export type ChapterWorkflowRecordStage =
   | "raw_provide"
@@ -79,10 +79,10 @@ export type ChapterWorkflowRecordEvent =
       };
     };
 
-export type ChapterWorkflowRecord = {
+export interface ChapterWorkflowRecord {
   id: string;
   chapterId: string;
   actorUserId: string | null;
   event: ChapterWorkflowRecordEvent;
   createdAt: number;
-};
+}

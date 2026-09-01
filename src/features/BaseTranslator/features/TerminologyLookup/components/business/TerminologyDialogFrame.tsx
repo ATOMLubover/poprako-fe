@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import AppDialog from "@/components/ui/AppDialog";
 
-type Props = {
+interface Props {
   title: string;
   children: ReactNode;
   footer: ReactNode;
   locked: boolean;
   onClose: () => void;
-};
+}
 
 export default function TerminologyDialogFrame({
   title,

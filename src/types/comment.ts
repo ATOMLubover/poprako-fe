@@ -1,14 +1,14 @@
 import type { UserInfo } from "./user";
 
-export type CommentInfo = {
+export interface CommentInfo {
   id: string;
   teamId: string;
   userId: string;
-  user?: UserInfo;
+  user?: UserInfo | undefined;
   content: string;
   createdAt: number;
-};
+}
 
-export type CommentCreatedResult = {
+export interface CommentCreatedResult {
   id: string;
-};
+}

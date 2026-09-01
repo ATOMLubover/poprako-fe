@@ -27,7 +27,7 @@ export async function loginUser(
     rawArgs,
     false,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: unwrapRawLoginUserResult(res.data) };
 }
 
@@ -45,6 +45,6 @@ export async function registerUser(
     rawArgs,
     false,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: unwrapRawRegisterUserResult(res.data) };
 }

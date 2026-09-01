@@ -1,3 +1,4 @@
+
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
@@ -6,7 +7,7 @@ import { describe, expect, test } from "vitest";
 function sourceFiles(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const filePath = path.join(directory, entry.name);
-    if (entry.isDirectory()) return sourceFiles(filePath);
+    if (entry.isDirectory()) {return sourceFiles(filePath);}
     if (!/\.tsx?$/.test(entry.name) || /\.(test|stories)\.tsx?$/.test(entry.name)) {
       return [];
     }
@@ -22,26 +23,28 @@ function isFailedResultCheck(node: ts.Expression): boolean {
 }
 
 function isHardcodedErrorToast(node: ts.Node): boolean {
-  if (!ts.isCallExpression(node) || node.arguments.length < 2) return false;
+  if (!ts.isCallExpression(node) || node.arguments.length < 2) {return false;}
   const callee = node.expression;
   const isShowToast = ts.isIdentifier(callee)
     ? callee.text === "showToast"
     : ts.isPropertyAccessExpression(callee) && callee.name.text === "showToast";
-  if (!isShowToast) return false;
+  if (!isShowToast) {return false;}
 
   const [message, type] = node.arguments;
+  if (!message || !type) {return false;}
   return (ts.isStringLiteral(message) || ts.isNoSubstitutionTemplateLiteral(message))
     && ts.isStringLiteral(type)
     && type.text === "error";
 }
 
 function isDroppedResultMetadata(node: ts.Node): boolean {
-  if (!ts.isThrowStatement(node) || !node.expression) return false;
-  if (!ts.isNewExpression(node.expression)) return false;
-  if (!ts.isIdentifier(node.expression.expression)) return false;
-  if (node.expression.expression.text !== "Error") return false;
+  if (!ts.isThrowStatement(node)) {return false;}
+  if (!ts.isNewExpression(node.expression)) {return false;}
+  if (!ts.isIdentifier(node.expression.expression)) {return false;}
+  if (node.expression.expression.text !== "Error") {return false;}
   const argument = node.expression.arguments?.[0];
-  return !!argument
+  if (!argument) {return false;}
+  return Boolean(argument)
     && ts.isPropertyAccessExpression(argument)
     && argument.name.text === "error";
 }
@@ -63,7 +66,7 @@ describe("API error handling guard", () => {
           const inspectFailureBranch = (child: ts.Node) => {
             if (isHardcodedErrorToast(child)) {
               const line = source.getLineAndCharacterOfPosition(child.getStart()).line + 1;
-              violations.push(`${filePath}:${line}: hardcoded failed Result toast`);
+              violations.push(`${filePath}:${String(line)}: hardcoded failed Result toast`);
             }
             ts.forEachChild(child, inspectFailureBranch);
           };
@@ -72,7 +75,7 @@ describe("API error handling guard", () => {
 
         if (isDroppedResultMetadata(node)) {
           const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-          violations.push(`${filePath}:${line}: use toApiRequestError`);
+          violations.push(`${filePath}:${String(line)}: use toApiRequestError`);
         }
         ts.forEachChild(node, visit);
       };

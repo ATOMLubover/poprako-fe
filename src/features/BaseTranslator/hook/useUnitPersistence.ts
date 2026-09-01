@@ -1,3 +1,9 @@
+/* eslint-disable no-console -- persistence failures are diagnostic. */
+/* eslint-disable @eslint-react/naming-convention-ref-name -- refs track persistence snapshots. */
+/* eslint-disable unicorn/prefer-simple-condition-first */
+/* eslint-disable unicorn/no-computed-property-existence-check */
+/* eslint-disable unicorn/no-array-callback-reference, unicorn/max-nested-calls */
+/* eslint-disable unicorn/consistent-boolean-name, @typescript-eslint/no-non-null-assertion */
 import { useCallback, useRef, useState } from "react";
 import { showLocalCaughtError } from "@/api/util";
 import { normalizeUnitIndexes, unitId, type UnitInfo } from "@/types/unit";
@@ -13,10 +19,10 @@ import type {
 type ShowToast = (message: string, type: ToastType) => void;
 
 export type PendingAction =
-  | { type: "navigate"; newIndex: number; targetUnitId?: string }
+  | { type: "navigate"; newIndex: number; targetUnitId?: string | undefined }
   | { type: "exit" };
 
-type Args = {
+interface Args {
   getPageId: () => string;
   onSaveUnits: (pageId: string, diff: UnitDiff) => Promise<void>;
   onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
@@ -24,7 +30,7 @@ type Args = {
   showToast: ShowToast;
   loadPage: (index: number, targetUnitId?: string) => Promise<void>;
   setUnitBuf: (units: UnitInfo[]) => void;
-};
+}
 
 function normalizedText(val?: string): string | null {
   return val && val !== "" ? val : null;
@@ -45,7 +51,7 @@ function buildUnitTranslation(unit: UnitInfo) {
 function buildUnitRevision(unit: UnitInfo) {
   const proofreadText = normalizedText(unit.proofreadText);
   // 新建 unit 未设置校对状态且没有文本时可省略 revision；这不是两者的耦合。
-  if (!unit.isProofread && proofreadText === null) return undefined;
+  if (!unit.isProofread && proofreadText === null) {return;}
 
   return {
     isProofread: unit.isProofread,
@@ -96,7 +102,7 @@ function buildPatchUnitOp(
   if (nextId !== undefined) {
     edit.nextId = nextId === null ? clearPatch() : assignPatch(nextId);
   }
-  if (unit.isBubble !== baseline.isBubble) edit.isBubble = unit.isBubble;
+  if (unit.isBubble !== baseline.isBubble) {edit.isBubble = unit.isBubble;}
   if (unit.xCoord !== baseline.xCoord || unit.yCoord !== baseline.yCoord) {
     edit.coord = buildUnitCoord(unit);
   }
@@ -125,7 +131,7 @@ function nextUnitId(
   units: UnitInfo[],
   index: number,
 ): string | null {
-  return units[index + 1] ? unitId(units[index + 1]) : null;
+  return units[index + 1] ? unitId(units[index + 1]!) : null;
 }
 
 function isEmptyPatch(edit: UnitPatchOp): boolean {
@@ -149,7 +155,7 @@ function existingOrderChanged(
     .filter((unit) => baselineById.has(unitId(unit)))
     .map(unitId);
 
-  if (baselineSurvivors.length !== currentExisting.length) return true;
+  if (baselineSurvivors.length !== currentExisting.length) {return true;}
 
   return baselineSurvivors.some((id, index) => id !== currentExisting[index]);
 }
@@ -170,12 +176,12 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       ops.push({ edit: "delete", id: unitId(unit) });
   }
 
-  const orderChanged = existingOrderChanged(current, baseline);
+  const isOrderChanged = existingOrderChanged(current, baseline);
 
-  if (orderChanged) {
+  if (isOrderChanged) {
     for (let index = current.length - 1; index >= 0; index--) {
-      const unit = current[index];
-      if (!baselineById.has(unitId(unit))) continue;
+      const unit = current[index]!;
+      if (!baselineById.has(unitId(unit))) {continue;}
 
       ops.push(buildPatchUnitOp(
         unit,
@@ -184,18 +190,17 @@ export function buildUnitDiff(current: UnitInfo[], baseline: UnitInfo[]): UnitDi
       ));
     }
   } else {
-    for (let index = 0; index < current.length; index++) {
-      const unit = current[index];
+    for (const unit of current) {
       const baselineUnit = baselineById.get(unitId(unit));
-      if (!baselineUnit) continue;
+      if (!baselineUnit) {continue;}
       const edit = buildPatchUnitOp(unit, baselineUnit, undefined);
-      if (!isEmptyPatch(edit)) ops.push(edit);
+      if (!isEmptyPatch(edit)) {ops.push(edit);}
     }
   }
 
   for (let index = 0; index < current.length; index++) {
-    const unit = current[index];
-    if (baselineById.has(unitId(unit))) continue;
+    const unit = current[index]!;
+    if (baselineById.has(unitId(unit))) {continue;}
 
     ops.push(buildCreateUnitOp(
       unit,
@@ -220,7 +225,7 @@ export async function persistDirtyUnits({
   onReloadUnits: (pageId: string) => Promise<UnitInfo[]>;
 }): Promise<{ status: "clean" } | { status: "saved"; units: UnitInfo[] }> {
   const diff = buildUnitDiff(currentUnits, baselineUnits);
-  if (diff.ops.length === 0) return { status: "clean" };
+  if (diff.ops.length === 0) {return { status: "clean" };}
 
   await onSaveUnits(pageId, diff);
 
@@ -260,9 +265,9 @@ export function useUnitPersistence({
   }, []);
 
   const flushIfDirty = useCallback(async (showSuccess = true) => {
-    if (isSaving.current) return;
+    if (isSaving.current) {return;}
     const diff = buildUnitDiff(unitBufRef.current, baselineUnitsRef.current);
-    if (diff.ops.length === 0) return;
+    if (diff.ops.length === 0) {return;}
 
     isSaving.current = true;
     setSaving(true);
@@ -279,12 +284,12 @@ export function useUnitPersistence({
         unitBufRef.current = result.units;
         setUnitBuf(result.units);
       }
-      if (showSuccess) showToast("保存成功", "success");
-    } catch (err) {
-      const summary = `ops:${diff.ops.length}`;
-      console.error(`[BaseTranslator] 保存失败 pageId=${getPageId()} diff=${summary}`, err);
-      showLocalCaughtError(err, showToast, "保存失败，请重试");
-      throw err;
+      if (showSuccess) {showToast("保存成功", "success");}
+    } catch (error) {
+      const summary = `ops:${String(diff.ops.length)}`;
+      console.error(`[BaseTranslator] 保存失败 pageId=${getPageId()} diff=${summary}`, error);
+      showLocalCaughtError(error, showToast, "保存失败，请重试");
+      throw error;
     } finally {
       isSaving.current = false;
       setSaving(false);
@@ -293,7 +298,7 @@ export function useUnitPersistence({
 
   const handleNavigate = useCallback(
     async (newIndex: number, targetUnitId?: string) => {
-      if (isNavigating.current) return;
+      if (isNavigating.current) {return;}
       isNavigating.current = true;
       setPendingAction(null);
       try {
@@ -319,7 +324,7 @@ export function useUnitPersistence({
   }, [flushIfDirty, onExit]);
 
   const handleRetryPendingAction = useCallback(async () => {
-    if (!pendingAction || isNavigating.current) return;
+    if (!pendingAction || isNavigating.current) {return;}
     isNavigating.current = true;
 
     try {
@@ -340,7 +345,7 @@ export function useUnitPersistence({
   }, [flushIfDirty, loadPage, onExit, pendingAction]);
 
   const handleDiscardPendingAction = useCallback(() => {
-    if (!pendingAction || isNavigating.current) return;
+    if (!pendingAction || isNavigating.current) {return;}
 
     const action = pendingAction;
     setPendingAction(null);

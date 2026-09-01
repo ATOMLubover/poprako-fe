@@ -33,7 +33,6 @@ function InteractiveFilterHeader() {
         activeFuzzyTitle={title}
         onChangeFuzzyTitle={(next) => {
           setTitle(next);
-          console.log("fuzzy title:", next);
         }}
         activeUploadStatus={upload}
         activeTranslateStatus={translate}
@@ -43,31 +42,23 @@ function InteractiveFilterHeader() {
         activePublishStatus={publish}
         onChangeUploadStatus={(next) => {
           setUpload(next);
-          console.log("upload:", next);
         }}
         onChangeTranslateStatus={(next) => {
           setTranslate(next);
-          console.log("translate:", next);
         }}
         onChangeProofreadStatus={(next) => {
           setProofread(next);
-          console.log("proofread:", next);
         }}
         onChangeTypesetStatus={(next) => {
           setTypeset(next);
-          console.log("typeset:", next);
         }}
         onChangeReviewStatus={(next) => {
           setReview(next);
-          console.log("review:", next);
         }}
         onChangePublishStatus={(next) => {
           setPublish(next);
-          console.log("publish:", next);
         }}
-        onCreateComic={() => {
-          console.log("create comic");
-        }}
+        onCreateComic={() => {return;}}
       />
     </div>
   );
@@ -82,20 +73,20 @@ export const PresetCompleted: Story = {
     <div className="mx-auto w-full max-w-5xl">
       <FilterHeader
         activeFuzzyTitle="小森林物语"
-        onChangeFuzzyTitle={(next) => console.log("fuzzy title:", next)}
+        onChangeFuzzyTitle={() => {return;}}
         activeUploadStatus="completed"
         activeTranslateStatus="completed"
         activeProofreadStatus="ongoing"
         activeTypesetStatus="pending"
         activeReviewStatus="completed"
         activePublishStatus="pending"
-        onChangeUploadStatus={(next) => console.log("upload:", next)}
-        onChangeTranslateStatus={(next) => console.log("translate:", next)}
-        onChangeProofreadStatus={(next) => console.log("proofread:", next)}
-        onChangeTypesetStatus={(next) => console.log("typeset:", next)}
-        onChangeReviewStatus={(next) => console.log("review:", next)}
-        onChangePublishStatus={(next) => console.log("publish:", next)}
-        onCreateComic={() => console.log("create comic")}
+        onChangeUploadStatus={() => {return;}}
+        onChangeTranslateStatus={() => {return;}}
+        onChangeProofreadStatus={() => {return;}}
+        onChangeTypesetStatus={() => {return;}}
+        onChangeReviewStatus={() => {return;}}
+        onChangePublishStatus={() => {return;}}
+        onCreateComic={() => {return;}}
       />
     </div>
   ),

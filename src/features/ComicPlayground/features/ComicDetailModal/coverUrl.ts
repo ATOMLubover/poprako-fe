@@ -1,11 +1,11 @@
 import type { PageInfo } from "@/types";
 
-type Args = {
+interface Args {
   isCoverUploaded: boolean;
-  comicCoverThumbnailUrl?: string | null;
-  selectedChapterIndex?: number;
+  comicCoverThumbnailUrl?: string | null | undefined;
+  selectedChapterIndex?: number | undefined;
   pages: PageInfo[];
-};
+}
 
 export function resolveComicDetailCoverUrl({
   isCoverUploaded,
@@ -17,8 +17,8 @@ export function resolveComicDetailCoverUrl({
     return comicCoverThumbnailUrl ?? null;
   }
 
-  if (selectedChapterIndex !== 0) return null;
+  if (selectedChapterIndex !== 0) {return null;}
 
   const firstPage = pages.find((page) => page.index === 0 && page.isUploaded);
-  return firstPage?.imageThumbnailUrl || firstPage?.imageUrl || null;
+  return firstPage?.imageThumbnailUrl ?? firstPage?.imageUrl ?? null;
 }

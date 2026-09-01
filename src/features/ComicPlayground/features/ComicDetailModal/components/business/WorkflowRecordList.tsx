@@ -12,25 +12,25 @@ import {
   type WorkflowRecordTextPart,
 } from "../../workflowRecord";
 
-type Props = {
+interface Props {
   chapterId: string | null;
   state: WorkflowRecordState;
   getUserLabel: (userId: string) => string;
   onLoadMore: () => void;
-};
+}
 
-type RecordItemProps = {
+interface RecordItemProps {
   record: ChapterWorkflowRecord;
   getUserLabel: Props["getUserLabel"];
-};
+}
 
-type TextPartsProps = {
+interface TextPartsProps {
   parts: WorkflowRecordTextPart[];
-};
+}
 
 function TextParts({ parts }: TextPartsProps) {
-  return parts.map((part, index) => (
-    <Fragment key={`${index}-${part.text}`}>
+  return parts.map((part) => (
+    <Fragment key={`${part.text}-${part.variable ? "variable" : "text"}`}>
       {part.variable ? (
         <span
           data-workflow-variable="true"
@@ -113,12 +113,12 @@ export default function WorkflowRecordList({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) onLoadMore();
+        if (entries[0]?.isIntersecting) {onLoadMore();}
       },
       { root, rootMargin: "0px 0px 120px", threshold: 0.01 },
     );
     observer.observe(sentinel);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, [onLoadMore, state.hasMore, state.isLoadingMore, state.loadMoreError]);
 
   if (!chapterId) {

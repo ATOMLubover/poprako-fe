@@ -13,12 +13,12 @@ import { AppDialogAction } from "@/components/ui/AppDialog";
 import { moveTermTarget, validateTermTargets } from "../../hook/termForm";
 import TerminologyDialogFrame from "./TerminologyDialogFrame";
 
-type Props = {
-  term?: TermInfo;
+interface Props {
+  term?: TermInfo | undefined;
   onSave: (args: UpdateTermArgs) => Promise<boolean>;
-  onDelete?: () => Promise<boolean>;
+  onDelete?: (() => Promise<boolean>) | undefined;
   onClose: () => void;
-};
+}
 
 export default function TermEditorDialog({
   term,
@@ -48,23 +48,23 @@ export default function TermEditorDialog({
   };
 
   const handleSave = async () => {
-    if (!isValid || isSubmitting) return;
+    if (!isValid || isSubmitting) {return;}
     setIsSubmitting(true);
-    const success = await onSave({
+    const isSuccess = await onSave({
       source: source.trim(),
       targets: targets.map((target) => target.trim()),
       comment: comment.trim() || undefined,
     });
     setIsSubmitting(false);
-    if (success) onClose();
+    if (isSuccess) {onClose();}
   };
 
   const handleDelete = async () => {
-    if (!onDelete || isSubmitting) return;
+    if (!onDelete || isSubmitting) {return;}
     setIsSubmitting(true);
-    const success = await onDelete();
+    const isSuccess = await onDelete();
     setIsSubmitting(false);
-    if (success) onClose();
+    if (isSuccess) {onClose();}
   };
 
   if (isConfirmingDelete && term && onDelete) {
@@ -78,7 +78,7 @@ export default function TermEditorDialog({
             <AppDialogAction
               type="button"
               disabled={isSubmitting}
-              onClick={() => setIsConfirmingDelete(false)}
+              onClick={() => { setIsConfirmingDelete(false); }}
             >
               返回
             </AppDialogAction>
@@ -86,7 +86,7 @@ export default function TermEditorDialog({
               type="button"
               tone="danger"
               disabled={isSubmitting}
-              onClick={handleDelete}
+              onClick={() => { void handleDelete(); }}
             >
               {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
               确认删除
@@ -116,7 +116,7 @@ export default function TermEditorDialog({
               type="button"
               tone="danger"
               disabled={isSubmitting}
-              onClick={() => setIsConfirmingDelete(true)}
+              onClick={() => { setIsConfirmingDelete(true); }}
             >
               删除
             </AppDialogAction>
@@ -132,7 +132,7 @@ export default function TermEditorDialog({
             type="button"
             tone="brand"
             disabled={!isValid || isSubmitting}
-            onClick={handleSave}
+            onClick={() => { void handleSave(); }}
           >
             {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
             保存
@@ -144,10 +144,9 @@ export default function TermEditorDialog({
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-slate-500">原文</span>
           <input
-            autoFocus
             value={source}
             disabled={isSubmitting}
-            onChange={(event) => setSource(event.target.value)}
+            onChange={(event) => { setSource(event.target.value); }}
             className={clsx(
               "h-8 w-full rounded-md border border-slate-200 bg-white px-2.5",
               "text-sm text-slate-700 shadow-sm shadow-slate-100 outline-none",
@@ -162,7 +161,7 @@ export default function TermEditorDialog({
             <button
               type="button"
               disabled={isSubmitting}
-              onClick={() => setTargets((current) => [...current, ""])}
+              onClick={() => { setTargets((current) => [...current, ""]); }}
               className={clsx(
                 "flex h-6 items-center gap-1 rounded-md px-1.5",
                 "text-[10px] text-slate-400 hover:bg-green-50 hover:text-green-600",
@@ -174,13 +173,13 @@ export default function TermEditorDialog({
           </div>
           <div className="space-y-1.5">
             {targets.map((target, index) => (
-              <div key={index} className="flex items-center gap-1">
+              <div key={`${target}-${String(index)}`} className="flex items-center gap-1">
                 <input
-                  aria-label={`译名 ${index + 1}`}
+                  aria-label={`译名 ${String(index + 1)}`}
                   value={target}
                   disabled={isSubmitting}
-                  onChange={(event) => handleTargetChange(index, event.target.value)}
-                  onBlur={() => setHasTouchedTargets(true)}
+                  onChange={(event) => { handleTargetChange(index, event.target.value); }}
+                  onBlur={() => { setHasTouchedTargets(true); }}
                   className={clsx(
                     "h-8 min-w-0 flex-1 rounded-md border bg-white px-2.5",
                     "text-sm text-slate-700 shadow-sm shadow-slate-100 outline-none",
@@ -191,11 +190,11 @@ export default function TermEditorDialog({
                 />
                 <button
                   type="button"
-                  aria-label={`上移译名 ${index + 1}`}
+                  aria-label={`上移译名 ${String(index + 1)}`}
                   disabled={isSubmitting || index === 0}
-                  onClick={() => setTargets((current) => (
+                  onClick={() => { setTargets((current) => (
                     moveTermTarget(current, index, index - 1)
-                  ))}
+                  )); }}
                   className={clsx(
                     "flex size-7 items-center justify-center rounded-md text-slate-400",
                     "hover:bg-slate-50 hover:text-slate-600",
@@ -206,11 +205,11 @@ export default function TermEditorDialog({
                 </button>
                 <button
                   type="button"
-                  aria-label={`下移译名 ${index + 1}`}
+                  aria-label={`下移译名 ${String(index + 1)}`}
                   disabled={isSubmitting || index === targets.length - 1}
-                  onClick={() => setTargets((current) => (
+                  onClick={() => { setTargets((current) => (
                     moveTermTarget(current, index, index + 1)
-                  ))}
+                  )); }}
                   className={clsx(
                     "flex size-7 items-center justify-center rounded-md text-slate-400",
                     "hover:bg-slate-50 hover:text-slate-600",
@@ -221,11 +220,11 @@ export default function TermEditorDialog({
                 </button>
                 <button
                   type="button"
-                  aria-label={`删除译名 ${index + 1}`}
+                  aria-label={`删除译名 ${String(index + 1)}`}
                   disabled={isSubmitting || targets.length === 1}
-                  onClick={() => setTargets((current) => (
+                  onClick={() => { setTargets((current) => (
                     current.filter((_, targetIndex) => targetIndex !== index)
-                  ))}
+                  )); }}
                   className={clsx(
                     "flex size-7 items-center justify-center rounded-md text-slate-400",
                     "hover:bg-red-50 hover:text-red-500 disabled:opacity-20",
@@ -247,7 +246,7 @@ export default function TermEditorDialog({
             rows={2}
             value={comment}
             disabled={isSubmitting}
-            onChange={(event) => setComment(event.target.value)}
+            onChange={(event) => { setComment(event.target.value); }}
             placeholder="选填"
             className={clsx(
               "w-full resize-none rounded-md border border-slate-200 bg-white px-2.5 py-2",

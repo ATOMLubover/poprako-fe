@@ -35,8 +35,8 @@ describe("team API", () => {
       },
     });
     const fetchMock = installFetch(
-      new Response(
-        JSON.stringify({
+      Response.json(
+        {
           code: 0,
           data: [{
             id: "team_1",
@@ -46,7 +46,7 @@ describe("team API", () => {
             created_at: 1,
             updated_at: 2,
           }],
-        }),
+        },
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -66,7 +66,7 @@ describe("team API", () => {
         updatedAt: 2,
       }],
     });
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "/api/v1/teams?user_id=user_1&offset=0&limit=20",
     );
   });
@@ -90,7 +90,7 @@ describe("team API", () => {
       data: undefined,
     });
 
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "/api/v1/teams/team_1/mark-self-online",
     );
     expect(fetchMock.mock.calls[0]?.[1]?.method).toBe("PUT");
@@ -98,7 +98,7 @@ describe("team API", () => {
 
   test("lists online user IDs for one team", async () => {
     const fetchMock = installFetch(
-      new Response(JSON.stringify({ code: 0, data: ["user_1", "user_2"] }), {
+      Response.json({ code: 0, data: ["user_1", "user_2"] }, {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -108,7 +108,7 @@ describe("team API", () => {
       success: true,
       data: ["user_1", "user_2"],
     });
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "/api/v1/teams/team_1/online-users",
     );
   });

@@ -10,25 +10,25 @@ import InfiniteTerminologyList from "./InfiniteTerminologyList";
 
 const PAGE_SIZE = 30;
 
-type Props = {
+interface Props {
   dataSource: TerminologyDataSource;
   query: string;
   searchQuery: string;
-  selectedTermbase?: TermbaseInfo;
+  selectedTermbase?: TermbaseInfo | undefined;
   revision: number;
   onQueryChange: (value: string) => void;
   onSelect: (termbase: TermbaseInfo) => void;
   onCreate: () => void;
   onEdit: (termbase: TermbaseInfo) => void;
   onError: (error: ResultFailure) => void;
-};
+}
 
-type RowProps = {
+interface RowProps {
   termbase: TermbaseInfo;
   isSelected: boolean;
   onSelect: () => void;
-  onEdit?: () => void;
-};
+  onEdit?: (() => void) | undefined;
+}
 
 function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps) {
   const scope = termbase.comicId ? "本作" : "团队";
@@ -79,7 +79,7 @@ function TermbaseRow({ termbase, isSelected, onSelect, onEdit }: RowProps) {
         </span>
       </span>
       <span className="min-w-0 flex-1 truncate text-right text-[10px] text-stone-400">
-        {termbase.description || "暂无描述"}
+        {termbase.description ?? "暂无描述"}
       </span>
     </button>
   );
@@ -112,7 +112,7 @@ export default function TermbasePanel({
   );
   const list = usePaginatedList({
     enabled: true,
-    queryKey: `termbases:${searchQuery.trim()}:${revision}`,
+    queryKey: `termbases:${searchQuery.trim()}:${String(revision)}`,
     pageSize: PAGE_SIZE,
     loadPage,
     onError,
@@ -132,9 +132,8 @@ export default function TermbasePanel({
           />
           <span className="sr-only">搜索术语库名称</span>
           <input
-            autoFocus
             value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
+            onChange={(event) => { onQueryChange(event.target.value); }}
             placeholder="搜索术语库名称"
             className={clsx(
               "h-7 w-full rounded-md border border-slate-200 bg-white",
@@ -175,8 +174,8 @@ export default function TermbasePanel({
             key={termbase.id}
             termbase={termbase}
             isSelected={termbase.id === selectedTermbase?.id}
-            onSelect={() => onSelect(termbase)}
-            onEdit={termbase.comicId ? () => onEdit(termbase) : undefined}
+            onSelect={() => { onSelect(termbase); }}
+            onEdit={termbase.comicId ? () => { onEdit(termbase); } : undefined}
           />
         ))}
       </InfiniteTerminologyList>

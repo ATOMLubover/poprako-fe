@@ -5,9 +5,9 @@ import type {
 } from "@/features/ComcList/types/types";
 
 function phaseBits(status: BinaryFilter | TripleFilter) {
-  if (status === "unset") return 0b11;
-  if (status === "pending") return 0b00;
-  if (status === "ongoing") return 0b01;
+  if (status === "unset") {return 0b11;}
+  if (status === "pending") {return 0b00;}
+  if (status === "ongoing") {return 0b01;}
   return 0b10;
 }
 
@@ -36,7 +36,7 @@ export function useComicPlaygroundFilters() {
         (phaseBits(activeReviewStatus) << 8) |
         (phaseBits(activePublishStatus) << 10);
 
-      return stages === 0b111111111111 ? undefined : stages;
+      return stages === 0b1111_1111_1111 ? undefined : stages;
     },
     [
       activeUploadStatus,

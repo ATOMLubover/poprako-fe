@@ -15,12 +15,12 @@ const ROLE_LABEL: Record<Role, string> = {
   admin: "管理员",
 };
 
-type Props = {
+interface Props {
   name: string;
   userId: string;
   role: Role;
-  onRemove?: (userId: string, role: Role) => void;
-};
+  onRemove?: ((userId: string, role: Role) => void) | undefined;
+}
 
 export default function UserTag({ name, userId, role, onRemove }: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -42,6 +42,7 @@ export default function UserTag({ name, userId, role, onRemove }: Props) {
         <span className="leading-none">{displayName}</span>
         {onRemove && (
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setShowConfirm(true);
@@ -67,7 +68,7 @@ export default function UserTag({ name, userId, role, onRemove }: Props) {
             onRemove?.(userId, role);
             setShowConfirm(false);
           }}
-          onCancel={() => setShowConfirm(false)}
+          onCancel={() => { setShowConfirm(false); }}
         />
       )}
     </>

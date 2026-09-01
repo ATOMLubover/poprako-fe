@@ -1,19 +1,19 @@
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 
-type Props = {
+interface Props {
   title: string;
-  description?: string;
-  children?: React.ReactNode;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  onConfirm?: () => void;
+  description?: string | undefined;
+  children?: React.ReactNode | undefined;
+  confirmLabel?: string | undefined;
+  cancelLabel?: string | undefined;
+  onConfirm?: (() => void) | undefined;
   onCancel: () => void;
-  loading?: boolean;
-  confirmDisabled?: boolean;
-  confirmTone?: "danger" | "success";
-  hideFooter?: boolean;
-};
+  loading?: boolean | undefined;
+  confirmDisabled?: boolean | undefined;
+  confirmTone?: "danger" | "success" | undefined;
+  hideFooter?: boolean | undefined;
+}
 
 export default function ConfirmDialog({
   title,

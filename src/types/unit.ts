@@ -1,7 +1,7 @@
 // 该包有关联及其复杂的逻辑，因此绝对不允许直接使用其类型的字段
 // 必须通过关联的函数提供封装性，防止错误逻辑散落到其他文件
 
-export type UnitInfo = {
+export interface UnitInfo {
   id: string;
 
   // 均为 0~1 的浮点数
@@ -14,30 +14,30 @@ export type UnitInfo = {
   // 是否为框内文本，否则是框外文本
   isBubble: boolean;
 
-  translatedText?: string;
-  translatorId?: string;
-  translatorCommnet?: string;
+  translatedText?: string | undefined;
+  translatorId?: string | undefined;
+  translatorCommnet?: string | undefined;
 
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
   isProofread: boolean;
-  proofreadText?: string;
-  proofreaderId?: string;
-  proofreaderComment?: string;
-};
+  proofreadText?: string | undefined;
+  proofreaderId?: string | undefined;
+  proofreaderComment?: string | undefined;
+}
 
-export type UnitEdit = {
-  xCoord?: number;
-  yCoord?: number;
-  isBubble?: boolean;
-  translatedText?: string;
-  translatorId?: string;
-  translatorCommnet?: string;
+export interface UnitEdit {
+  xCoord?: number | undefined;
+  yCoord?: number | undefined;
+  isBubble?: boolean | undefined;
+  translatedText?: string | undefined;
+  translatorId?: string | undefined;
+  translatorCommnet?: string | undefined;
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
-  isProofread?: boolean;
-  proofreadText?: string;
-  proofreaderId?: string;
-  proofreaderComment?: string;
-};
+  isProofread?: boolean | undefined;
+  proofreadText?: string | undefined;
+  proofreaderId?: string | undefined;
+  proofreaderComment?: string | undefined;
+}
 
 export function unitId(unit: Pick<UnitInfo, "id">): string {
   return unit.id;
@@ -47,19 +47,21 @@ export function unitIndex(unit: UnitInfo): number {
   return unit.index;
 }
 
+// eslint-disable-next-line unicorn/consistent-boolean-name
 export function unitIsTranslated(unit: UnitInfo): boolean {
-  return unit.translatedText != null && unit.translatedText != "";
+  return Boolean(unit.translatedText);
 }
 
+// eslint-disable-next-line unicorn/consistent-boolean-name
 export function unitIsProofread(unit: UnitInfo): boolean {
   return unit.isProofread;
 }
 
 export function unitFinalText(unit: UnitInfo): string | null {
-  if (unit.proofreadText && unit.proofreadText != "") {
+  if (unit.proofreadText && unit.proofreadText !== "") {
     return unit.proofreadText;
   }
-  if (unit.translatedText && unit.translatedText != "") {
+  if (unit.translatedText && unit.translatedText !== "") {
     return unit.translatedText;
   }
 
@@ -67,7 +69,7 @@ export function unitFinalText(unit: UnitInfo): string | null {
 }
 
 export function unitTranslatedText(unit: UnitInfo): string | null {
-  if (unit.translatedText && unit.translatedText != "") {
+  if (unit.translatedText && unit.translatedText !== "") {
     return unit.translatedText;
   }
 
@@ -79,7 +81,7 @@ export function unitTranslatorId(unit: UnitInfo): string | null {
 }
 
 export function unitProofreadText(unit: UnitInfo): string | null {
-  if (unit.proofreadText && unit.proofreadText != "") {
+  if (unit.proofreadText && unit.proofreadText !== "") {
     return unit.proofreadText;
   }
 
@@ -91,7 +93,7 @@ export function unitProofreaderId(unit: UnitInfo): string | null {
 }
 
 export function unitTranslatorComment(unit: UnitInfo): string | null {
-  if (unit.translatorCommnet && unit.translatorCommnet != "") {
+  if (unit.translatorCommnet && unit.translatorCommnet !== "") {
     return unit.translatorCommnet;
   }
 
@@ -99,7 +101,7 @@ export function unitTranslatorComment(unit: UnitInfo): string | null {
 }
 
 export function unitProofreaderComment(unit: UnitInfo): string | null {
-  if (unit.proofreaderComment && unit.proofreaderComment != "") {
+  if (unit.proofreaderComment && unit.proofreaderComment !== "") {
     return unit.proofreaderComment;
   }
 
@@ -113,11 +115,11 @@ export function createUnit(
 ): UnitInfo {
   return {
     // 生成一个随机 ID，其在上传服务器时会被忽略
-    id: self.crypto.randomUUID(),
-    xCoord: xCoord,
-    yCoord: yCoord,
+    id: crypto.randomUUID(),
+    xCoord,
+    yCoord,
     index: 0,
-    isBubble: isBubble,
+    isBubble,
     isProofread: false,
   } as UnitInfo;
 }
@@ -129,8 +131,8 @@ export function modifyUnitPosition(
 ) {
   return {
     ...unit,
-    xCoord: xCoord,
-    yCoord: yCoord,
+    xCoord,
+    yCoord,
   };
 }
 
@@ -149,7 +151,7 @@ export function unitPosition(unit: UnitInfo) {
 export function modifyUnitIndex(unit: UnitInfo, index: number) {
   return {
     ...unit,
-    index: index,
+    index,
   };
 }
 
@@ -165,10 +167,11 @@ export function moveUnitToIndex(
   targetIndex: number,
 ): UnitInfo[] {
   const sourceIndex = units.findIndex((unit) => unitId(unit) === targetUnitId);
-  if (sourceIndex < 0) return units;
+  if (sourceIndex === -1) {return units;}
 
   const nextUnits = [...units];
   const [targetUnit] = nextUnits.splice(sourceIndex, 1);
+  if (!targetUnit) {return units;}
   const boundedIndex = Math.max(0, Math.min(targetIndex, nextUnits.length));
   nextUnits.splice(boundedIndex, 0, targetUnit);
 
@@ -178,10 +181,11 @@ export function moveUnitToIndex(
 export function modifyUnitIsBubble(unit: UnitInfo, isBubble: boolean) {
   return {
     ...unit,
-    isBubble: isBubble,
+    isBubble,
   };
 }
 
+// eslint-disable-next-line unicorn/consistent-boolean-name
 export function unitIsBubble(unit: UnitInfo) {
   return unit.isBubble;
 }
@@ -217,7 +221,7 @@ export function modifyUnitIsProofread(unit: UnitInfo, isProofread: boolean) {
   return {
     ...unit,
     // isProofread 与 proofreadText 完全独立：切换状态不得改变校对文本。
-    isProofread: isProofread,
+    isProofread,
   };
 }
 
@@ -300,7 +304,7 @@ export function applyUnitUpdates(unit: UnitInfo, updates: UnitEdit): UnitInfo {
     );
   }
 
-  if ("isProofread" in updates && !hasProofreadContentUpdate) {
+  if (!hasProofreadContentUpdate && "isProofread" in updates) {
     // 校对状态更新不得影响 proofreadText。
     nextUnit = modifyUnitIsProofread(
       nextUnit,
@@ -397,24 +401,24 @@ export function isUnitSame(rhs: UnitInfo, lhs: UnitInfo): boolean {
   return true;
 }
 
-export type UnitPatch = {
+export interface UnitPatch {
   id: string;
 
-  xCoord?: number;
-  yCoord?: number;
+  xCoord?: number | undefined;
+  yCoord?: number | undefined;
 
-  isBubble?: boolean;
+  isBubble?: boolean | undefined;
 
-  translatedText?: string | null;
-  translatorId?: string | null;
-  translatorCommnet?: string | null;
+  translatedText?: string | null | undefined;
+  translatorId?: string | null | undefined;
+  translatorCommnet?: string | null | undefined;
 
   // 仅表示校对流程状态；与 proofreadText 完全独立，二者不得互相推导或隐式修改。
-  isProofread?: boolean;
-  proofreadText?: string | null;
-  proofreaderId?: string | null;
-  proofreaderComment?: string | null;
-};
+  isProofread?: boolean | undefined;
+  proofreadText?: string | null | undefined;
+  proofreaderId?: string | null | undefined;
+  proofreaderComment?: string | null | undefined;
+}
 
 export type UnitCreation = UnitInfo;
 

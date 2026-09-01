@@ -1,12 +1,12 @@
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   icon: React.ElementType;
   title: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  danger?: boolean;
-};
+  onClick?: (() => void) | undefined;
+  disabled?: boolean | undefined;
+  danger?: boolean | undefined;
+}
 
 export default function ActionButton({
   icon: Icon,
@@ -17,6 +17,7 @@ export default function ActionButton({
 }: Props) {
   return (
     <button
+      type="button"
       title={title}
       onClick={onClick}
       disabled={disabled}

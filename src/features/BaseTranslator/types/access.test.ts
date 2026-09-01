@@ -25,20 +25,38 @@ describe("translator assignment access", () => {
     expect(availableTranslatorModes({
       canTranslate: false,
       canProofread: true,
-    })).toEqual(["proofread"]);
+    })).toEqual(["proofread", "readOnly"]);
     expect(availableTranslatorModes({
       canTranslate: true,
       canProofread: true,
-    })).toEqual(["proofread", "translate"]);
+    })).toEqual(["proofread", "translate", "readOnly"]);
   });
 
-  test("locks the mode selected at entry and prioritizes proofreading", () => {
-    const modes = availableTranslatorModes({
+  test("defaults to the highest-priority mode granted by assignments", () => {
+    const proofreaderModes = availableTranslatorModes({
       canTranslate: false,
       canProofread: true,
     });
+    const translatorModes = availableTranslatorModes({
+      canTranslate: true,
+      canProofread: false,
+    });
+    const dualRoleModes = availableTranslatorModes({
+      canTranslate: true,
+      canProofread: true,
+    });
 
-    expect(initialTranslatorMode(modes, "translate")).toBe("proofread");
+    expect(initialTranslatorMode(proofreaderModes)).toBe("proofread");
+    expect(initialTranslatorMode(translatorModes)).toBe("translate");
+    expect(initialTranslatorMode(dualRoleModes)).toBe("proofread");
+  });
+
+  test("preserves an explicit read-only entry", () => {
+    const modes = availableTranslatorModes({
+      canTranslate: true,
+      canProofread: true,
+    });
+
     expect(initialTranslatorMode(modes, "readOnly")).toBe("readOnly");
   });
 

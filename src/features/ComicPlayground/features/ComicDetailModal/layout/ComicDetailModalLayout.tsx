@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   header: ReactNode;
   sidebar: ReactNode;
   content: ReactNode;
-};
+}
 
 export default function ComicDetailModalLayout({
   header,

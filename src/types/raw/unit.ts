@@ -9,7 +9,7 @@ import type {
 import type { UnitSearchMatch } from
   "@/features/BaseTranslator/types/unitSearchTransform";
 
-export type RawUnitInfo = {
+export interface RawUnitInfo {
   id: string;
 
   page_id: string;
@@ -19,17 +19,17 @@ export type RawUnitInfo = {
 
   is_bubble: boolean;
 
-  translated_text?: string;
-  last_translator_id?: string;
+  translated_text?: string | undefined;
+  last_translator_id?: string | undefined;
 
   // 仅表示校对流程状态；与 proofread_text 完全独立，二者不得互相推导或隐式修改。
   is_proofread: boolean;
-  proofread_text?: string;
-  last_proofreader_id?: string;
+  proofread_text?: string | undefined;
+  last_proofreader_id?: string | undefined;
 
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawUnitInfo(raw: RawUnitInfo): UnitInfo {
   return {
@@ -58,30 +58,30 @@ export function unwrapRawUnitSearchMatch(raw: RawUnitInfo): UnitSearchMatch {
 
 export type RawUnitTextPart = "translated_text" | "proofread_text";
 
-export type RawTransformChapterUnitsArgs = {
+export interface RawTransformChapterUnitsArgs {
   part: RawUnitTextPart;
-  units: Array<{
+  units: {
     unit_id: string;
-    transforms: Array<{
+    transforms: {
       origin: string;
       target: string;
-    }>;
-  }>;
-};
+    }[];
+  }[];
+}
 
-export type ListPageUnitsResult = {
+export interface ListPageUnitsResult {
   totalUnitCount: number;
   translatedUnitCount: number;
   proofreadUnitCount: number;
   units: UnitInfo[];
-};
+}
 
-export type RawListPageUnitsResult = {
+export interface RawListPageUnitsResult {
   total_unit_count: number;
   translated_unit_count: number;
   proofread_unit_count: number;
-  unit_infos?: RawUnitInfo[];
-};
+  unit_infos?: RawUnitInfo[] | undefined;
+}
 
 export function unwrapRawListPageUnitsResult(
   raw: RawListPageUnitsResult,
@@ -96,49 +96,49 @@ export function unwrapRawListPageUnitsResult(
   };
 }
 
-export type RawUnitCoord = {
+export interface RawUnitCoord {
   x_coord: number;
   y_coord: number;
-};
+}
 
-export type RawUnitTranslation = {
+export interface RawUnitTranslation {
   translated_text: string;
-};
+}
 
-export type RawUnitRevision = {
+export interface RawUnitRevision {
   // 仅表示校对流程状态；与 proofread_text 完全独立，二者不得互相推导或隐式修改。
   is_proofread: boolean;
-  proofread_text?: string;
-};
+  proofread_text?: string | undefined;
+}
 
 export type RawPatch<T> =
   | { type: "clear" }
   | { type: "assign"; value: T };
 
-export type RawUnitCreateEdit = {
+export interface RawUnitCreateEdit {
   edit: "create";
   local_id: string;
-  next_id?: string;
+  next_id?: string | undefined;
   is_bubble: boolean;
   coord: RawUnitCoord;
-  translation?: RawUnitTranslation;
-  revision?: RawUnitRevision;
-};
+  translation?: RawUnitTranslation | undefined;
+  revision?: RawUnitRevision | undefined;
+}
 
-export type RawUnitPatchEdit = {
+export interface RawUnitPatchEdit {
   edit: "patch";
   id: string;
-  next_id?: RawPatch<string>;
-  is_bubble?: boolean;
-  coord?: RawUnitCoord;
-  translation?: RawPatch<RawUnitTranslation>;
-  revision?: RawPatch<RawUnitRevision>;
-};
+  next_id?: RawPatch<string> | undefined;
+  is_bubble?: boolean | undefined;
+  coord?: RawUnitCoord | undefined;
+  translation?: RawPatch<RawUnitTranslation> | undefined;
+  revision?: RawPatch<RawUnitRevision> | undefined;
+}
 
-export type RawUnitDeleteEdit = {
+export interface RawUnitDeleteEdit {
   edit: "delete";
   id: string;
-};
+}
 
 export type RawUnitEdit = RawUnitCreateEdit | RawUnitPatchEdit | RawUnitDeleteEdit;
 
@@ -154,12 +154,15 @@ function wrapPatch<T, R>(
   wrap: (value: T) => R,
 ): RawPatch<R> | undefined {
   switch (patch.type) {
-    case "skip":
+    case "skip": {
       return undefined;
-    case "clear":
+    }
+    case "clear": {
       return { type: "clear" };
-    case "assign":
+    }
+    case "assign": {
       return { type: "assign", value: wrap(patch.value) };
+    }
   }
 }
 
@@ -201,15 +204,18 @@ function wrapPatchUnitEdit(op: UnitPatchOp): RawUnitPatchEdit {
 
 export function wrapUnitEdit(op: UnitOp): RawUnitEdit {
   switch (op.edit) {
-    case "create":
+    case "create": {
       return wrapCreateUnitEdit(op);
-    case "patch":
+    }
+    case "patch": {
       return wrapPatchUnitEdit(op);
-    case "delete":
+    }
+    case "delete": {
       return { edit: "delete", id: op.id };
+    }
   }
 }
 
 export function wrapUnitDiff(diff: UnitDiff): RawUnitEdit[] {
-  return diff.ops.map(wrapUnitEdit);
+  return diff.ops.map((op) => wrapUnitEdit(op));
 }

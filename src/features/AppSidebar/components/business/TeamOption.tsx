@@ -14,16 +14,18 @@ import { hasRole } from "@/types/role";
 import TeamModifierModal from "./TeamModifierModal";
 import type { Result } from "@/types/utils/result";
 
-type Props = {
+interface Props {
   teams: TeamConfig[];
   activeTeam: TeamConfig;
   isListOpen: boolean;
-  onToggleList: (nextOpen: boolean) => void;
+  onToggleList: (isNextOpen: boolean) => void;
   onSelectTeam: (team: TeamConfig) => void;
   onJoinTeam: () => void | Promise<void>;
-  onUpdateTeam?: (id: string, args: { name: string; description?: string }) => Promise<Result<void>>;
+  onUpdateTeam?: (
+    (id: string, args: { name: string; description?: string | undefined }) => Promise<Result<void>>
+  ) | undefined;
   onAvatarUploadingChange: (isUploading: boolean) => void;
-};
+}
 
 function TeamAvatar({
   team,
@@ -44,9 +46,7 @@ function TeamAvatar({
 }) {
   const resolvedAvatarUrl =
     localAvatarUrl ??
-    (team.avatarThumbnailUrl || team.avatarUrl
-      ? team.avatarThumbnailUrl || team.avatarUrl
-      : "");
+    (team.avatarThumbnailUrl ?? team.avatarUrl);
 
   return (
     <button
@@ -125,30 +125,32 @@ function TeamList({
   activeId: string;
   onSelect: (team: TeamConfig) => void;
   onJoin: () => void;
-  onLongPressTeam?: (team: TeamConfig) => void;
+  onLongPressTeam?: ((team: TeamConfig) => void) | undefined;
 }) {
   const [inviteCode, setInviteCode] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const showToast = useToastStore((s) => s.showToast);
-  const longPressTimer = useRef<number | null>(null);
-  const longPressTeam = useRef<TeamConfig | null>(null);
-  const longPressHandled = useRef(false);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTeamRef = useRef<TeamConfig | null>(null);
+  const longPressHandledRef = useRef(false);
 
   const clearLongPress = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
+    if (!longPressTimerRef.current) {
+      return;
     }
+
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
   }, []);
 
   const handleTeamPointerDown = useCallback(
     (t: TeamConfig) => (e: React.PointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      longPressHandled.current = false;
-      longPressTeam.current = t;
-      longPressTimer.current = window.setTimeout(() => {
-        longPressHandled.current = true;
+      longPressHandledRef.current = false;
+      longPressTeamRef.current = t;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressHandledRef.current = true;
         onLongPressTeam?.(t);
       }, 500);
     },
@@ -160,8 +162,8 @@ function TeamList({
       e.preventDefault();
       e.stopPropagation();
       clearLongPress();
-      if (!longPressHandled.current) {
-        const t = longPressTeam.current;
+      if (!longPressHandledRef.current) {
+        const t = longPressTeamRef.current;
         if (t) {
           onSelect(t);
         }
@@ -186,7 +188,7 @@ function TeamList({
 
   const handleJoin = async () => {
     const code = inviteCode.trim();
-    if (!code || isJoining) return;
+    if (!code || isJoining) {return;}
     setIsJoining(true);
     const result = await joinMember(code);
     setIsJoining(false);
@@ -200,7 +202,7 @@ function TeamList({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleJoin();
+    if (e.key === "Enter") {void handleJoin();}
   };
 
   return (
@@ -246,8 +248,12 @@ function TeamList({
                       : "bg-gray-100 text-gray-400",
                   )}
                 >
-                  {t.avatarThumbnailUrl || t.avatarUrl ? (
-                    <img src={t.avatarThumbnailUrl || t.avatarUrl} alt={t.name} className="w-full h-full object-cover" />
+                  {t.avatarThumbnailUrl ?? t.avatarUrl ? (
+                    <img
+                      src={t.avatarThumbnailUrl ?? t.avatarUrl}
+                      alt={t.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     t.short
                   )}
@@ -276,10 +282,15 @@ function TeamList({
               <div
                 key={t.id}
                 onPointerDown={handleTeamPointerDown(t)}
+                role="button"
+                tabIndex={0}
                 onPointerUp={handleTeamPointerUp()}
                 onPointerCancel={handleTeamPointerCancel()}
                 onPointerLeave={handleTeamPointerCancel()}
                 onContextMenu={handleTeamContextMenu()}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {onSelect(t);}
+                }}
                 className={clsx(baseClasses, "select-none touch-none cursor-pointer")}
                 title="长按修改汉化组信息"
               >
@@ -287,8 +298,9 @@ function TeamList({
               </div>
             ) : (
               <button
+                type="button"
                 key={t.id}
-                onClick={() => onSelect(t)}
+                onClick={() => { onSelect(t); }}
                 className={baseClasses}
               >
                 {itemContent}
@@ -308,7 +320,7 @@ function TeamList({
           <input
             type="text"
             value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
+            onChange={(e) => { setInviteCode(e.target.value); }}
             onKeyDown={handleKeyDown}
             placeholder="输入邀请码加入..."
             disabled={isJoining}
@@ -351,15 +363,16 @@ export default function TeamOption({
   }, [isUploadingAvatar, onAvatarUploadingChange]);
 
   useEffect(() => {
-    if (!isUploadingAvatar) return;
+    if (!isUploadingAvatar) {return;}
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       event.returnValue = "";
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    return () => { window.removeEventListener("beforeunload", handleBeforeUnload); };
   }, [isUploadingAvatar]);
 
   useEffect(() => {
@@ -378,10 +391,10 @@ export default function TeamOption({
   const canUploadTeamAvatar = activeMember !== null && hasRole(activeMember, "admin");
 
   const handleAvatarFileChange = async (file?: File) => {
-    if (!file || isUploadingAvatar || !activeTeam.id || !canUploadTeamAvatar) return;
+    if (!file || isUploadingAvatar || !canUploadTeamAvatar) {return;}
 
     const fileNameParts = file.name.split(".");
-    const extension = (fileNameParts[fileNameParts.length - 1] || "").toLowerCase();
+    const extension = (fileNameParts.at(-1) ?? "").toLowerCase();
 
     if (!extension || !acceptedExtensions.has(extension) || !file.type.startsWith("image/")) {
       showToast("请上传有效的图片文件", "error");
@@ -413,7 +426,7 @@ export default function TeamOption({
         slot.putUrl,
         file,
         slot.headers,
-        (percent) => setAvatarUploadProgress(percent),
+        (percent) => { setAvatarUploadProgress(percent); },
       );
       if (!uploadRes.success) {
         showLocalApiFailure(uploadRes, showToast);
@@ -430,15 +443,15 @@ export default function TeamOption({
       }
 
       setLocalAvatarUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
+        if (prev) {URL.revokeObjectURL(prev);}
         return URL.createObjectURL(file);
       });
 
       await onJoinTeam();
       showToast("团队头像上传成功", "success");
-    } catch (err) {
-      console.error("[TeamOption] 上传团队头像异常:", err);
-      showLocalCaughtError(err, showToast, "团队头像上传失败", true);
+    } catch (error) {
+      console.error("[TeamOption] 上传团队头像异常:", error); // eslint-disable-line no-console
+      showLocalCaughtError(error, showToast, "团队头像上传失败", true);
     } finally {
       setIsUploadingAvatar(false);
       setAvatarUploadProgress(null);
@@ -446,12 +459,12 @@ export default function TeamOption({
   };
 
   const handleToggleList = () => {
-    const nextOpen = !isListOpen;
-    if (!nextOpen && isUploadingAvatar) {
+    const isNextOpen = !isListOpen;
+    if (!isNextOpen && isUploadingAvatar) {
       setShowExitWarning(true);
       return;
     }
-    onToggleList(nextOpen);
+    onToggleList(isNextOpen);
   };
 
   return (
@@ -483,7 +496,7 @@ export default function TeamOption({
             uploadProgress={avatarUploadProgress}
             canUpload={canUploadTeamAvatar}
             onUploadClick={() => {
-              if (isUploadingAvatar || !canUploadTeamAvatar) return;
+              if (isUploadingAvatar || !canUploadTeamAvatar) {return;}
               fileInputRef.current?.click();
             }}
           />
@@ -528,7 +541,7 @@ export default function TeamOption({
           teams={teams}
           activeId={activeTeam.id}
           onSelect={onSelectTeam}
-          onJoin={onJoinTeam}
+          onJoin={() => { void onJoinTeam(); }}
           onLongPressTeam={onUpdateTeam ? (t) => { setTeamToModify(t); onToggleList(false); } : undefined}
         />
       )}
@@ -543,7 +556,7 @@ export default function TeamOption({
             setShowExitWarning(false);
             onToggleList(false);
           }}
-          onCancel={() => setShowExitWarning(false)}
+          onCancel={() => { setShowExitWarning(false); }}
         />
       )}
       {teamToModify && onUpdateTeam && (
@@ -553,7 +566,7 @@ export default function TeamOption({
             const res = await onUpdateTeam(teamToModify.id, args);
             return res;
           }}
-          onClose={() => setTeamToModify(null)}
+          onClose={() => { setTeamToModify(null); }}
         />
       )}
     </div>

@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/prefer-spread, unicorn/consistent-function-scoping */
+/* eslint-disable unicorn/prefer-simple-condition-first -- pointer behavior. */
 import {
   useEffect,
   useRef,
@@ -8,19 +10,19 @@ import {
 import { Tooltip } from "radix-ui";
 import type { UserInfo } from "@/types/user";
 
-export type UnitContributor = {
+export interface UnitContributor {
   role: "translator" | "proofreader";
   user: UserInfo;
-};
+}
 
-type Props = {
+interface Props {
   contributors: UnitContributor[];
   children: ReactNode;
-};
+}
 
-type AvatarProps = {
+interface AvatarProps {
   user: UserInfo;
-};
+}
 
 const HOVER_DELAY_MS = 320;
 
@@ -30,7 +32,7 @@ function userDisplayName(user: UserInfo): string {
 
 function ContributorAvatar({ user }: AvatarProps) {
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
-  const avatarUrl = user.avatarThumbnailUrl || user.avatarUrl;
+  const avatarUrl = user.avatarThumbnailUrl ?? user.avatarUrl;
   const displayName = userDisplayName(user);
 
   return (
@@ -47,7 +49,7 @@ function ContributorAvatar({ user }: AvatarProps) {
           src={avatarUrl}
           alt=""
           className="size-full object-cover"
-          onError={() => setFailedAvatarUrl(avatarUrl)}
+          onError={() => { setFailedAvatarUrl(avatarUrl); }}
         />
       ) : (
         <span>{Array.from(displayName)[0] ?? "?"}</span>
@@ -67,11 +69,11 @@ export default function UnitContributorTooltip({
   const suppressedRef = useRef(false);
   const contributorKey = contributors
     .map(({ role, user }) => `${role}:${user.id}`)
-    .join("\u0000");
-  const open = contributorKey !== "" && openContributorKey === contributorKey;
+    .join("\u{0}");
+  const isOpen = contributorKey !== "" && openContributorKey === contributorKey;
 
   function cancelTimer() {
-    if (timerRef.current === null) return;
+    if (timerRef.current === null) {return;}
     clearTimeout(timerRef.current);
     timerRef.current = null;
   }
@@ -83,7 +85,7 @@ export default function UnitContributorTooltip({
 
   function isContributorTrigger(event: ReactPointerEvent<HTMLDivElement>) {
     const target = event.target;
-    if (!(target instanceof Element)) return false;
+    if (!(target instanceof Element)) {return false;}
 
     const trigger = target.closest("[data-unit-contributor-trigger]");
     return trigger !== null && event.currentTarget.contains(trigger);
@@ -94,8 +96,8 @@ export default function UnitContributorTooltip({
       closeTooltip();
       return;
     }
-    if (suppressedRef.current || open || timerRef.current !== null) return;
-    if (contributorKey === "") return;
+    if (suppressedRef.current || isOpen || timerRef.current !== null) {return;}
+    if (contributorKey === "") {return;}
 
     const nextContributorKey = contributorKey;
     timerRef.current = setTimeout(() => {
@@ -114,10 +116,10 @@ export default function UnitContributorTooltip({
     closeTooltip();
   }
 
-  useEffect(() => () => cancelTimer(), []);
+  useEffect(() => () => { cancelTimer(); }, []);
 
   return (
-    <Tooltip.Root open={open}>
+    <Tooltip.Root open={isOpen}>
       <Tooltip.Trigger asChild>
         <div
           className="w-full min-w-0"

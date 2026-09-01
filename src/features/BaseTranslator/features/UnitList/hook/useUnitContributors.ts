@@ -1,3 +1,4 @@
+/* eslint-disable @eslint-react/use-state, @eslint-react/exhaustive-deps */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UnitInfo } from "@/types/unit";
 import type { UserInfo } from "@/types/user";
@@ -7,28 +8,28 @@ import {
   type UnitUserResolver,
 } from "./unitContributorCache";
 
-type Args = {
+interface Args {
   units: UnitInfo[];
   onResolveUser: UnitUserResolver;
-};
+}
 
 export function useUnitContributors({ units, onResolveUser }: Args) {
   const cacheRef = useRef(new UnitContributorCache());
   const [, setRevision] = useState(0);
   const contributorIds = useMemo(() => unitContributorIds(units), [units]);
-  const contributorKey = contributorIds.join("\u0000");
+  const contributorKey = contributorIds.join("\u{0}");
 
   useEffect(() => {
-    let active = true;
+    let isActive = true;
 
-    contributorIds.forEach((userId) => {
+    for (const userId of contributorIds) {
       void cacheRef.current.resolve(userId, onResolveUser).then((user) => {
-        if (active && user) setRevision((revision) => revision + 1);
+        if (isActive && user) {setRevision((revision) => revision + 1);}
       });
-    });
+    }
 
     return () => {
-      active = false;
+      isActive = false;
     };
     // contributorKey captures the deduplicated IDs without retriggering on array identity.
     // eslint-disable-next-line react-hooks/exhaustive-deps

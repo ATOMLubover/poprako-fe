@@ -1,6 +1,6 @@
 import { diffArrays } from "diff";
 
-export type UnitTextDiffPart = {
+export interface UnitTextDiffPart {
   kind:
     | "unchanged"
     | "deleted"
@@ -8,32 +8,35 @@ export type UnitTextDiffPart = {
     | "replacement-removed"
     | "replacement-added";
   text: string;
-};
+}
 
-type RawDiffPart = {
+interface RawDiffPart {
   kind: "unchanged" | "removed" | "added";
   text: string;
-};
+}
 
 const wordSegmenter = typeof Intl.Segmenter === "function"
   ? new Intl.Segmenter("zh", { granularity: "word" })
   : undefined;
 
 function tokenizeText(text: string): string[] {
-  if (!wordSegmenter) return Array.from(text);
+  if (!wordSegmenter) {
+    return [...text]; // eslint-disable-line @typescript-eslint/no-misused-spread
+  }
   return Array.from(wordSegmenter.segment(text), ({ segment }) => segment);
 }
 
 function mergeAdjacentParts(parts: UnitTextDiffPart[]): UnitTextDiffPart[] {
-  return parts.reduce<UnitTextDiffPart[]>((merged, part) => {
+  const merged: UnitTextDiffPart[] = [];
+  for (const part of parts) {
     const previous = merged.at(-1);
     if (previous?.kind === part.kind) {
       previous.text += part.text;
-      return merged;
+      continue;
     }
     merged.push({ ...part });
-    return merged;
-  }, []);
+  }
+  return merged;
 }
 
 function orderReplacementParts(parts: RawDiffPart[]): UnitTextDiffPart[] {
@@ -41,16 +44,23 @@ function orderReplacementParts(parts: RawDiffPart[]): UnitTextDiffPart[] {
   let index = 0;
 
   while (index < parts.length) {
-    if (parts[index].kind === "unchanged") {
-      ordered.push({ kind: "unchanged", text: parts[index].text });
+    const part = parts[index];
+    if (!part) {break;}
+    if (part.kind === "unchanged") {
+      ordered.push({ kind: "unchanged", text: part.text });
       index += 1;
       continue;
     }
 
     const changed: RawDiffPart[] = [];
-    while (index < parts.length && parts[index].kind !== "unchanged") {
-      changed.push(parts[index]);
-      index += 1;
+    while (index < parts.length && parts[index]?.kind !== "unchanged") {
+      const changedPart = parts[index];
+      if (changedPart) {
+        changed.push(changedPart);
+        index += 1;
+      } else {
+        index = parts.length;
+      }
     }
     const isReplacement = changed.some((part) => part.kind === "removed")
       && changed.some((part) => part.kind === "added");
@@ -90,9 +100,9 @@ export function buildUnitTextDiff(
   const parts = changes.map<RawDiffPart>((change) => ({
     kind: change.removed
       ? "removed"
-      : change.added
+      : (change.added
         ? "added"
-        : "unchanged",
+        : "unchanged"),
     text: change.value.join(""),
   }));
 

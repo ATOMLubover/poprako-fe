@@ -61,7 +61,7 @@ export default function LoginCard() {
 
       if (!result.success) {
         showLocalApiFailure(result, showToast);
-        console.error("[LoginCard] 操作失败：", result.error);
+        console.error("[LoginCard] 操作失败：", result.error); // eslint-disable-line no-console
         return;
       }
 
@@ -71,10 +71,10 @@ export default function LoginCard() {
         writeFirstRegistrationFlag(false);
       }
       showToast(mode === "login" ? "登录成功！" : "注册成功！", "success");
-      navigate("/comic-playground", { replace: true });
-    } catch (err) {
-      showLocalCaughtError(err, showToast, "操作失败，请稍后重试");
-      console.error("[LoginCard] 操作异常：", err);
+      void navigate("/comic-playground", { replace: true });
+    } catch (error) {
+      showLocalCaughtError(error, showToast, "操作失败，请稍后重试");
+      console.error("[LoginCard] 操作异常：", error); // eslint-disable-line no-console
     } finally {
       setIsLoading(false);
     }
@@ -111,9 +111,9 @@ export default function LoginCard() {
                 background:
                   i === 0
                     ? "var(--color-green-500)"
-                    : i === 1
+                    : (i === 1
                       ? "var(--color-green-100)"
-                      : "var(--color-green-50)",
+                      : "var(--color-green-50)"),
               }}
             />
           ))}
@@ -124,8 +124,9 @@ export default function LoginCard() {
       <div className={clsx("mx-6 mb-4 flex rounded-lg p-0.5", "bg-green-50")}>
         {(["login", "register"] as Mode[]).map((m) => (
           <button
+            type="button"
             key={m}
-            onClick={() => switchMode(m)}
+            onClick={() => { switchMode(m); }}
             className={clsx(
               "flex-1 rounded-md py-1.5 text-xs font-semibold",
               "transition-all duration-200 focus:outline-none",
@@ -185,8 +186,9 @@ export default function LoginCard() {
 
         {/* 提交按钮 — 浅绿底 + 项目主色文字 */}
         <button
+          type="button"
           disabled={isLoading}
-          onClick={handleSubmit}
+          onClick={() => { void handleSubmit(); }}
           className={clsx(
             "mt-4 w-full rounded-lg py-2 text-sm font-semibold",
             "bg-green-50 text-green-500",
@@ -197,7 +199,7 @@ export default function LoginCard() {
             "disabled:cursor-not-allowed disabled:opacity-50",
           )}
         >
-          {isLoading ? "处理中…" : mode === "login" ? "登录" : "注册"}
+          {isLoading ? "处理中…" : (mode === "login" ? "登录" : "注册")}
         </button>
       </div>
     </div>

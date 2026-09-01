@@ -32,10 +32,10 @@ export const Default: Story = {
     currWorkset: mockWorkset,
     onCreateComic: async (args) => {
       await new Promise((r) => setTimeout(r, 800));
-      console.log("创建作品:", args);
+      void args;
       return { success: true, data: "new-comic-id" };
     },
-    onClose: () => console.log("关闭弹窗"),
+    onClose: () => {return;},
   },
 };
 
@@ -45,10 +45,10 @@ export const SubmitError: Story = {
     currWorkset: mockWorkset,
     onCreateComic: async (args) => {
       await new Promise((r) => setTimeout(r, 800));
-      console.log("创建作品（模拟失败）:", args);
+      void args;
       return { success: false, error: "作品标题已存在" };
     },
-    onClose: () => console.log("关闭弹窗"),
+    onClose: () => {return;},
   },
 };
 
@@ -58,9 +58,9 @@ export const LongWorksetName: Story = {
     currWorkset: { ...mockWorkset, name: "超级无敌长的作品集名称组织队伍名" },
     onCreateComic: async (args) => {
       await new Promise((r) => setTimeout(r, 800));
-      console.log("创建作品:", args);
+      void args;
       return { success: true, data: "new-comic-id" };
     },
-    onClose: () => console.log("关闭弹窗"),
+    onClose: () => {return;},
   },
 };

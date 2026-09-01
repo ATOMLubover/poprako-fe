@@ -9,11 +9,11 @@ import type { Result } from "@/types/utils/result";
 import type { WorksetInfo } from "@/types/workset";
 import PresetAssignmentRoleSwitchGroup from "./PresetAssignmentRoleSwitchGroup";
 
-type Props = {
+interface Props {
   currWorkset: WorksetInfo;
   onCreateComic: (args: CreateComicArgs) => Promise<Result<string>>;
   onClose: () => void;
-};
+}
 
 export default function ComicCreatorModal({
   currWorkset,
@@ -33,9 +33,9 @@ export default function ComicCreatorModal({
   const isValid =
     formData.title.trim().length > 0 && formData.author.trim().length > 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {return;}
     setIsSubmitting(true);
     const result = await onCreateComic({
       worksetId: currWorkset.id,
@@ -47,7 +47,7 @@ export default function ComicCreatorModal({
         presetRoles.length > 0 ? roleMask(presetRoles) : undefined,
     });
     setIsSubmitting(false);
-    if (result.success) onClose();
+    if (result.success) {onClose();}
   };
 
   return (
@@ -90,27 +90,27 @@ export default function ComicCreatorModal({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+        <form onSubmit={(event) => { void handleSubmit(event); }} className="px-5 pb-5 pt-3">
           <div className="space-y-2.5">
             <IconInputRow
               icon={<Type size={14} />}
               placeholder="标题"
               value={formData.title}
-              onChange={(v) => setFormData({ ...formData, title: v })}
+              onChange={(v) => { setFormData({ ...formData, title: v }); }}
             />
 
             <IconInputRow
               icon={<User size={14} />}
               placeholder="作者"
               value={formData.author}
-              onChange={(v) => setFormData({ ...formData, author: v })}
+              onChange={(v) => { setFormData({ ...formData, author: v }); }}
             />
 
             <IconInputRow
               icon={<BookOpen size={14} />}
               placeholder="第一章标题（选填）"
               value={formData.firstChapterTitle}
-              onChange={(v) => setFormData({ ...formData, firstChapterTitle: v })}
+              onChange={(v) => { setFormData({ ...formData, firstChapterTitle: v }); }}
             />
 
             {/* 描述 textarea — 与 IconInputRow 风格对齐 */}
@@ -132,7 +132,7 @@ export default function ComicCreatorModal({
                 )}
                 value={formData.description}
                 onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                  { setFormData({ ...formData, description: e.target.value }); }
                 }
               />
             </div>

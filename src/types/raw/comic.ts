@@ -11,11 +11,11 @@ import type { RawAssignmentInfo } from "./assignment";
 import type { RawChapterInfo } from "./chapter";
 import { ensureHttpsUrl } from "@/utils/url";
 
-export type RawComicInfo = {
+export interface RawComicInfo {
   id: string;
 
   workset_id: string;
-  workset?: RawWorksetInfo;
+  workset?: RawWorksetInfo | undefined;
 
   title: string;
   author: string;
@@ -24,21 +24,21 @@ export type RawComicInfo = {
   chapter_count: number;
 
   cover_url: string | null;
-  cover_thumbnail_url?: string | null;
+  cover_thumbnail_url?: string | null | undefined;
 
   creator_id: string;
-  creator?: RawUserInfo;
+  creator?: RawUserInfo | undefined;
 
   last_active_at: number;
   created_at: number;
   updated_at: number;
-};
+}
 
-export type RawListComicInfosPayload = {
+export interface RawListComicInfosPayload {
   comics: RawComicInfo[];
   pinned_chapters: (RawChapterInfo | null)[];
   pinned_chapter_assignments: RawAssignmentInfo[][];
-};
+}
 
 export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
   return {
@@ -48,7 +48,7 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
     title: raw.title,
     author: raw.author,
     description: raw.description ?? "",
-    isCoverUploaded: !!raw.cover_url,
+    isCoverUploaded: Boolean(raw.cover_url),
     creatorId: raw.creator_id,
     index: raw.index,
     chapterCount: raw.chapter_count,
@@ -60,13 +60,13 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
   } as ComicInfo;
 }
 
-export type RawCreateComicArgs = {
+export interface RawCreateComicArgs {
   author: string;
   description: string;
   workset_id: string;
   title: string;
-  first_chapter_subtitle?: string;
-};
+  first_chapter_subtitle?: string | undefined;
+}
 export function unwrapRawCreateComicArgs(
   raw: RawCreateComicArgs,
 ): CreateComicArgs {
@@ -79,19 +79,19 @@ export function unwrapRawCreateComicArgs(
   } as CreateComicArgs;
 }
 
-export type RawCreateComicResult = { id: string };
+export interface RawCreateComicResult { id: string }
 export function unwrapRawCreateComicResult(
   raw: RawCreateComicResult,
 ): CreateComicResult {
   return { id: raw.id };
 }
 
-export type RawUpdateComicArgs = {
+export interface RawUpdateComicArgs {
   id: string;
-  title?: string;
-  author?: string;
-  description?: string;
-};
+  title?: string | undefined;
+  author?: string | undefined;
+  description?: string | undefined;
+}
 export function unwrapRawUpdateComicArgs(
   raw: RawUpdateComicArgs,
 ): UpdateComicArgs {

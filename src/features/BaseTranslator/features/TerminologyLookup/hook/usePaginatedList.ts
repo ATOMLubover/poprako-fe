@@ -5,13 +5,13 @@ import {
   paginationReducer,
 } from "./pagination";
 
-type Options<T extends { id: string }> = {
+interface Options<T extends { id: string }> {
   enabled: boolean;
   queryKey: string;
   pageSize: number;
   loadPage: (offset: number, limit: number) => Promise<Result<T[]>>;
   onError: (error: ResultFailure) => void;
-};
+}
 
 export function usePaginatedList<T extends { id: string }>({
   enabled,
@@ -41,12 +41,12 @@ export function usePaginatedList<T extends { id: string }>({
   const execute = useCallback(async (
     requestVersion: number,
     offset: number,
-    append: boolean,
+    shouldAppend: boolean,
   ) => {
     activeRequestRef.current = requestVersion;
     const result = await loadPageRef.current(offset, pageSize);
 
-    if (requestVersion !== requestVersionRef.current) return;
+    if (requestVersion !== requestVersionRef.current) {return;}
     activeRequestRef.current = null;
 
     if (!result.success) {
@@ -64,12 +64,12 @@ export function usePaginatedList<T extends { id: string }>({
       requestVersion,
       items: result.data,
       pageSize,
-      append,
+      shouldAppend,
     });
   }, [pageSize]);
 
   const reload = useCallback(() => {
-    if (!enabled) return;
+    if (!enabled) {return;}
 
     const requestVersion = requestVersionRef.current + 1;
     requestVersionRef.current = requestVersion;
@@ -79,14 +79,14 @@ export function usePaginatedList<T extends { id: string }>({
   }, [enabled, execute, queryKey]);
 
   const loadMore = useCallback(() => {
-    if (!enabled || activeRequestRef.current !== null) return;
+    if (!enabled || activeRequestRef.current !== null) {return;}
 
     const snapshot = stateRef.current;
     if (
       !snapshot.hasMore ||
       snapshot.error ||
       snapshot.phase === "initial-loading"
-    ) return;
+    ) {return;}
 
     const requestVersion = requestVersionRef.current;
     dispatch({ type: "load-more", requestVersion });
@@ -99,7 +99,7 @@ export function usePaginatedList<T extends { id: string }>({
       reload();
       return;
     }
-    if (!enabled || activeRequestRef.current !== null) return;
+    if (!enabled || activeRequestRef.current !== null) {return;}
 
     const requestVersion = requestVersionRef.current;
     dispatch({ type: "load-more", requestVersion });
@@ -107,7 +107,7 @@ export function usePaginatedList<T extends { id: string }>({
   }, [enabled, execute, reload]);
 
   useEffect(() => {
-    if (!enabled || loadedQueryKeyRef.current === queryKey) return;
+    if (!enabled || loadedQueryKeyRef.current === queryKey) {return;}
     reload();
   }, [enabled, queryKey, reload]);
 

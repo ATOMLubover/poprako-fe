@@ -1,36 +1,37 @@
-type HashResult = {
+interface HashResult {
   imageHash: string;
-};
+}
 
 type HashResponse = HashResult & {
   id: number;
-  error?: string;
+  error?: string | undefined;
 };
 
-type PendingHash = {
+interface PendingHash {
   resolve: (result: HashResult) => void;
   reject: (error: Error) => void;
-};
+}
 
 let hashWorker: Worker | null = null;
 let nextRequestId = 1;
 const pendingHashes = new Map<number, PendingHash>();
 
 function rejectPendingHashes(error: Error): void {
-  for (const pendingHash of pendingHashes.values()) pendingHash.reject(error);
+  for (const pendingHash of pendingHashes.values()) {pendingHash.reject(error);}
   pendingHashes.clear();
 }
 
 function getHashWorker(): Worker {
-  if (hashWorker) return hashWorker;
+  if (hashWorker) {return hashWorker;}
 
-  const worker = new Worker(new URL("./pageHash.worker.ts", import.meta.url), {
+  const worker = new Worker(new URL("pageHash.worker.ts", import.meta.url), {
     type: "module",
   });
 
+  // eslint-disable-next-line unicorn/prefer-add-event-listener
   worker.onmessage = (event: MessageEvent<HashResponse>) => {
     const pendingHash = pendingHashes.get(event.data.id);
-    if (!pendingHash) return;
+    if (!pendingHash) {return;}
 
     pendingHashes.delete(event.data.id);
 
@@ -42,20 +43,22 @@ function getHashWorker(): Worker {
     pendingHash.resolve({ imageHash: event.data.imageHash });
   };
 
-  worker.onerror = () => {
+  worker.onerror = () => { // eslint-disable-line unicorn/prefer-add-event-listener
     rejectPendingHashes(new Error("计算图片哈希失败"));
     worker.terminate();
-    hashWorker = null;
+    hashWorker = null; // eslint-disable-line unicorn/no-top-level-assignment-in-function
   };
 
-  hashWorker = worker;
+  hashWorker = worker; // eslint-disable-line unicorn/no-top-level-assignment-in-function
   return worker;
 }
 
-/** Calculates one file's SHA-256 in a dedicated worker. */
+/**
+Calculates one file's SHA-256 in a dedicated worker.
+*/
 export function hashPageFile(file: File): Promise<HashResult> {
   return new Promise((resolve, reject) => {
-    const id = nextRequestId++;
+    const id = nextRequestId++; // eslint-disable-line unicorn/no-top-level-assignment-in-function
 
     pendingHashes.set(id, { resolve, reject });
 

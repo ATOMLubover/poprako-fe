@@ -15,13 +15,13 @@ import {
   updateTerm,
 } from "./term";
 
-type FetchCall = {
+interface FetchCall {
   url: string;
-  init?: RequestInit;
-};
+  init?: RequestInit | undefined;
+}
 
 function okJson(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify({ code: 0, data }), {
+  return Response.json({ code: 0, data }, {
     status,
     headers: { "Content-Type": "application/json" },
   });
@@ -38,7 +38,7 @@ function installFetch(...responses: Response[]) {
     void init;
     const response = responses[responseIndex];
     responseIndex += 1;
-    if (!response) throw new Error("Missing mocked response");
+    if (!response) {throw new Error("Missing mocked response");}
     return Promise.resolve(response.clone());
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -51,14 +51,19 @@ function fetchCallAt(
 ): FetchCall {
   const call = fetchMock.mock.calls[index];
   expect(call).toBeDefined();
+  if (!call) {throw new Error(`Missing fetch call at index ${String(index)}`);}
+  const input = call[0];
+  const url = typeof input === "string" || input instanceof URL ? input.toString() : input.url;
   return {
-    url: String(call![0]),
-    init: call![1] as RequestInit | undefined,
+    url,
+    init: call[1],
   };
 }
 
 function bodyOf(call: FetchCall): unknown {
-  return JSON.parse(String(call.init?.body));
+  const body = call.init?.body;
+  if (typeof body !== "string") {throw new TypeError("Expected a JSON request body");}
+  return JSON.parse(body);
 }
 
 describe("termbase API", () => {
@@ -164,15 +169,15 @@ describe("termbase API", () => {
       noContent(),
     );
 
-    const getResult = await getTermbase("termbase_1");
+    const fetchedTermbase = await getTermbase("termbase_1");
     const updateResult = await updateTermbase("termbase_1", {
       name: "People",
       description: "",
     });
-    const deleteResult = await deleteTermbase("termbase_1");
+    const deletedTermbase = await deleteTermbase("termbase_1");
 
     expect(fetchCallAt(fetchMock, 0).url).toBe("/api/v1/termbases/termbase_1");
-    expect(getResult).toEqual({
+    expect(fetchedTermbase).toEqual({
       success: true,
       data: {
         id: "termbase_1",
@@ -197,10 +202,10 @@ describe("termbase API", () => {
     });
     expect(updateResult).toEqual({ success: true, data: undefined });
 
-    const deleteCall = fetchCallAt(fetchMock, 2);
-    expect(deleteCall.url).toBe("/api/v1/termbases/termbase_1");
-    expect(deleteCall.init?.method).toBe("DELETE");
-    expect(deleteResult).toEqual({ success: true, data: undefined });
+    const deletionCall = fetchCallAt(fetchMock, 2);
+    expect(deletionCall.url).toBe("/api/v1/termbases/termbase_1");
+    expect(deletionCall.init?.method).toBe("DELETE");
+    expect(deletedTermbase).toEqual({ success: true, data: undefined });
   });
 });
 
@@ -267,33 +272,33 @@ describe("term API", () => {
       noContent(),
     );
 
-    const createResult = await createTerm({
+    const createdTerm = await createTerm({
       termbaseId: "termbase_1",
       source: "Hero",
       targets: ["勇者"],
       comment: "Character",
     });
-    const getResult = await getTerm("term_1");
+    const fetchedTerm = await getTerm("term_1");
     const updateResult = await updateTerm("term_1", {
       source: "Heroine",
       targets: ["女主角", "主角"],
       comment: "",
     });
-    const deleteResult = await deleteTerm("term_1");
+    const deletedTerm = await deleteTerm("term_1");
 
-    const createCall = fetchCallAt(fetchMock, 0);
-    expect(createCall.url).toBe("/api/v1/terms");
-    expect(createCall.init?.method).toBe("POST");
-    expect(bodyOf(createCall)).toEqual({
+    const creationCall = fetchCallAt(fetchMock, 0);
+    expect(creationCall.url).toBe("/api/v1/terms");
+    expect(creationCall.init?.method).toBe("POST");
+    expect(bodyOf(creationCall)).toEqual({
       termbase_id: "termbase_1",
       source: "Hero",
       targets: ["勇者"],
       comment: "Character",
     });
-    expect(createResult).toEqual({ success: true, data: "term_1" });
+    expect(createdTerm).toEqual({ success: true, data: "term_1" });
 
     expect(fetchCallAt(fetchMock, 1).url).toBe("/api/v1/terms/term_1");
-    expect(getResult).toEqual({
+    expect(fetchedTerm).toEqual({
       success: true,
       data: {
         id: "term_1",
@@ -318,9 +323,9 @@ describe("term API", () => {
     });
     expect(updateResult).toEqual({ success: true, data: undefined });
 
-    const deleteCall = fetchCallAt(fetchMock, 3);
-    expect(deleteCall.url).toBe("/api/v1/terms/term_1");
-    expect(deleteCall.init?.method).toBe("DELETE");
-    expect(deleteResult).toEqual({ success: true, data: undefined });
+    const deletionCall = fetchCallAt(fetchMock, 3);
+    expect(deletionCall.url).toBe("/api/v1/terms/term_1");
+    expect(deletionCall.init?.method).toBe("DELETE");
+    expect(deletedTerm).toEqual({ success: true, data: undefined });
   });
 });

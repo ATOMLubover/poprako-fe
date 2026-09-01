@@ -1,13 +1,13 @@
 import type { LucideIcon } from "lucide-react";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   icon: LucideIcon;
   label: string;
   isActive: boolean;
   onClick: () => void;
-  hasBadge?: boolean;
-};
+  hasBadge?: boolean | undefined;
+}
 
 export default function NavItem({
   icon: Icon,
@@ -17,7 +17,7 @@ export default function NavItem({
   hasBadge = false,
 }: Props) {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={clsx(
         "group/item relative flex h-11 w-full",

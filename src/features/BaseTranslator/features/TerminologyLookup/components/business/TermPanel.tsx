@@ -11,7 +11,7 @@ import InfiniteTerminologyList from "./InfiniteTerminologyList";
 
 const PAGE_SIZE = 30;
 
-type Props = {
+interface Props {
   dataSource: TerminologyDataSource;
   termbase: TermbaseInfo;
   query: string;
@@ -19,12 +19,12 @@ type Props = {
   onCreate: () => void;
   onEdit: (term: TermInfo) => void;
   onError: (error: ResultFailure) => void;
-};
+}
 
-type RowProps = {
+interface RowProps {
   term: TermInfo;
-  onEdit?: () => void;
-};
+  onEdit?: (() => void) | undefined;
+}
 
 function TermRow({ term, onEdit }: RowProps) {
   const longPress = useLongPress({ onLongPress: () => onEdit?.() });
@@ -48,7 +48,7 @@ function TermRow({ term, onEdit }: RowProps) {
         {term.targets.length > 0 ? (
           term.targets.map((target, index) => (
             <div
-              key={`${term.id}:${index}`}
+              key={`${term.id}:${target}:${String(index)}`}
               className={clsx(
                 "rounded-md border border-green-100 bg-green-50/60 px-1.5 py-px",
                 "text-[10px] leading-4 text-primary-text",
@@ -91,7 +91,7 @@ export default function TermPanel({
   );
   const list = usePaginatedList({
     enabled: true,
-    queryKey: `terms:${termbase.id}:${query.trim()}:${revision}`,
+    queryKey: `terms:${termbase.id}:${query.trim()}:${String(revision)}`,
     pageSize: PAGE_SIZE,
     loadPage,
     onError,
@@ -150,7 +150,7 @@ export default function TermPanel({
           <TermRow
             key={term.id}
             term={term}
-            onEdit={termbase.comicId ? () => onEdit(term) : undefined}
+            onEdit={termbase.comicId ? () => { onEdit(term); } : undefined}
           />
         ))}
       </InfiniteTerminologyList>

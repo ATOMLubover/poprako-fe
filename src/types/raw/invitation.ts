@@ -4,7 +4,7 @@ import type {
   UpdateInvitationArgs,
 } from "../invitation";
 
-export type RawInvitationInfo = {
+export interface RawInvitationInfo {
   id: string;
   code: string;
   invitee_qid: string;
@@ -12,7 +12,7 @@ export type RawInvitationInfo = {
   is_pending: boolean;
   roles: number;
   team_id: string;
-};
+}
 
 export function unwrapRawInvitationInfo(
   raw: RawInvitationInfo,
@@ -28,11 +28,11 @@ export function unwrapRawInvitationInfo(
   } as InvitationInfo;
 }
 
-export type RawCreateInvitationArgs = {
+export interface RawCreateInvitationArgs {
   invitee_qid: string;
   roles: number;
   team_id: string;
-};
+}
 export function unwrapRawCreateInvitationArgs(
   raw: RawCreateInvitationArgs,
 ): CreateInvitationArgs {
@@ -43,10 +43,10 @@ export function unwrapRawCreateInvitationArgs(
   } as CreateInvitationArgs;
 }
 
-export type RawUpdateInvitationArgs = {
+export interface RawUpdateInvitationArgs {
   id: string;
-  roles?: number;
-};
+  roles?: number | undefined;
+}
 export function unwrapRawUpdateInvitationArgs(
   raw: RawUpdateInvitationArgs,
 ): UpdateInvitationArgs {

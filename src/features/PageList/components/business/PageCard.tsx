@@ -8,20 +8,20 @@ import MultiProgressBar from "@/components/ui/MultiProgressBar";
 import LazyImage from
   "@/features/ComicPlayground/features/ComicDetailModal/components/business/LazyImage";
 
-type Props = {
+interface Props {
   page: PageInfo;
-  onClick?: () => void;
-  onDelete?: () => void;
-  enableDelete?: boolean;
-  enableClick?: boolean;
-  onReupload?: (file: File) => void;
-  canReupload?: boolean;
-  isReuploading?: boolean;
-  reuploadAccept?: string;
-  uploadProgress?: number;
-  uploadStatus?: PageUploadTaskStatus;
-  uploadError?: string;
-};
+  onClick?: (() => void) | undefined;
+  onDelete?: (() => void) | undefined;
+  enableDelete?: boolean | undefined;
+  enableClick?: boolean | undefined;
+  onReupload?: ((file: File) => void) | undefined;
+  canReupload?: boolean | undefined;
+  isReuploading?: boolean | undefined;
+  reuploadAccept?: string | undefined;
+  uploadProgress?: number | undefined;
+  uploadStatus?: PageUploadTaskStatus | undefined;
+  uploadError?: string | undefined;
+}
 
 export default function PageCard({
   page,
@@ -51,17 +51,27 @@ export default function PageCard({
     typeof uploadProgress === "number"
       ? Math.max(0, Math.min(100, Math.round(uploadProgress)))
       : null;
+  let statusClass = isEmpty ? "border-[3px] border-green-500 bg-transparent" : "bg-gray-400";
+  if (isTranslated) {statusClass = "bg-orange-400";}
+  if (isCompleted) {statusClass = "bg-green-500";}
 
   const handleReuploadFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file || !onReupload) return;
+    if (!file || !onReupload) {return;}
     onReupload(file);
   };
 
   return (
     <div
       onClick={enableClick && !isPending ? onClick : undefined}
+      role={enableClick && !isPending ? "button" : undefined}
+      tabIndex={enableClick && !isPending ? 0 : undefined}
+      onKeyDown={enableClick && !isPending ? (event) => {
+        if (event.key !== "Enter" && event.key !== " ") {return;}
+        event.preventDefault();
+        onClick?.();
+      } : undefined}
       style={{ contentVisibility: "auto", containIntrinsicSize: "auto 150px" }}
       className={clsx(
         "relative aspect-3/4 border rounded-sm flex flex-col",
@@ -80,8 +90,8 @@ export default function PageCard({
           "flex items-center justify-center",
         )}
       >
-        <span className="text-[10px] font-bold text-white/90 leading-none">
-          P{page.index+1}
+            <span className="text-[10px] font-bold text-white/90 leading-none">
+          P{page.index + 1}
         </span>
       </div>
 
@@ -97,13 +107,7 @@ export default function PageCard({
           <div
             className={clsx(
               "w-2.5 h-2.5 rounded-full shadow-sm",
-              isCompleted
-                ? "bg-green-500"
-                : isTranslated
-                  ? "bg-orange-400"
-                  : isEmpty
-                    ? "border-[3px] border-green-500 bg-transparent"
-                    : "bg-gray-400",
+              statusClass,
             )}
           />
         </div>
@@ -113,7 +117,7 @@ export default function PageCard({
       {page.imageThumbnailUrl ? (
         <LazyImage
           src={page.imageThumbnailUrl}
-          alt={`Page ${page.index}`}
+          alt={`Page ${String(page.index)}`}
           className="absolute inset-0 w-full h-full object-cover"
         />
       ) : (
@@ -162,7 +166,7 @@ export default function PageCard({
           <span className="absolute text-[11px] font-bold text-white/90">
             {uploadStatus === "confirming"
               ? "确认中"
-              : `${clampedUploadProgress}%`}
+              : `${String(clampedUploadProgress)}%`}
           </span>
         </div>
       )}
@@ -201,6 +205,7 @@ export default function PageCard({
       {/* Delete button */}
       {enableDelete && onDelete && !isPending && (
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDelete();
@@ -223,7 +228,7 @@ export default function PageCard({
             type="file"
             accept={reuploadAccept ?? "image/*"}
             className="hidden"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) => { event.stopPropagation(); }}
             onChange={handleReuploadFileChange}
           />
           <div
@@ -233,6 +238,7 @@ export default function PageCard({
             )}
           >
             <button
+              type="button"
               onClick={(event) => {
                 event.stopPropagation();
                 reuploadInputRef.current?.click();

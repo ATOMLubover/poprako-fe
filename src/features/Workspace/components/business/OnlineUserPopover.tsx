@@ -3,10 +3,10 @@ import { ChevronDown, UserRound, UsersRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { UserInfo } from "@/types/user";
 
-type Props = {
+interface Props {
   onlineCount: number;
   users: readonly UserInfo[];
-};
+}
 
 function avatarChar(user: UserInfo): string {
   return user.name.slice(0, 1).toUpperCase();
@@ -17,16 +17,16 @@ export default function OnlineUserPopover({ onlineCount, users }: Props) {
   const popoverRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {return;}
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
-      if (!(target instanceof Node)) return;
-      if (popoverRef.current?.contains(target)) return;
+      if (!(target instanceof Node)) {return;}
+      if (popoverRef.current?.contains(target)) {return;}
       setIsOpen(false);
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") {setIsOpen(false);}
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
@@ -44,7 +44,7 @@ export default function OnlineUserPopover({ onlineCount, users }: Props) {
         type="button"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => { setIsOpen((open) => !open); }}
         className={clsx(
           "flex items-center gap-2 rounded-md px-2.5 py-1.5",
           "text-sm font-medium text-slate-500 transition-colors",
@@ -79,7 +79,7 @@ export default function OnlineUserPopover({ onlineCount, users }: Props) {
 
           <div className="max-h-64 space-y-1 overflow-y-auto">
             {users.map((user) => {
-              const avatarUrl = user.avatarThumbnailUrl || user.avatarUrl;
+              const avatarUrl = user.avatarThumbnailUrl ?? user.avatarUrl;
 
               return (
                 <div

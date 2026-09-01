@@ -24,23 +24,25 @@ function makeMockMember(idx: number): MemberInfo {
   ];
   const assignedRole = roleFields[idx % roleFields.length];
   return {
-    id: `member-${idx}`,
-    userId: `user-${idx}`,
+    id: `member-${String(idx)}`,
+    userId: `user-${String(idx)}`,
     teamId: "team-1",
     user: {
-      id: `user-${idx}`,
-      qq: `100${idx}0000`,
+      id: `user-${String(idx)}`,
+      qq: `100${String(idx)}0000`,
       name: ["苍井翔太", "草莓大福", "云雀小队", "星河制作", "翡翠工坊"][
         idx % 5
-      ],
-      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=member${idx}`,
+      ] ?? "",
+      avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=member${String(idx)}`,
       isSuperAdmin: idx === 0,
       lastActiveAt: now - 1000 * 60 * 60 * idx,
       createdAt: now - 1000 * 60 * 60 * 24 * 30,
       updatedAt: now - 1000 * 60 * 60 * idx,
     },
     assignedAdminAt: idx === 0 ? now : undefined,
-    [assignedRole]: now - 1000 * 60 * 60 * 24 * idx,
+    ...(assignedRole && {
+      [assignedRole]: now - 1000 * 60 * 60 * 24 * idx,
+    }),
     roles: idx === 0 ? 0b1 : 0,
     createdAt: now - 1000 * 60 * 60 * 24 * 30,
     updatedAt: now - 1000 * 60 * 60 * idx,
@@ -79,7 +81,7 @@ function MemberListDemo() {
         onChangeFuzzyName={setFuzzyName}
         activeRole={activeRole}
         onChangeRole={setActiveRole}
-        onCreateMember={() => alert("创建成员")}
+        onCreateMember={() => { return; }}
         onLoadMembers={mockLoadMembers}
       />
     </div>
@@ -102,8 +104,7 @@ export const Embedded: StoryObj<typeof EmbeddedMemberList> = {
 
 // ── FilterHeader Story ────────────────────────────
 
-export const FilterHeader: StoryObj<typeof MemberListFilterHeader> = {
-  render: () => {
+function FilterHeaderDemo() {
     const [fuzzyName, setFuzzyName] = useState("");
     const [activeRole, setActiveRole] = useState<RoleFilter | null>(null);
     return (
@@ -113,9 +114,12 @@ export const FilterHeader: StoryObj<typeof MemberListFilterHeader> = {
           onChangeFuzzyName={setFuzzyName}
           activeRole={activeRole}
           onChangeRole={setActiveRole}
-          onCreateMember={() => alert("创建成员")}
+          onCreateMember={() => { return; }}
         />
       </div>
     );
-  },
+}
+
+export const FilterHeader: StoryObj<typeof MemberListFilterHeader> = {
+  render: () => <FilterHeaderDemo />,
 };

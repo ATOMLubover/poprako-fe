@@ -7,25 +7,25 @@ import {
 } from "@/types/raw/assignment";
 import { useAppStore } from "@/store/app";
 
-type ListAssignmentsByChapterArgs = {
+interface ListAssignmentsByChapterArgs {
   chapterId: string;
   offset: number;
   limit: number;
-  includes?: string[];
-};
+  includes?: string[] | undefined;
+}
 
-type ListMyAssignmentsArgs = {
-  userId?: string;
+interface ListMyAssignmentsArgs {
+  userId?: string | undefined;
   offset: number;
   limit: number;
-  includes?: string[];
-};
+  includes?: string[] | undefined;
+}
 
-type UpsertAssignmentArgs = {
+interface UpsertAssignmentArgs {
   chapterId: string;
   userId: string;
   roles: number;
-};
+}
 
 export async function listAssignmentsByChapter(
   args: ListAssignmentsByChapterArgs,
@@ -36,19 +36,19 @@ export async function listAssignmentsByChapter(
     limit: args.limit,
     incl: args.includes,
   });
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: (result.data ?? []).map(unwrapRawAssignmentInfo),
+    data: result.data.map((item) => unwrapRawAssignmentInfo(item)),
   };
 }
 
 export async function listMyAssignments(
   args: ListMyAssignmentsArgs,
 ): Promise<Result<AssignmentInfo[]>> {
-  const userId = args.userId ?? useAppStore.getState().loginState?.userInfo?.id;
-  if (!userId) return { success: false, error: "未找到当前用户" };
+  const userId = args.userId ?? useAppStore.getState().loginState?.userInfo.id;
+  if (!userId) {return { success: false, error: "未找到当前用户" };}
 
   const result = await api.get<RawAssignmentInfo[]>("/assignments", {
     owner_id: userId,
@@ -56,11 +56,11 @@ export async function listMyAssignments(
     offset: args.offset,
     limit: args.limit,
   });
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: (result.data ?? []).map(unwrapRawAssignmentInfo),
+    data: result.data.map((item) => unwrapRawAssignmentInfo(item)),
   };
 }
 
@@ -82,9 +82,9 @@ export async function upsertAssignment(
 
 export async function deleteAssignment(
   assignmentId: string,
-): Promise<Result<void>> {
-  const result = await api.delete<void>(`/assignments/${assignmentId}`);
-  if (!result.success) return result;
+): Promise<Result<undefined>> {
+  const result = await api.delete<undefined>(`/assignments/${assignmentId}`);
+  if (!result.success) {return result;}
 
   return { success: true, data: undefined };
 }

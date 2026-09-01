@@ -8,7 +8,7 @@ export type PageUploadTaskStatus =
   | "succeeded"
   | "failed";
 
-export type PageUploadTaskView = {
+export interface PageUploadTaskView {
   taskId: string;
   batchId: string;
   chapterId: string;
@@ -19,12 +19,12 @@ export type PageUploadTaskView = {
   attempt: number;
   status: PageUploadTaskStatus;
   error: string | null;
-};
+}
 
-type PageUploadTaskStore = {
+interface PageUploadTaskStore {
   tasks: Record<string, PageUploadTaskView>;
   chapterRevision: Record<string, number>;
-};
+}
 
 const useMutablePageUploadTaskStore = create<PageUploadTaskStore>()(() => ({
   tasks: {},
@@ -58,7 +58,7 @@ export function patchPageUploadTask(
 ): void {
   useMutablePageUploadTaskStore.setState((state) => {
     const task = state.tasks[taskId];
-    if (!task) return state;
+    if (!task) {return state;}
 
     return {
       tasks: {
@@ -90,12 +90,12 @@ export function clearPageUploadTasks(): void {
 
 export function clearChapterUploadTasks(chapterId: string): void {
   useMutablePageUploadTaskStore.setState((state) => {
-    const tasks = { ...state.tasks };
-    for (const id of Object.keys(tasks)) {
-      if (tasks[id].chapterId === chapterId) delete tasks[id];
-    }
-    const chapterRevision = { ...state.chapterRevision };
-    delete chapterRevision[chapterId];
+    const tasks = Object.fromEntries(
+      Object.entries(state.tasks).filter(([, task]) => task.chapterId !== chapterId),
+    );
+    const chapterRevision = Object.fromEntries(
+      Object.entries(state.chapterRevision).filter(([id]) => id !== chapterId),
+    );
     return { tasks, chapterRevision };
   });
 }

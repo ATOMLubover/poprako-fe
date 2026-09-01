@@ -12,6 +12,11 @@ import type { UserInfo } from "@/types/user";
 
 const now = Date.now();
 
+function required<T>(value: T | undefined): T {
+  if (value === undefined) {throw new Error("示例数据缺失");}
+  return value;
+}
+
 // Mock builders
 
 function makeUser(id: string, name: string): UserInfo {
@@ -77,10 +82,10 @@ function makeChapter(
 ): ChapterInfo {
   const hasSubtitle = idx % 3 === 0;
   return {
-    id: `chapter-${idx}`,
+    id: `chapter-${String(idx)}`,
     comicId: "comic-1",
     index: idx,
-    subtitle: hasSubtitle ? SUBTITLE_POOL[idx % SUBTITLE_POOL.length] : "",
+    subtitle: hasSubtitle ? required(SUBTITLE_POOL[idx % SUBTITLE_POOL.length]) : "",
     isPinned: false,
     pageCount: 18 + (idx % 8),
     totalUnitCount: 140 + idx * 8,
@@ -107,7 +112,7 @@ const pinnedChapter = makeChapter(42, {
 
 function makePages(chapterId: string, count: number): PageInfo[] {
   return Array.from({ length: count }, (_, i) => ({
-    id: `page-${chapterId}-${i + 1}`,
+    id: `page-${chapterId}-${String(i + 1)}`,
     chapterId,
     index: i + 1,
     imageUrl: "",
@@ -242,9 +247,9 @@ function makeManyAssignments(chapterId: string): AssignmentInfo[] {
       "id" | "chapterId" | "userId" | "user" | "createdAt" | "updatedAt"
     >,
   ) => {
-    const uid = `u-many-${idCounter}`;
+    const uid = `u-many-${String(idCounter)}`;
     assignments.push({
-      id: `am-${idCounter}`,
+      id: `am-${String(idCounter)}`,
       chapterId,
       userId: uid,
       user: makeUser(uid, name),
@@ -256,47 +261,47 @@ function makeManyAssignments(chapterId: string): AssignmentInfo[] {
   };
 
   // 4x 原始提供者
-  ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", LONG_NAMES[0]].forEach(
-    (n) => push(n, "assignedRawProviderAt"),
-  );
+  for (const n of ["佐仓绫音大粉丝", "RawHunterZero", "Nakamura Yū Fan", required(LONG_NAMES[0])]) {
+    push(n, "assignedRawProviderAt")
+  ;}
 
   // 6x 翻译
-  [
+  for (const n of [
     "Aki Translator",
-    LONG_NAMES[2],
-    LONG_NAMES[6],
+    required(LONG_NAMES[2]),
+    required(LONG_NAMES[6]),
     "Mitsuki",
-    LONG_NAMES[9],
+    required(LONG_NAMES[9]),
     "神崎蘭子之友",
-  ].forEach((n) => push(n, "assignedTranslatorAt"));
+  ]) {push(n, "assignedTranslatorAt");}
 
   // 5x 校对
-  [
-    LONG_NAMES[1],
-    LONG_NAMES[7],
+  for (const n of [
+    required(LONG_NAMES[1]),
+    required(LONG_NAMES[7]),
     "校对博士学位",
     "Proofreader_X",
     "星野",
-  ].forEach((n) => push(n, "assignedProofreaderAt"));
+  ]) {push(n, "assignedProofreaderAt");}
 
   // 5x 排版
-  [
-    LONG_NAMES[3],
-    LONG_NAMES[4],
+  for (const n of [
+    required(LONG_NAMES[3]),
+    required(LONG_NAMES[4]),
     "LayoutMaster2077",
     "排版狂魔不知疲倦的人",
-    LONG_NAMES[8],
-  ].forEach((n) => push(n, "assignedTypesetterAt"));
+    required(LONG_NAMES[8]),
+  ]) {push(n, "assignedTypesetterAt");}
 
   // 3x 监修
-  [LONG_NAMES[5], "ReviewerElite", "最终boss级监修官"].forEach((n) =>
-    push(n, "assignedReviewerAt"),
-  );
+  for (const n of [required(LONG_NAMES[5]), "ReviewerElite", "最终boss级监修官"]) {
+    push(n, "assignedReviewerAt")
+  ;}
 
   // 3x 发布
-  ["Publisher_A", LONG_NAMES[9], "全能发布王者"].forEach((n) =>
-    push(n, "assignedPublisherAt"),
-  );
+  for (const n of ["Publisher_A", required(LONG_NAMES[9]), "全能发布王者"]) {
+    push(n, "assignedPublisherAt")
+  ;}
 
   return assignments;
 }
@@ -321,7 +326,7 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
           origin: "translation_import",
         },
       },
-      createdAt: now - 1_000 * 60 * 4,
+      createdAt: now - 1000 * 60 * 4,
     },
     {
       id: `${chapterId}-record-9`,
@@ -331,7 +336,7 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
         kind: "translation_exported",
         data: { formats: { labelPlus: true, poprako: true } },
       },
-      createdAt: now - 1_000 * 60 * 18,
+      createdAt: now - 1000 * 60 * 18,
     },
     {
       id: `${chapterId}-record-8`,
@@ -345,7 +350,7 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
           importedUnitCount: 186,
         },
       },
-      createdAt: now - 1_000 * 60 * 32,
+      createdAt: now - 1000 * 60 * 32,
     },
     {
       id: `${chapterId}-record-7`,
@@ -355,7 +360,7 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
         kind: "assignment_deleted",
         data: { subjectUserId: "u-former", previousRoles: 4 },
       },
-      createdAt: now - 1_000 * 60 * 51,
+      createdAt: now - 1000 * 60 * 51,
     },
     {
       id: `${chapterId}-record-6`,
@@ -369,7 +374,7 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
           nextRoles: 6,
         },
       },
-      createdAt: now - 1_000 * 60 * 76,
+      createdAt: now - 1000 * 60 * 76,
     },
     {
       id: `${chapterId}-record-5`,
@@ -379,21 +384,21 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
         kind: "assignment_created",
         data: { subjectUserId: "u-aki", roles: 2 },
       },
-      createdAt: now - 1_000 * 60 * 105,
+      createdAt: now - 1000 * 60 * 105,
     },
     {
       id: `${chapterId}-record-4`,
       chapterId,
       actorUserId: "u-admin",
       event: { kind: "chapter_unpinned" },
-      createdAt: now - 1_000 * 60 * 144,
+      createdAt: now - 1000 * 60 * 144,
     },
     {
       id: `${chapterId}-record-3`,
       chapterId,
       actorUserId: "u-admin",
       event: { kind: "chapter_pinned" },
-      createdAt: now - 1_000 * 60 * 175,
+      createdAt: now - 1000 * 60 * 175,
     },
     {
       id: `${chapterId}-record-2`,
@@ -403,23 +408,26 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
         kind: "chapter_subtitle_updated",
         data: { previousSubtitle: "", nextSubtitle: "深渊回响" },
       },
-      createdAt: now - 1_000 * 60 * 220,
+      createdAt: now - 1000 * 60 * 220,
     },
     {
-      id: `${chapterId}-record-1`,
+      id: `${chapterId}-record-${String(1)}`,
       chapterId,
       actorUserId: null,
       event: { kind: "chapter_created" },
-      createdAt: now - 1_000 * 60 * 260,
+      createdAt: now - 1000 * 60 * 260,
     },
   ];
 }
 
 const removeCombinedTypesetAssignment = fn(
-  async (_chapterId: string, _userId: string, _role: Role) => ({
-    success: true as const,
-    data: undefined,
-  }),
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async (chapterId: string, userId: string, role: Role) => {
+    void chapterId;
+    void userId;
+    void role;
+    return { success: true as const, data: undefined };
+  },
 );
 
 const meta: Meta<typeof ComicDetailModal> = {
@@ -470,6 +478,7 @@ export const Default: Story = {
         data: records.slice(args.offset, args.offset + args.limit),
       };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     onResolveWorkflowRecordUser: async (userId) => {
       const names: Record<string, string> = {
         "u-admin": "Mori",
@@ -483,27 +492,27 @@ export const Default: Story = {
     },
     onTransiteWorkflow: async (_chapterId, transition) => {
       await delay(300);
-      console.log("workflow transition:", transition);
+      console.log("workflow transition:", transition); // eslint-disable-line no-console
       return { success: true, data: undefined };
     },
     onCreateChapter: async (args) => {
       await delay(200);
-      console.log("create chapter:", args);
-      return { success: true, data: `new-chapter-${now}` };
+      console.log("create chapter:", args); // eslint-disable-line no-console
+      return { success: true, data: `new-chapter-${String(now)}` };
     },
     onDeleteChapter: async (chapterId) => {
       await delay(200);
-      console.log("delete chapter:", chapterId);
+      console.log("delete chapter:", chapterId); // eslint-disable-line no-console
       return { success: true, data: undefined };
     },
     onRemoveAssignment: async (_chapterId, userId) => {
       await delay(200);
-      console.log("remove assignment:", userId);
+      console.log("remove assignment:", userId); // eslint-disable-line no-console
       return { success: true, data: undefined };
     },
     onResolveActiveMember: () =>
       makeMember("u-aki", "Aki", { assignedTranslatorAt: now }),
-    onClose: () => console.log("closed"),
+    onClose: () => { console.log("closed"); }, // eslint-disable-line no-console
   },
 };
 
@@ -559,7 +568,7 @@ export const AdminAssignmentControls: Story = {
       await delay(100);
       return {
         success: true,
-        data: makeManyAssignments(chapterId).concat({
+        data: [...makeManyAssignments(chapterId), {
           id: "a-admin",
           chapterId,
           userId: "u-admin",
@@ -568,7 +577,7 @@ export const AdminAssignmentControls: Story = {
           assignedTranslatorAt: now,
           createdAt: now,
           updatedAt: now,
-        }),
+        }],
       };
     },
     onResolveActiveMember: () =>
@@ -576,9 +585,11 @@ export const AdminAssignmentControls: Story = {
         assignedAdminAt: now,
         assignedTranslatorAt: now,
       }),
+    // eslint-disable-next-line @typescript-eslint/require-await
     onLoadAssignableMembers: async () => ({ success: true, data: [] }),
+    // eslint-disable-next-line @typescript-eslint/require-await
     onAddAssignment: async (_chapterId, userId, role) => {
-      console.log("add assignment:", userId, role);
+      console.log("add assignment:", userId, role); // eslint-disable-line no-console
       return { success: true, data: undefined };
     },
   },
@@ -594,8 +605,9 @@ export const SelfServiceControls: Story = {
         assignedTranslatorAt: now,
         assignedProofreaderAt: now,
       }),
+    // eslint-disable-next-line @typescript-eslint/require-await
     onJoinChapterRole: async (_chapterId, role) => {
-      console.log("join assignment:", role);
+      console.log("join assignment:", role); // eslint-disable-line no-console
       return { success: true, data: undefined };
     },
   },
@@ -606,6 +618,7 @@ export const CombinedTypesetRemoval: Story = {
   args: {
     ...Default.args,
     currentUserId: "u-admin",
+    // eslint-disable-next-line @typescript-eslint/require-await
     onLoadAssignments: async (chapterId) => ({
       success: true,
       data: [
@@ -646,17 +659,17 @@ export const CombinedTypesetRemoval: Story = {
     await userEvent.click(avatar);
 
     const body = within(document.body);
-    expect(body.queryByRole("heading", { name: "嵌字流程" })).not.toBeInTheDocument();
+    await expect(body.queryByRole("heading", { name: "嵌字流程" })).not.toBeInTheDocument();
     await userEvent.click(await body.findByRole("button", { name: "移除" }));
 
-    await waitFor(() => {
-      expect(removeCombinedTypesetAssignment).toHaveBeenNthCalledWith(
+    await waitFor(async () => {
+      await expect(removeCombinedTypesetAssignment).toHaveBeenNthCalledWith(
         1,
         "chapter-42",
         "u-dual",
         "typesetter",
       );
-      expect(removeCombinedTypesetAssignment).toHaveBeenNthCalledWith(
+      await expect(removeCombinedTypesetAssignment).toHaveBeenNthCalledWith(
         2,
         "chapter-42",
         "u-dual",
@@ -679,11 +692,11 @@ export const WorkflowTimeline: Story = {
     const eventText = await canvas.findByText("翻校数据导入推进");
     const record = eventText.closest("li");
 
-    expect(record).toHaveTextContent(
+    await expect(record).toHaveTextContent(
       "翻译阶段已完成： Aki 翻校数据导入推进",
     );
-    expect(record?.querySelectorAll("p")).toHaveLength(1);
-    expect(canvas.queryByText("总管")).not.toBeInTheDocument();
+    await expect(record?.querySelectorAll("p")).toHaveLength(1);
+    await expect(canvas.queryByText("总管")).not.toBeInTheDocument();
   },
 };
 
@@ -691,6 +704,7 @@ export const EmptyWorkflowRecords: Story = {
   name: "工作流记录为空",
   args: {
     ...Default.args,
+    // eslint-disable-next-line @typescript-eslint/require-await
     onLoadWorkflowRecords: async () => ({ success: true, data: [] }),
   },
   play: async ({ canvasElement }) => {
@@ -698,7 +712,7 @@ export const EmptyWorkflowRecords: Story = {
     await userEvent.click(await canvas.findByRole("button", {
       name: "工作流记录",
     }));
-    expect(await canvas.findByText("暂无活动记录")).toBeInTheDocument();
+    await expect(await canvas.findByText("暂无活动记录")).toBeInTheDocument();
   },
 };
 
@@ -706,6 +720,7 @@ export const WorkflowRecordsLoadError: Story = {
   name: "工作流记录加载失败",
   args: {
     ...Default.args,
+    // eslint-disable-next-line @typescript-eslint/require-await
     onLoadWorkflowRecords: async () => ({
       success: false,
       error: "网络连接失败",
@@ -716,7 +731,7 @@ export const WorkflowRecordsLoadError: Story = {
     await userEvent.click(await canvas.findByRole("button", {
       name: "工作流记录",
     }));
-    expect(
+    await expect(
       await canvas.findByText("活动记录加载失败"),
     ).toBeInTheDocument();
   },
@@ -730,7 +745,9 @@ export const MobileWorkflow: Story = {
   parameters: {
     viewport: { defaultViewport: "mobile1" },
   },
-  play: WorkflowTimeline.play,
+  play: async (context) => {
+    if (WorkflowTimeline.play) {await WorkflowTimeline.play(context);}
+  },
 };
 
 export const EmptyPages: Story = {

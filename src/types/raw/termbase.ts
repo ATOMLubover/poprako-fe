@@ -1,19 +1,19 @@
 import type { TermbaseInfo } from "../termbase";
 
-export type RawTermbaseInfo = {
+export interface RawTermbaseInfo {
   id: string;
 
-  team_id?: string | null;
-  comic_id?: string | null;
+  team_id?: string | null | undefined;
+  comic_id?: string | null | undefined;
 
   name: string;
-  description?: string | null;
+  description?: string | null | undefined;
   term_count: number;
 
   creator_id: string;
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawTermbaseInfo(raw: RawTermbaseInfo): TermbaseInfo {
   return {

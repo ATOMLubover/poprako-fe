@@ -6,12 +6,12 @@ import type { UpdateTermbaseArgs } from "@/features/BaseTranslator/types/termino
 import { AppDialogAction } from "@/components/ui/AppDialog";
 import TerminologyDialogFrame from "./TerminologyDialogFrame";
 
-type Props = {
-  termbase?: TermbaseInfo;
+interface Props {
+  termbase?: TermbaseInfo | undefined;
   onSave: (args: UpdateTermbaseArgs) => Promise<boolean>;
-  onDelete?: () => Promise<boolean>;
+  onDelete?: (() => Promise<boolean>) | undefined;
   onClose: () => void;
-};
+}
 
 export default function TermbaseEditorDialog({
   termbase,
@@ -27,22 +27,22 @@ export default function TermbaseEditorDialog({
   const isValid = name.trim().length > 0;
 
   const handleSave = async () => {
-    if (!isValid || isSubmitting) return;
+    if (!isValid || isSubmitting) {return;}
     setIsSubmitting(true);
-    const success = await onSave({
+    const isSuccess = await onSave({
       name: name.trim(),
       description: description.trim() || undefined,
     });
     setIsSubmitting(false);
-    if (success) onClose();
+    if (isSuccess) {onClose();}
   };
 
   const handleDelete = async () => {
-    if (!onDelete || isSubmitting) return;
+    if (!onDelete || isSubmitting) {return;}
     setIsSubmitting(true);
-    const success = await onDelete();
+    const isSuccess = await onDelete();
     setIsSubmitting(false);
-    if (success) onClose();
+    if (isSuccess) {onClose();}
   };
 
   if (isConfirmingDelete && termbase && onDelete) {
@@ -56,7 +56,7 @@ export default function TermbaseEditorDialog({
             <AppDialogAction
               type="button"
               disabled={isSubmitting}
-              onClick={() => setIsConfirmingDelete(false)}
+              onClick={() => { setIsConfirmingDelete(false); }}
             >
               返回
             </AppDialogAction>
@@ -64,7 +64,7 @@ export default function TermbaseEditorDialog({
               type="button"
               tone="danger"
               disabled={isSubmitting}
-              onClick={handleDelete}
+              onClick={() => { void handleDelete(); }}
             >
               {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
               确认删除
@@ -94,7 +94,7 @@ export default function TermbaseEditorDialog({
               type="button"
               tone="danger"
               disabled={isSubmitting}
-              onClick={() => setIsConfirmingDelete(true)}
+              onClick={() => { setIsConfirmingDelete(true); }}
             >
               删除
             </AppDialogAction>
@@ -110,7 +110,7 @@ export default function TermbaseEditorDialog({
             type="button"
             tone="brand"
             disabled={!isValid || isSubmitting}
-            onClick={handleSave}
+            onClick={() => { void handleSave(); }}
           >
             {isSubmitting && <LoaderCircle size={13} className="animate-spin" />}
             保存
@@ -122,10 +122,9 @@ export default function TermbaseEditorDialog({
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-slate-500">名称</span>
           <input
-            autoFocus
             value={name}
             disabled={isSubmitting}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) => { setName(event.target.value); }}
             className={clsx(
               "h-8 w-full rounded-md border border-slate-200 bg-white px-2.5",
               "text-sm text-slate-700 shadow-sm shadow-slate-100 outline-none",
@@ -139,7 +138,7 @@ export default function TermbaseEditorDialog({
             rows={3}
             value={description}
             disabled={isSubmitting}
-            onChange={(event) => setDescription(event.target.value)}
+            onChange={(event) => { setDescription(event.target.value); }}
             placeholder="选填"
             className={clsx(
               "w-full resize-none rounded-md border border-slate-200 bg-white px-2.5 py-2",

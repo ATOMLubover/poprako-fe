@@ -15,11 +15,11 @@ import type { Result } from "@/types/utils/result";
 
 // ── Role config ──────────────────────────────────────────────────────────────
 
-type RoleConfig = {
+interface RoleConfig {
   label: string;
   value: number;
   activeClass: string;
-};
+}
 
 const ROLE_CONFIG: RoleConfig[] = [
   {
@@ -67,18 +67,18 @@ const ROLE_CONFIG: RoleConfig[] = [
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(ts?: number): string {
-  if (!ts) return "—";
+  if (!ts) {return "—";}
   const d = new Date(ts);
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  return `${String(d.getFullYear())}/${String(d.getMonth() + 1)}/${String(d.getDate())}`;
 }
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
-type Props = {
+interface Props {
   member: MemberInfo;
   onClose: () => void;
   onUpdateRole: (id: string, roles: number) => Promise<Result<void>>;
-};
+}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -92,22 +92,25 @@ export default function MemberDetailModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { user } = member;
-  const isAdmin = user?.isSuperAdmin || !!member.assignedAdminAt;
+  const isAdmin = user?.isSuperAdmin ?? Boolean(member.assignedAdminAt);
   const lastActive = formatDate(user?.lastActiveAt);
   const isDirty = selectedBits !== member.roles;
 
   const toggleBit = (value: number) =>
-    setSelectedBits((prev) =>
-      (prev & value) !== 0 ? prev & ~value : prev | value,
-    );
+    { setSelectedBits((prev) =>
+      (prev & value) === 0 ? prev | value : prev & ~value,
+    ); };
 
   const handleConfirm = async () => {
-    if (!isDirty || isSubmitting) return;
+    if (!isDirty || isSubmitting) {return;}
     setIsSubmitting(true);
     try {
       const result = await onUpdateRole(member.id, selectedBits);
       if (!result.success) {
-        console.error("[MemberDetailModal] 更新角色失败:", result.error);
+        // eslint-disable-next-line no-console
+        console.error(
+          "[MemberDetailModal] 更新角色失败:", result.error,
+        );
         showLocalApiFailure(result, showToast);
         return;
       }
@@ -175,9 +178,9 @@ export default function MemberDetailModal({
                 "border border-slate-200",
               )}
             >
-              {user?.avatarThumbnailUrl || user?.avatarUrl ? (
+              {user?.avatarThumbnailUrl ?? user?.avatarUrl ? (
                 <img
-                  src={user.avatarThumbnailUrl || user.avatarUrl}
+                  src={user.avatarThumbnailUrl ?? user.avatarUrl}
                   alt={user.name}
                   className="w-full h-full object-cover"
                 />
@@ -216,7 +219,7 @@ export default function MemberDetailModal({
                 <button
                   key={role.value}
                   type="button"
-                  onClick={() => toggleBit(role.value)}
+                  onClick={() => { toggleBit(role.value); }}
                   className={clsx(
                     "flex flex-row items-center justify-center gap-1.5",
                     "rounded-sm border px-2 py-1 text-[11px] font-bold",
@@ -262,7 +265,7 @@ export default function MemberDetailModal({
           <button
             type="button"
             disabled={!isDirty || isSubmitting}
-            onClick={handleConfirm}
+            onClick={() => { void handleConfirm(); }}
             className={clsx(
               "flex items-center justify-center gap-1 rounded-sm px-4 py-1.5 w-full",
               "text-xs font-semibold transition-all active:scale-[0.98]",

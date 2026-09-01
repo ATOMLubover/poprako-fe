@@ -53,7 +53,7 @@ type Story = StoryObj<typeof MemberInvitorModal>;
 // ── Helper: generate a random-looking invitation code ─────────────────────────
 
 function fakeCode() {
-  return `POP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+  return `POP-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 }
 
 // ── Stories ───────────────────────────────────────────────────────────────────
@@ -63,8 +63,10 @@ function fakeCode() {
  */
 export const Default: Story = {
   render: () => {
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
     const [invitations, setInvitations] =
+      // eslint-disable-next-line @eslint-react/rules-of-hooks
       useState<InvitationInfo[]>(MOCK_INVITATIONS);
 
     const handleLoad = async (
@@ -81,7 +83,7 @@ export const Default: Story = {
       await new Promise((r) => setTimeout(r, 700));
       const code = fakeCode();
       const newInv: InvitationInfo = {
-        id: `inv-${Date.now()}`,
+        id: `inv-${String(Date.now())}`,
         inviteeQq: args.inviteeQq,
         invitorId: "user-me",
         invitationCode: code,
@@ -104,8 +106,9 @@ export const Default: Story = {
         {!open && (
           <div className="flex items-center justify-center pt-32">
             <button
+              type="button"
               className="rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-              onClick={() => setOpen(true)}
+              onClick={() => { setOpen(true); }}
             >
               重新打开
             </button>
@@ -114,7 +117,7 @@ export const Default: Story = {
         {open && (
           <MemberInvitorModal
             teamId="team-1"
-            onClose={() => setOpen(false)}
+            onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
             onDeleteInvitation={handleDelete}
@@ -131,8 +134,10 @@ export const Default: Story = {
 export const EmptyPending: Story = {
   name: "空待处理列表",
   render: () => {
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const handleLoad = async (): Promise<Result<InvitationInfo[]>> => {
       await new Promise((r) => setTimeout(r, 300));
       return { success: true, data: [] };
@@ -140,9 +145,9 @@ export const EmptyPending: Story = {
 
     const handleCreate = async (
       args: CreateInvitationArgs,
-    ): Promise<Result<string>> => {
+    ): Promise<Result<string>> => { // eslint-disable-line unicorn/consistent-function-scoping
       await new Promise((r) => setTimeout(r, 700));
-      console.log("创建邀请:", args);
+      console.log("创建邀请:", args); // eslint-disable-line no-console
       return { success: true, data: fakeCode() };
     };
 
@@ -151,10 +156,14 @@ export const EmptyPending: Story = {
         {open && (
           <MemberInvitorModal
             teamId="team-1"
-            onClose={() => setOpen(false)}
+            onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); console.log("删除邀请:", id); return { success: true, data: undefined }; }}
+            onDeleteInvitation={async (id) => {
+              await new Promise((resolve) => setTimeout(resolve, 400));
+              void id;
+              return { success: true, data: undefined };
+            }}
           />
         )}
       </div>
@@ -168,8 +177,10 @@ export const EmptyPending: Story = {
 export const LoadError: Story = {
   name: "加载邀请列表失败",
   render: () => {
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const handleLoad = async (): Promise<Result<InvitationInfo[]>> => {
       await new Promise((r) => setTimeout(r, 500));
       return { success: false, error: "网络超时，无法加载邀请列表" };
@@ -177,9 +188,9 @@ export const LoadError: Story = {
 
     const handleCreate = async (
       args: CreateInvitationArgs,
-    ): Promise<Result<string>> => {
+    ): Promise<Result<string>> => { // eslint-disable-line unicorn/consistent-function-scoping
       await new Promise((r) => setTimeout(r, 700));
-      console.log("创建邀请:", args);
+      console.log("创建邀请:", args); // eslint-disable-line no-console
       return { success: true, data: fakeCode() };
     };
 
@@ -188,10 +199,14 @@ export const LoadError: Story = {
         {open && (
           <MemberInvitorModal
             teamId="team-1"
-            onClose={() => setOpen(false)}
+            onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); console.log("删除邀请:", id); return { success: true, data: undefined }; }}
+            onDeleteInvitation={async (id) => {
+              await new Promise((resolve) => setTimeout(resolve, 400));
+              void id;
+              return { success: true, data: undefined };
+            }}
           />
         )}
       </div>
@@ -205,7 +220,9 @@ export const LoadError: Story = {
 export const SubmitError: Story = {
   name: "邀请提交失败",
   render: () => {
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [invitations, setInvitations] = useState<InvitationInfo[]>(MOCK_INVITATIONS);
 
     const handleLoad = async (): Promise<Result<InvitationInfo[]>> => {
@@ -213,6 +230,7 @@ export const SubmitError: Story = {
       return { success: true, data: invitations };
     };
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     const handleCreate = async (): Promise<Result<string>> => {
       await new Promise((r) => setTimeout(r, 700));
       return { success: false, error: "该 QQ 号已是汉化组成员，无法重复邀请" };
@@ -223,7 +241,7 @@ export const SubmitError: Story = {
         {open && (
           <MemberInvitorModal
             teamId="team-1"
-            onClose={() => setOpen(false)}
+            onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
             onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); setInvitations(prev => prev.filter(inv => inv.id !== id)); return { success: true, data: undefined }; }}
@@ -240,7 +258,9 @@ export const SubmitError: Story = {
 export const AllRoles: Story = {
   name: "所有角色全开",
   render: () => {
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [invitations, setInvitations] = useState<InvitationInfo[]>([{
       id: "inv-all",
       inviteeQq: "123456789",
@@ -258,9 +278,9 @@ export const AllRoles: Story = {
 
     const handleCreate = async (
       args: CreateInvitationArgs,
-    ): Promise<Result<string>> => {
+    ): Promise<Result<string>> => { // eslint-disable-line unicorn/consistent-function-scoping
       await new Promise((r) => setTimeout(r, 700));
-      console.log("创建邀请:", args);
+      console.log("创建邀请:", args); // eslint-disable-line no-console
       return { success: true, data: fakeCode() };
     };
 
@@ -269,7 +289,7 @@ export const AllRoles: Story = {
         {open && (
           <MemberInvitorModal
             teamId="team-1"
-            onClose={() => setOpen(false)}
+            onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
             onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); setInvitations(prev => prev.filter(inv => inv.id !== id)); return { success: true, data: undefined }; }}
@@ -286,11 +306,13 @@ export const AllRoles: Story = {
 export const LongList: Story = {
   name: "待处理邀请列表较长",
   render: () => {
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [invitations, setInvitations] = useState<InvitationInfo[]>(
       Array.from({ length: 12 }, (_, i) => ({
-        id: `inv-long-${i}`,
-        inviteeQq: `${100000000 + i * 11111111}`,
+        id: `inv-long-${String(i)}`,
+        inviteeQq: String(100_000_000 + i * 11_111_111),
         invitorId: "user-0",
         invitationCode: `POP-${i.toString(16).toUpperCase().padStart(6, "0")}`,
         roles: (1 << (i % 8)) | (1 << ((i + 3) % 8)),
@@ -306,9 +328,9 @@ export const LongList: Story = {
 
     const handleCreate = async (
       args: CreateInvitationArgs,
-    ): Promise<Result<string>> => {
+    ): Promise<Result<string>> => { // eslint-disable-line unicorn/consistent-function-scoping
       await new Promise((r) => setTimeout(r, 700));
-      console.log("创建邀请:", args);
+      console.log("创建邀请:", args); // eslint-disable-line no-console
       return { success: true, data: fakeCode() };
     };
 
@@ -317,7 +339,7 @@ export const LongList: Story = {
         {open && (
           <MemberInvitorModal
             teamId="team-1"
-            onClose={() => setOpen(false)}
+            onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
             onDeleteInvitation={async (id) => { await new Promise(r => setTimeout(r, 400)); setInvitations(prev => prev.filter(inv => inv.id !== id)); return { success: true, data: undefined }; }}
@@ -334,8 +356,10 @@ export const LongList: Story = {
 export const SlowNetwork: Story = {
   name: "慢网络模拟",
   render: () => {
+    // eslint-disable-next-line @eslint-react/rules-of-hooks
     const [open, setOpen] = useState(true);
     const [invitations, setInvitations] =
+      // eslint-disable-next-line @eslint-react/rules-of-hooks
       useState<InvitationInfo[]>(MOCK_INVITATIONS);
 
     const handleLoad = async (
@@ -353,7 +377,7 @@ export const SlowNetwork: Story = {
       const code = fakeCode();
       setInvitations((prev) => [
         {
-          id: `inv-${Date.now()}`,
+          id: `inv-${String(Date.now())}`,
           inviteeQq: args.inviteeQq,
           invitorId: "user-me",
           invitationCode: code,
@@ -377,7 +401,7 @@ export const SlowNetwork: Story = {
         {open && (
           <MemberInvitorModal
             teamId="team-1"
-            onClose={() => setOpen(false)}
+            onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
             onDeleteInvitation={handleDelete}

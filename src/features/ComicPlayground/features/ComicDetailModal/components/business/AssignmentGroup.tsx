@@ -12,44 +12,44 @@ import AssignmentAvatarStack from "./AssignmentAvatarStack";
 import { ASSIGNMENT_ROLE_DEFS } from "./assignmentWorkflow";
 import TransitionDialog from "./TransitionDialog";
 
-type Props = {
-  selectedChapter?: ChapterInfo;
+interface Props {
+  selectedChapter?: ChapterInfo | undefined;
   assignments: AssignmentInfo[];
-  isAssignmentsLoading?: boolean;
-  currentUserId?: string | null;
+  isAssignmentsLoading?: boolean | undefined;
+  currentUserId?: string | null | undefined;
   onTransiteWorkflow: (transition: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveAssignment?: (userId: string, role: Role) => void;
-  onAddAssignment?: (role: Role) => void;
-  onJoinRole?: (role: Role) => void;
-  canJoinRole?: (role: Role) => boolean;
-  isRoleJoining?: (role: Role) => boolean;
-  onLeaveRole?: (role: Role) => void;
-  canLeaveRole?: (role: Role) => boolean;
-  isRoleLeaving?: (role: Role) => boolean;
-  canOperateWorkflow?: boolean;
-  canManageAssignments?: boolean;
-};
+  onRemoveAssignment?: ((userId: string, role: Role) => void) | undefined;
+  onAddAssignment?: ((role: Role) => void) | undefined;
+  onJoinRole?: ((role: Role) => void) | undefined;
+  canJoinRole?: ((role: Role) => boolean) | undefined;
+  isRoleJoining?: ((role: Role) => boolean) | undefined;
+  onLeaveRole?: ((role: Role) => void) | undefined;
+  canLeaveRole?: ((role: Role) => boolean) | undefined;
+  isRoleLeaving?: ((role: Role) => boolean) | undefined;
+  canOperateWorkflow?: boolean | undefined;
+  canManageAssignments?: boolean | undefined;
+}
 
-type TransitionState = {
+interface TransitionState {
   label: string;
   status: WorkflowStatus;
   forwardTransition: WorkflowTransition | null;
   revertTransition: WorkflowTransition | null;
-};
+}
 
-type RemoveState = {
+interface RemoveState {
   assignment: AssignmentInfo;
   role: Role;
   roleLabel: string;
-};
+}
 
-type ActionButtonProps = {
+interface ActionButtonProps {
   label: string;
-  disabled?: boolean;
-  danger?: boolean;
+  disabled?: boolean | undefined;
+  danger?: boolean | undefined;
   onClick: () => void;
   children: ReactNode;
-};
+}
 
 function ActionButton({
   label,
@@ -68,7 +68,7 @@ function ActionButton({
         event.stopPropagation();
         onClick();
       }}
-      onKeyDown={(event) => event.stopPropagation()}
+      onKeyDown={(event) => { event.stopPropagation(); }}
       className={clsx(
         "flex h-6 w-6 shrink-0 items-center justify-center rounded-sm border",
         "border-transparent transition-colors",
@@ -92,9 +92,9 @@ function assignmentName(assignment: AssignmentInfo): string {
 }
 
 function workflowStatusLabel(status: WorkflowStatus): string {
-  if (status === "pending") return "未开始";
-  if (status === "ongoing") return "进行中";
-  if (status === "completed") return "已完成";
+  if (status === "pending") {return "未开始";}
+  if (status === "ongoing") {return "进行中";}
+  if (status === "completed") {return "已完成";}
   return "未配置";
 }
 
@@ -117,17 +117,17 @@ export default function AssignmentGroup({
 }: Props) {
   const [transitionState, setTransitionState] =
     useState<TransitionState | null>(null);
-  const [removeState, setRemoveState] = useState<RemoveState | null>(null);
+  const [removalState, setRemovalState] = useState<RemoveState | null>(null);
   const transitioningRef = useRef(false);
 
   async function handleTransition(transition: WorkflowTransition) {
-    if (transitioningRef.current) return;
+    if (transitioningRef.current) {return;}
     transitioningRef.current = true;
     setTransitionState(null);
     try {
       await onTransiteWorkflow(transition);
-    } catch (err) {
-      console.error("[AssignmentGroup] 流程操作失败:", err);
+    } catch (error) {
+      console.error("[AssignmentGroup] 流程操作失败:", error); // eslint-disable-line no-console
     } finally {
       transitioningRef.current = false;
     }
@@ -147,13 +147,11 @@ export default function AssignmentGroup({
       />
       <div className="grid grid-cols-2 border-l border-t border-stone-200/80 rounded-sm">
         {ASSIGNMENT_ROLE_DEFS.map((roleDef) => {
-          const roleAssignments = assignments.filter(roleDef.matches);
-          const isCurrentUserAssigned = !!(
-            currentUserId &&
+          const roleAssignments = assignments.filter((assignment) => roleDef.matches(assignment));
+          const isCurrentUserAssigned = Boolean(currentUserId &&
             roleAssignments.some(
               (assignment) => assignment.userId === currentUserId,
-            )
-          );
+            ));
           const canOperateThisRole =
             canOperateWorkflow || isCurrentUserAssigned;
           const status = selectedChapter
@@ -181,11 +179,11 @@ export default function AssignmentGroup({
             canApplyWorkflowTransition(selectedChapter, nextRevert)
               ? nextRevert
               : null;
-          const hasTransition = !!(forwardTransition || revertTransition);
+          const hasTransition = Boolean(forwardTransition ?? revertTransition);
           const canJoin = canJoinRole?.(roleDef.addRole) ?? false;
 
           const openTransition = () => {
-            if (!hasTransition || transitioningRef.current) return;
+            if (!hasTransition || transitioningRef.current) {return;}
             setTransitionState({
               label: roleDef.shortLabel,
               status,
@@ -195,14 +193,14 @@ export default function AssignmentGroup({
           };
 
           return (
-            <div
+            <div // eslint-disable-line jsx-a11y/no-static-element-interactions
               key={roleDef.addRole}
               role={hasTransition ? "button" : undefined}
-              tabIndex={hasTransition ? 0 : undefined}
+              {...(hasTransition ? { tabIndex: 0 } : {})}
               aria-label={`${roleDef.fullLabel}，${statusLabel}`}
               onClick={openTransition}
               onKeyDown={(event) => {
-                if (event.target !== event.currentTarget) return;
+                if (event.target !== event.currentTarget) {return;}
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
                   openTransition();
@@ -240,9 +238,9 @@ export default function AssignmentGroup({
                 <AssignmentAvatarStack
                   assignments={roleAssignments}
                   isLoading={isAssignmentsLoading}
-                  canRemove={canManageAssignments && !!onRemoveAssignment}
+                  canRemove={canManageAssignments && Boolean(onRemoveAssignment)}
                   onRequestRemove={(assignment) => {
-                    setRemoveState({
+                    setRemovalState({
                       assignment,
                       role: roleDef.addRole,
                       roleLabel: roleDef.fullLabel,
@@ -255,7 +253,7 @@ export default function AssignmentGroup({
                 {canManageAssignments && onAddAssignment && (
                   <ActionButton
                     label={`分配${roleDef.fullLabel}成员`}
-                    onClick={() => onAddAssignment(roleDef.addRole)}
+                    onClick={() => { onAddAssignment(roleDef.addRole); }}
                   >
                     <Plus size={13} strokeWidth={2.25} />
                   </ActionButton>
@@ -264,7 +262,7 @@ export default function AssignmentGroup({
                   <ActionButton
                     label={`加入${roleDef.fullLabel}分工`}
                     disabled={isRoleJoining?.(roleDef.addRole)}
-                    onClick={() => onJoinRole(roleDef.addRole)}
+                    onClick={() => { onJoinRole(roleDef.addRole); }}
                   >
                     <UserPlus size={13} strokeWidth={2.25} />
                   </ActionButton>
@@ -274,7 +272,7 @@ export default function AssignmentGroup({
                     label={`退出${roleDef.fullLabel}分工`}
                     danger
                     disabled={isRoleLeaving?.(roleDef.addRole)}
-                    onClick={() => onLeaveRole(roleDef.addRole)}
+                    onClick={() => { onLeaveRole(roleDef.addRole); }}
                   >
                     <UserMinus size={13} strokeWidth={2.25} />
                   </ActionButton>
@@ -291,27 +289,27 @@ export default function AssignmentGroup({
           status={transitionState.status}
           forwardTransition={transitionState.forwardTransition}
           revertTransition={transitionState.revertTransition}
-          onConfirm={handleTransition}
-          onCancel={() => setTransitionState(null)}
+          onConfirm={(transition) => { void handleTransition(transition); }}
+          onCancel={() => { setTransitionState(null); }}
         />
       )}
 
-      {removeState && (
+      {removalState && (
         <ConfirmDialog
           title="移除成员"
           description={
-            `确认移除「${assignmentName(removeState.assignment)}」的` +
-            `${removeState.roleLabel}分工？`
+            `确认移除「${assignmentName(removalState.assignment)}」的` +
+            `${removalState.roleLabel}分工？`
           }
           confirmLabel="移除"
           onConfirm={() => {
             onRemoveAssignment?.(
-              removeState.assignment.userId,
-              removeState.role,
+              removalState.assignment.userId,
+              removalState.role,
             );
-            setRemoveState(null);
+            setRemovalState(null);
           }}
-          onCancel={() => setRemoveState(null)}
+          onCancel={() => { setRemovalState(null); }}
         />
       )}
     </section>

@@ -6,13 +6,13 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { Result } from "@/types/utils/result";
 
-type Props = {
+interface Props {
   onLoadMembers: (
     offset: number,
     limit: number,
   ) => Promise<Result<MemberInfo[]>>;
-  onMemberClick?: (member: MemberInfo) => void;
-};
+  onMemberClick?: ((member: MemberInfo) => void) | undefined;
+}
 
 // 受控的成员列表展示组件，负责无限下滑加载
 // 过滤/搜索逻辑由父组件通过 onLoadMembers 闭包注入
@@ -30,48 +30,51 @@ export default function EmbeddedMemberList({
   const { showToast } = useToastStore();
 
   const loadMembers = useCallback(async () => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore) {return;}
     setIsLoading(true);
     try {
       const result = await onLoadMembers(offset, 20);
-      if (!result.success) {
-        console.error("[EmbeddedMemberList] 加载成员列表失败:", result.error);
-        showLocalApiFailure(result, showToast);
-        setHasMore(false);
-      } else {
-        if (result.data.length < 20) setHasMore(false);
+      if (result.success) {
+        if (result.data.length < 20) {setHasMore(false);}
         setMembers((prev) => [...prev, ...result.data]);
         setOffset((prev) => prev + result.data.length);
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(
+          "[EmbeddedMemberList] 加载成员列表失败:", result.error,
+        );
+        showLocalApiFailure(result, showToast);
+        setHasMore(false);
       }
-    } catch (err) {
-      console.error("[EmbeddedMemberList] 加载成员列表异常:", err);
-      showLocalCaughtError(err, showToast, "发生未知错误");
+    } catch (error) {
+      console.error("[EmbeddedMemberList] 加载成员列表异常:", error); // eslint-disable-line no-console
+      showLocalCaughtError(error, showToast, "发生未知错误");
     } finally {
       setIsLoading(false);
     }
   }, [isLoading, hasMore, offset, onLoadMembers, showToast]);
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect */
+    /* eslint-disable react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect */
     setMembers([]);
     setHasMore(true);
     setOffset(0);
     setIsLoading(false);
-    /* eslint-enable react-hooks/set-state-in-effect */
+    /* eslint-enable react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect */
   }, [onLoadMembers]);
 
   useEffect(() => {
-    if (!loadMoreRef.current) return;
+    if (!loadMoreRef.current) {return;}
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
-        if (first && first.isIntersecting) loadMembers();
+        if (first?.isIntersecting) {void loadMembers();}
       },
       { root: scrollContainerRef.current },
     );
     observerRef.current.observe(loadMoreRef.current);
     return () => {
-      if (observerRef.current) observerRef.current.disconnect();
+      if (observerRef.current) {observerRef.current.disconnect();}
     };
   }, [loadMembers]);
 
@@ -85,7 +88,7 @@ export default function EmbeddedMemberList({
           <MemberCard
             key={m.id}
             member={m}
-            onClick={onMemberClick ? () => onMemberClick(m) : undefined}
+            onClick={onMemberClick ? () => { onMemberClick(m); } : undefined}
           />
         ))}
       </div>

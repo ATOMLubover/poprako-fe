@@ -1,4 +1,4 @@
-export type InvitationInfo = {
+export interface InvitationInfo {
   id: string;
 
   invitationCode: string;
@@ -9,15 +9,15 @@ export type InvitationInfo = {
   roles: number;
 
   createdAt: number;
-};
+}
 
-export type CreateInvitationArgs = {
+export interface CreateInvitationArgs {
   teamId: string;
   inviteeQq: string;
   roles: number;
-};
-export type UpdateInvitationArgs = {
+}
+export interface UpdateInvitationArgs {
   id: string;
-  roles?: number;
-  teamId?: string;
-};
+  roles?: number | undefined;
+  teamId?: string | undefined;
+}

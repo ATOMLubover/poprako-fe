@@ -5,7 +5,6 @@ import { useAppStore } from "@/store/app";
 import { getMyUser } from "@/api/user";
 import { listMyMembers } from "@/api/member";
 import LoadingCircle from "@/components/ui/LoadingCircle";
-import type { TranslatorMode } from "@/types/translatorMode";
 
 export default function TranslatorPage() {
   const { chapterId, pageId } = useParams<{
@@ -20,45 +19,50 @@ export default function TranslatorPage() {
   const returnTo = searchParams.get("returnTo");
   const returnComicId = searchParams.get("comicId");
   const returnChapterId = searchParams.get("chapterId");
-  const startMode: TranslatorMode | undefined =
-    searchParams.get("readOnly") === "true" ? "readOnly" : undefined;
+  const startMode = searchParams.get("readOnly") === "true"
+    ? "readOnly" as const
+    : "auto" as const;
 
   const handleExit = () => {
     if (
-      (returnTo === "/workspace" || returnTo === "/comic-playground") &&
-      returnComicId &&
-      returnChapterId
+      returnComicId && returnChapterId &&
+      (returnTo === "/workspace" || returnTo === "/comic-playground")
     ) {
       const nextSearchParams = new URLSearchParams({
         comicId: returnComicId,
         chapterId: returnChapterId,
       });
 
-      navigate({
+      void navigate({
         pathname: returnTo,
         search: `?${nextSearchParams.toString()}`,
       });
       return;
     }
 
-    navigate(-1);
+    void navigate(-1);
   };
 
   // Ensure user is authenticated before rendering translator
   useEffect(() => {
     if (loginState !== null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
       setIsAuthReady(true);
       return;
     }
 
-    getMyUser()
-      .then(async (userInfo) => {
+    async function loadUser() {
+      try {
+        const userInfo = await getMyUser();
         const memberInfos = await listMyMembers({ ownerId: userInfo.id });
         setLoginState({ userInfo, memberInfos });
+
         setIsAuthReady(true);
-      })
-      .catch(() => navigate("/login", { replace: true }));
+      } catch {
+        void navigate("/login", { replace: true });
+      }
+    }
+    void loadUser();
   }, [loginState, navigate, setLoginState]);
 
   if (!isAuthReady) {

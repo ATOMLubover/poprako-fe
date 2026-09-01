@@ -6,12 +6,12 @@ import {
   type RawCommentInfo,
 } from "@/types/raw/comment";
 
-type ListCommentsArgs = {
+interface ListCommentsArgs {
   teamId: string;
   offset: number;
   limit: number;
-  includes?: string[];
-};
+  includes?: string[] | undefined;
+}
 
 export async function listComments(
   args: ListCommentsArgs,
@@ -24,22 +24,22 @@ export async function listComments(
       incl: args.includes,
     },
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
   return {
     success: true,
-    data: (result.data ?? []).map(unwrapRawCommentInfo),
+    data: result.data.map((item) => unwrapRawCommentInfo(item)),
   };
 }
 
-type CreateCommentArgs = {
+interface CreateCommentArgs {
   teamId: string;
   content: string;
-};
+}
 
-type RawCreateCommentArgs = {
+interface RawCreateCommentArgs {
   team_id: string;
   content: string;
-};
+}
 
 export async function createComment(
   args: CreateCommentArgs,
@@ -51,6 +51,6 @@ export async function createComment(
       content: args.content,
     },
   );
-  if (!result.success) return result;
-  return { success: true, data: result.data!.id };
+  if (!result.success) {return result;}
+  return { success: true, data: result.data.id };
 }

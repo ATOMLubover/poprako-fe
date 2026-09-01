@@ -19,10 +19,10 @@ const now = Date.now();
 
 function makeMockComic(idx: number): ComicInfo {
   return {
-    id: `comic-${idx}`,
+    id: `comic-${String(idx)}`,
     worksetId: "workset-0",
-    title: `测试漫画 ${idx + 1}`,
-    author: `作者 ${idx + 1}`,
+    title: `测试漫画 ${String(idx + 1)}`,
+    author: `作者 ${String(idx + 1)}`,
     description: "这是一部测试用的漫画",
     index: idx,
     chapterCount: 10 + idx,
@@ -42,6 +42,8 @@ function makePagedLoader(allComics: ComicInfo[], delay = 800) {
     offset: number,
     limit: number,
   ): Promise<Result<ComicTranslationListItem[]>> => {
+    void offset;
+    void limit;
     await new Promise((resolve) => setTimeout(resolve, delay));
     return {
       success: true,
@@ -61,7 +63,9 @@ export const TranslatorMode: Story = {
 
 export const EmptyState: Story = {
   args: {
-    onLoadComics: async (_offset: number, _limit: number) => {
+    onLoadComics: async (offset: number, limit: number) => {
+      void offset;
+      void limit;
       await new Promise((resolve) => setTimeout(resolve, 600));
       return { success: true, data: [] };
     },
@@ -70,7 +74,9 @@ export const EmptyState: Story = {
 
 export const ErrorState: Story = {
   args: {
-    onLoadComics: async (_offset: number, _limit: number) => {
+    onLoadComics: async (offset: number, limit: number) => {
+      void offset;
+      void limit;
       await new Promise((resolve) => setTimeout(resolve, 600));
       return { success: false, error: "服务器错误，请稍后重试" };
     },

@@ -2,36 +2,36 @@ import type { TermInfo } from "@/types/term";
 import type { TermbaseInfo } from "@/types/termbase";
 import type { Result } from "@/types/utils/result";
 
-export type ListTermbasesArgs = {
-  fuzzyName?: string;
+export interface ListTermbasesArgs {
+  fuzzyName?: string | undefined;
   offset: number;
   limit: number;
-};
+}
 
-export type ListTermsArgs = {
+export interface ListTermsArgs {
   termbaseId: string;
-  fuzzySource?: string;
+  fuzzySource?: string | undefined;
   offset: number;
   limit: number;
-};
+}
 
-export type CreateTermbaseArgs = {
+export interface CreateTermbaseArgs {
   name: string;
-  description?: string;
-};
+  description?: string | undefined;
+}
 
 export type UpdateTermbaseArgs = CreateTermbaseArgs;
 
-export type CreateTermArgs = {
+export interface CreateTermArgs {
   termbaseId: string;
   source: string;
   targets: string[];
-  comment?: string;
-};
+  comment?: string | undefined;
+}
 
 export type UpdateTermArgs = Omit<CreateTermArgs, "termbaseId">;
 
-export type TerminologyDataSource = {
+export interface TerminologyDataSource {
   listTermbases: (
     args: ListTermbasesArgs,
   ) => Promise<Result<TermbaseInfo[]>>;
@@ -45,4 +45,4 @@ export type TerminologyDataSource = {
   createTerm: (args: CreateTermArgs) => Promise<Result<string>>;
   updateTerm: (id: string, args: UpdateTermArgs) => Promise<Result<void>>;
   deleteTerm: (id: string) => Promise<Result<void>>;
-};
+}

@@ -6,5 +6,5 @@ export function selectPageImageUrl(
 ): string {
   return quality === "original"
     ? page.imageUrl
-    : page.imageOptimizedUrl || page.imageUrl;
+    : page.imageOptimizedUrl ?? page.imageUrl;
 }

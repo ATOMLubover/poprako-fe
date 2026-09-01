@@ -2,12 +2,12 @@ import clsx from "clsx";
 
 export type SelectionState = "checked" | "unchecked" | "mixed";
 
-type Props = {
+interface Props {
   label: string;
   state: SelectionState;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   onClick: () => void;
-};
+}
 
 export default function CircleSelector({
   label,
@@ -26,7 +26,7 @@ export default function CircleSelector({
         event.stopPropagation();
         onClick();
       }}
-      onDoubleClick={(event) => event.stopPropagation()}
+      onDoubleClick={(event) => { event.stopPropagation(); }}
       className={clsx(
         "flex size-6 shrink-0 items-center justify-center rounded-full",
         "transition-transform duration-150 active:scale-90",

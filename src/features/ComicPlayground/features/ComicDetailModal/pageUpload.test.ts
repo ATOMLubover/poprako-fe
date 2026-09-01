@@ -12,6 +12,8 @@ const hashMocks = vi.hoisted(() => ({
   hashPageFile: vi.fn(),
 }));
 
+function noop(): void {return;}
+
 vi.mock("@/features/ComicPlayground/api/page", () => apiMocks);
 vi.mock("./pageHash", () => hashMocks);
 
@@ -29,11 +31,11 @@ function file(name: string, byte = 1): File {
 function slot(pageId: string, imageVersion = 1) {
   return {
     pageId,
-    index: Number(pageId.replace(/\D/g, "")) || 0,
+    index: Number(pageId.replaceAll(/\D/g, "")) || 0,
     imageHash: `hash-${pageId}`,
     extension: "png",
     slot: {
-      putUrl: `https://upload.example/${pageId}/${imageVersion}`,
+      putUrl: `https://upload.example/${pageId}/${String(imageVersion)}`,
       imageVersion,
       headers: {},
     },
@@ -293,7 +295,7 @@ describe("page upload coordinator", () => {
         pages: [slot("page-1"), slot("page-2"), slot("page-3")],
       },
     });
-    apiMocks.uploadToPresignedUrl.mockImplementation(async (putUrl: string) => {
+    apiMocks.uploadToPresignedUrl.mockImplementation((putUrl: string) => {
       if (putUrl.includes("page-1")) {
         return {
           success: false,
@@ -438,46 +440,48 @@ describe("page upload coordinator", () => {
 
   test("keeps alloc, PUT, and mark serial for the same page", async () => {
     const events: string[] = [];
-    let finishFirstPut = () => {};
+    let finishFirstPut: () => void = noop;
     const firstPut = new Promise<{
       success: true;
       data: undefined;
       httpStatus: number;
     }>((resolve) => {
-      finishFirstPut = () => resolve({
+      finishFirstPut = () => { resolve({
         success: true,
         data: undefined,
         httpStatus: 200,
-      });
+      }); };
     });
     hashMocks.hashPageFile
       .mockResolvedValueOnce({ imageHash: "hash-a" })
       .mockResolvedValueOnce({ imageHash: "hash-b" });
     apiMocks.allocExistingPageUpload
-      .mockImplementationOnce(async () => {
+      .mockImplementationOnce(() => {
         events.push("alloc-a");
         return { success: true, data: slot("page-1", 1) };
       })
-      .mockImplementationOnce(async () => {
+      .mockImplementationOnce(() => {
         events.push("alloc-b");
         return { success: true, data: slot("page-1", 2) };
       });
     apiMocks.uploadToPresignedUrl
-      .mockImplementationOnce(async () => {
+      .mockImplementationOnce(() => {
         events.push("put-a");
         return firstPut;
       })
-      .mockImplementationOnce(async () => {
+      .mockImplementationOnce(() => {
         events.push("put-b");
         return { success: true, data: undefined, httpStatus: 200 };
       });
-    apiMocks.updatePage.mockImplementation(async (_pageId, args) => {
-      events.push(`mark-${args.imageVersion}`);
+    apiMocks.updatePage.mockImplementation(
+      (_pageId: string, args: { imageVersion?: number | undefined }) => {
+      events.push(`mark-${String(args.imageVersion)}`);
       return { success: true, data: undefined };
-    });
+      },
+    );
 
     const first = await startPageReupload("chapter-1", "page-1", file("a.png"));
-    await vi.waitFor(() => expect(events).toEqual(["alloc-a", "put-a"]));
+    await vi.waitFor(() => { expect(events).toEqual(["alloc-a", "put-a"]); });
 
     const second = await startPageReupload("chapter-1", "page-1", file("b.png"));
     expect(events).toEqual(["alloc-a", "put-a"]);

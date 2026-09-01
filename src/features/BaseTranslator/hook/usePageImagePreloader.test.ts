@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/require-await, @typescript-eslint/no-empty-function */
+/* eslint-disable unicorn/consistent-function-scoping, unicorn/prefer-promise-with-resolvers */
 import { describe, expect, test, vi } from "vitest";
 import {
   centerOutPageIndexes,
@@ -5,10 +7,10 @@ import {
   resolveInitialPageIndex,
 } from "./usePageImagePreloader";
 
-type Deferred = {
+interface Deferred {
   promise: Promise<void>;
   resolve: () => void;
-};
+}
 
 function deferred(): Deferred {
   let resolve = () => {};
@@ -20,7 +22,7 @@ function deferred(): Deferred {
 }
 
 async function flushTasks(turns = 20): Promise<void> {
-  for (let turn = 0; turn < turns; turn++) await Promise.resolve();
+  for (let turn = 0; turn < turns; turn++) {await Promise.resolve();}
 }
 
 describe("page image preload order", () => {
@@ -83,7 +85,7 @@ describe("page image preloader", () => {
     });
 
     preloader.configure({
-      pageIds: Array.from({ length: 8 }, (_, index) => `page-${index}`),
+      pageIds: Array.from({ length: 8 }, (_, index) => `page-${String(index)}`),
       centerIndex: 4,
       quality: "optimized",
     });
@@ -92,14 +94,16 @@ describe("page image preloader", () => {
     expect(pending).toHaveLength(4);
     expect(maxActiveCount).toBe(4);
 
-    pending[0].resolve();
+    const firstPending = pending[0];
+    if (!firstPending) {throw new Error("预加载任务缺失");}
+    firstPending.resolve();
     await flushTasks();
 
     expect(pending).toHaveLength(5);
     expect(maxActiveCount).toBe(4);
 
     preloader.stop();
-    pending.forEach((task) => task.resolve());
+    for (const task of pending) {task.resolve();}
     await flushTasks();
   });
 
@@ -111,7 +115,7 @@ describe("page image preloader", () => {
       resolvePageImage: async (pageId, quality) => `${pageId}-${quality}`,
       loadImage: async (url) => {
         loadedUrls.push(url);
-        if (loadedUrls.length === 1) await firstLoad.promise;
+        if (loadedUrls.length === 1) {await firstLoad.promise;}
       },
     });
 

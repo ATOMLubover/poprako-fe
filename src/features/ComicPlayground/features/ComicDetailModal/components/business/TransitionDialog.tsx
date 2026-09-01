@@ -3,14 +3,14 @@ import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import type { WorkflowStatus } from "@/types/workflow";
 
-type Props = {
+interface Props {
   label: string;
   status: WorkflowStatus;
   forwardTransition: WorkflowTransition | null;
   revertTransition: WorkflowTransition | null;
   onConfirm: (transition: WorkflowTransition) => void;
   onCancel: () => void;
-};
+}
 
 const ROLE_LABEL_MAP: Record<string, string> = {
   图: "图源",
@@ -51,24 +51,29 @@ function transitionTarget(t: WorkflowTransition): WorkflowStatus {
     case "proofread_complete":
     case "typeset_complete":
     case "review_complete":
-    case "publish_complete":
+    case "publish_complete": {
       return "completed";
+    }
     case "translate_start":
     case "proofread_start":
-    case "typeset_start":
+    case "typeset_start": {
       return "ongoing";
+    }
     case "upload_revert":
     case "translate_start_revert":
     case "proofread_start_revert":
     case "typeset_start_revert":
-    case "review_revert":
+    case "review_revert": {
       return "pending";
+    }
     case "translate_revert":
     case "proofread_revert":
-    case "typeset_revert":
+    case "typeset_revert": {
       return "ongoing";
-    default:
+    }
+    default: {
       return "pending";
+    }
   }
 }
 
@@ -81,9 +86,6 @@ export default function TransitionDialog({
   onCancel,
 }: Props) {
   const roleName = ROLE_LABEL_MAP[label] ?? label;
-  const hasForward = forwardTransition != null;
-  const hasRevert = revertTransition != null;
-
   const forwardTarget = forwardTransition
     ? transitionTarget(forwardTransition)
     : null;
@@ -102,18 +104,18 @@ export default function TransitionDialog({
       footer={(
         <div className="flex items-center gap-2">
           <AppDialogAction onClick={onCancel}>取消</AppDialogAction>
-          {hasRevert && (
+          {revertTransition && (
             <AppDialogAction
               tone="warning"
-              onClick={() => revertTransition && onConfirm(revertTransition)}
+              onClick={() => { onConfirm(revertTransition); }}
             >
               回退
             </AppDialogAction>
           )}
-          {hasForward && (
+          {forwardTransition && (
             <AppDialogAction
               tone="brand"
-              onClick={() => forwardTransition && onConfirm(forwardTransition)}
+              onClick={() => { onConfirm(forwardTransition); }}
             >
               推进
             </AppDialogAction>

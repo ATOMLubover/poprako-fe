@@ -7,13 +7,13 @@ import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { Result } from "@/types/utils/result";
 import type { ComicTranslationListItem } from "../../types/types";
 
-type Props = {
+interface Props {
   onLoadComics: (
     offset: number,
     limit: number,
   ) => Promise<Result<ComicTranslationListItem[]>>;
-  onComicClick?: (comicInfo: ComicTranslationListItem["comicInfo"]) => void;
-};
+  onComicClick?: ((comicInfo: ComicTranslationListItem["comicInfo"]) => void) | undefined;
+}
 
 export default function ComicTranslationList({
   onLoadComics,
@@ -30,18 +30,18 @@ export default function ComicTranslationList({
   const offsetRef = useRef(0);
   const { showToast } = useToastStore();
 
-  const loadComics = useCallback(async (reset = false) => {
-    if (isLoadingRef.current) return;
-    if (!reset && !hasMoreRef.current) return;
+  const loadComics = useCallback(async (shouldReset = false) => {
+    if (isLoadingRef.current) {return;}
+    if (!shouldReset && !hasMoreRef.current) {return;}
 
-    if (reset) {
+    if (shouldReset) {
       hasMoreRef.current = true;
       offsetRef.current = 0;
       setComics([]);
       setHasMore(true);
     }
 
-    const requestOffset = reset ? 0 : offsetRef.current;
+    const requestOffset = shouldReset ? 0 : offsetRef.current;
 
     isLoadingRef.current = true;
     setIsLoading(true);
@@ -49,7 +49,10 @@ export default function ComicTranslationList({
     try {
       const result = await onLoadComics(requestOffset, pageSize);
       if (!result.success) {
-        console.error("[ComicTranslationList] 加载漫画列表失败:", result.error);
+        // eslint-disable-next-line no-console
+        console.error(
+          "[ComicTranslationList] 加载漫画列表失败:", result.error,
+        );
         showLocalApiFailure(result, showToast);
         hasMoreRef.current = false;
         setHasMore(false);
@@ -59,15 +62,15 @@ export default function ComicTranslationList({
       const items = result.data;
 
       const nextOffset = requestOffset + items.length;
-      const nextHasMore = items.length === pageSize;
+      const isNextHasMore = items.length === pageSize;
 
       offsetRef.current = nextOffset;
-      hasMoreRef.current = nextHasMore;
-      setHasMore(nextHasMore);
-      setComics((prev) => (reset ? items : [...prev, ...items]));
-    } catch (err) {
-      console.error("[ComicTranslationList] 加载漫画列表异常:", err);
-      showLocalCaughtError(err, showToast, "发生未知错误");
+      hasMoreRef.current = isNextHasMore;
+      setHasMore(isNextHasMore);
+      setComics((prev) => (shouldReset ? items : [...prev, ...items]));
+    } catch (error) {
+      console.error("[ComicTranslationList] 加载漫画列表异常:", error); // eslint-disable-line no-console
+      showLocalCaughtError(error, showToast, "发生未知错误");
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
@@ -94,25 +97,25 @@ export default function ComicTranslationList({
     const wasLoading = prevIsLoadingRef.current;
     prevIsLoadingRef.current = isLoading;
 
-    if (!wasLoading || isLoading) return;
-    if (!hasMoreRef.current) return;
-    if (!loadMoreRef.current || !scrollContainerRef.current) return;
+    if (!wasLoading || isLoading) {return;}
+    if (!hasMoreRef.current) {return;}
+    if (!loadMoreRef.current || !scrollContainerRef.current) {return;}
 
     const containerRect = scrollContainerRef.current.getBoundingClientRect();
     const targetRect = loadMoreRef.current.getBoundingClientRect();
 
     if (targetRect.top < containerRect.bottom) {
-      loadComicsRef.current();
+      void loadComicsRef.current();
     }
   }, [isLoading]);
 
   useEffect(() => {
-    if (!loadMoreRef.current) return;
+    if (!loadMoreRef.current) {return;}
 
     const observer = new IntersectionObserver(
       (entries) => {
         const firstEntry = entries[0];
-        if (firstEntry && firstEntry.isIntersecting) {
+        if (firstEntry?.isIntersecting) {
           void loadComics();
         }
       },
@@ -120,7 +123,7 @@ export default function ComicTranslationList({
     );
     observer.observe(loadMoreRef.current);
 
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, [loadComics]);
 
   return (

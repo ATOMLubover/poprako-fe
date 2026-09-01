@@ -4,7 +4,7 @@ import type { RoleFilter } from "../../types/types";
 import MemberListFilterHeader from "./MemberListFilterHeader";
 import EmbeddedMemberList from "./EmbeddedMemberList";
 
-type Props = {
+interface Props {
   fuzzyName: string;
   onChangeFuzzyName: (name: string) => void;
   activeRole: RoleFilter | null;
@@ -14,8 +14,8 @@ type Props = {
     offset: number,
     limit: number,
   ) => Promise<Result<MemberInfo[]>>;
-  onMemberClick?: (member: MemberInfo) => void;
-};
+  onMemberClick?: ((member: MemberInfo) => void) | undefined;
+}
 
 export default function MemberList({
   fuzzyName,

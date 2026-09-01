@@ -21,9 +21,9 @@ import LazyImage from "./LazyImage";
 import StatItem from "./StatItem";
 import type { CoverUploadState } from "../../types";
 
-type Props = {
+interface Props {
   comicInfo: ComicInfo;
-  selectedChapter?: ChapterInfo;
+  selectedChapter?: ChapterInfo | undefined;
   pagesLength: number;
   canReadOnly: boolean;
   canUploadCover: boolean;
@@ -35,20 +35,21 @@ type Props = {
   isArchivingComic: boolean;
   isDeletingComic: boolean;
   isExportingData: boolean;
-  isImportingData?: boolean;
-  onNavigateReadOnly?: () => void;
-  onExport?: () => void;
-  onImportFileChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isImportingData?: boolean | undefined;
+  onNavigateReadOnly?: (() => void) | undefined;
+  onExport?: (() => void) | undefined;
+  onImportFileChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
   onDeletePages: () => void;
   onArchiveComic: () => void;
   onDeleteComic: () => void;
   coverInputRef: RefObject<HTMLInputElement | null>;
   coverUpload: CoverUploadState;
-};
+}
 
 export default function ComicDetailSidebar({
   comicInfo,
   selectedChapter,
+  pagesLength,
   canReadOnly,
   canUploadCover,
   canTranslateOrProofread,
@@ -69,6 +70,7 @@ export default function ComicDetailSidebar({
   coverInputRef,
   coverUpload,
 }: Props) {
+  void pagesLength;
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const handleOpenImportPicker = () => importFileInputRef.current?.click();
   return (
@@ -121,7 +123,7 @@ export default function ComicDetailSidebar({
                       strokeDasharray={100.531}
                       strokeDashoffset={
                         100.531 *
-                        (1 - (coverUpload.coverUploadProgress ?? 0) / 100)
+                        (1 - coverUpload.coverUploadProgress / 100)
                       }
                       strokeLinecap="round"
                       className="transition-all duration-300 ease-out"
@@ -146,6 +148,7 @@ export default function ComicDetailSidebar({
             />
             <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
               <button
+                type="button"
                 onClick={() => coverInputRef.current?.click()}
                 className={clsx(
                   "pointer-events-auto inline-flex h-6 w-6 items-center justify-center rounded-sm",

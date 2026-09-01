@@ -1,3 +1,4 @@
+/* eslint-disable no-console -- contributor resolution diagnostics. */
 import {
   unitProofreaderId,
   unitTranslatorId,
@@ -13,14 +14,14 @@ export type UnitUserResolver = (
 export function unitContributorIds(units: UnitInfo[]): string[] {
   const ids = new Set<string>();
 
-  units.forEach((unit) => {
+  for (const unit of units) {
     const translatorId = unitTranslatorId(unit);
     const proofreaderId = unitProofreaderId(unit);
-    if (translatorId) ids.add(translatorId);
-    if (proofreaderId) ids.add(proofreaderId);
-  });
+    if (translatorId) {ids.add(translatorId);}
+    if (proofreaderId) {ids.add(proofreaderId);}
+  }
 
-  return Array.from(ids);
+  return [...ids];
 }
 
 export class UnitContributorCache {
@@ -37,34 +38,34 @@ export class UnitContributorCache {
     resolver: UnitUserResolver,
   ): Promise<UserInfo | undefined> {
     const user = this.users.get(userId);
-    if (user) return Promise.resolve(user);
-    if (this.failed.has(userId)) return Promise.resolve(undefined);
+    if (user) {return Promise.resolve(user);}
+    if (this.failed.has(userId)) {return Promise.resolve(undefined);}
 
     const pending = this.pending.get(userId);
-    if (pending) return pending;
+    if (pending) {return pending;}
 
-    const request = resolver(userId)
-      .then((result) => {
+    const request = (async () => {
+      try {
+        const result = await resolver(userId);
         if (!result.success) {
           this.failed.add(userId);
           console.error("[UnitList] 解析 Unit 人员失败", {
             userId,
             error: result.error,
           });
-          return undefined;
+          return;
         }
 
         this.users.set(userId, result.data);
         return result.data;
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         this.failed.add(userId);
         console.error("[UnitList] 解析 Unit 人员异常", { userId, error });
-        return undefined;
-      })
-      .finally(() => {
+        return;
+      } finally {
         this.pending.delete(userId);
-      });
+      }
+    })();
 
     this.pending.set(userId, request);
     return request;

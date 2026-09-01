@@ -35,15 +35,15 @@ import type {
 
 export type { ListChapterWorkflowRecordsArgs } from "../types/chapter";
 
-type ExportRequestOptions = {
-  signal?: AbortSignal;
-};
+interface ExportRequestOptions {
+  signal?: AbortSignal | undefined;
+}
 
 function toStageUpdate(
-  transition: UpdateChapterArgs["workflowTransition"] | UpdateChapterArgs["revertTransition"],
+  transition: UpdateChapterArgs["workflowTransition"]  ,
   oper: RawUpdateChapterStageArgs["oper"],
 ): Omit<RawUpdateChapterStageArgs, "id"> | null {
-  if (!transition) return null;
+  if (!transition) {return null;}
 
   if (transition.startsWith("upload_")) {
     return { stage: "raw_provide", oper };
@@ -86,16 +86,19 @@ export async function listChapters(
     },
   );
 
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const items = Array.isArray(res.data) ? res.data : [];
 
-  return { success: true, data: items.map((raw) => toChapterInfo(raw)!) };
+  return { success: true, data: items.flatMap((raw) => {
+    const chapter = toChapterInfo(raw);
+    return chapter ? [chapter] : [];
+  }) };
 }
 
 export async function getChapter(id: string): Promise<Result<ChapterInfo>> {
   const res = await api.get<RawChapterInfo>(`/chapters/${id}`);
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const chapter = toChapterInfo(res.data);
   if (!chapter) {
@@ -115,10 +118,10 @@ export async function listChapterWorkflowRecords(
       limit: args.limit,
     },
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const items = Array.isArray(res.data) ? res.data : [];
-  return { success: true, data: items.map(unwrapRawChapterWorkflowRecord) };
+  return { success: true, data: items.map((item) => unwrapRawChapterWorkflowRecord(item)) };
 }
 
 export async function createChapter(
@@ -134,52 +137,52 @@ export async function createChapter(
     "/chapters",
     rawArgs,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: (res.data as { id: string }).id };
 }
 
 export async function updateChapter(
   id: string,
   args: UpdateChapterArgs,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   if (args.subtitle !== undefined) {
     const rawArgs: RawUpdateChapterArgs = {
       id,
       subtitle: args.subtitle,
     };
 
-    const res = await api.patch<void, RawUpdateChapterArgs>(
+    const res = await api.patch<undefined, RawUpdateChapterArgs>(
       `/chapters/${id}`,
       rawArgs,
     );
-    if (!res.success) return res;
+    if (!res.success) {return res;}
   }
 
   if (args.isPinned) {
-    const res = await api.post<void, object>(
+    const res = await api.post<undefined, object>(
       `/chapters/${id}/mark-pinned`,
       {},
     );
-    if (!res.success) return res;
+    if (!res.success) {return res;}
   }
 
   const stageUpdate =
     toStageUpdate(args.workflowTransition, "advance") ??
     toStageUpdate(args.revertTransition, "revert");
   if (stageUpdate) {
-    const res = await api.post<void, RawUpdateChapterStageArgs>(
+    const res = await api.post<undefined, RawUpdateChapterStageArgs>(
       `/chapters/${id}/stage/advance`,
       { id, ...stageUpdate },
     );
-    if (!res.success) return res;
+    if (!res.success) {return res;}
   }
 
   return { success: true, data: undefined };
 }
 
-export async function deleteChapter(id: string): Promise<Result<void>> {
-  const res = await api.delete<void>(`/chapters/${id}`);
-  if (!res.success) return res;
+export async function deleteChapter(id: string): Promise<Result<undefined>> {
+  const res = await api.delete<undefined>(`/chapters/${id}`);
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }
 
@@ -190,10 +193,10 @@ function unwrapRawChapterExport(raw: RawChapterExport): ChapterExport {
     chapterId: raw.chapter_id,
     chapterIndex: raw.chapter_index,
     chapterSubtitle: raw.chapter_subtitle,
-    pages: (raw.pages ?? []).map((page) => ({
+    pages: raw.pages.map((page) => ({
       pageId: page.page_id,
       pageIndex: page.page_index,
-      units: (page.units ?? []).map((unit) => ({
+      units: page.units.map((unit) => ({
         unitId: unit.unit_id,
         unitIndex: unit.unit_index,
         pageId: unit.page_id,
@@ -223,14 +226,9 @@ export async function exportChapter(
     const response = await fetch(
       `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=poprako,label_plus`,
       {
-        method: "GET",
-        headers: token
-          ? {
-              Authorization: `Bearer ${token}`,
-            }
-          : undefined,
+        ...(token && { headers: { Authorization: `Bearer ${token}` } }),
         credentials: "omit",
-        signal: options?.signal,
+        ...(options?.signal && { signal: options.signal }),
       },
     );
 
@@ -239,7 +237,7 @@ export async function exportChapter(
     if (!response.ok) {
       let error: string;
       try {
-        const body = JSON.parse(rawText) as { message?: string };
+        const body = JSON.parse(rawText) as { message?: string | undefined };
         error = resolveHttpErrorMessage(
           body.message,
           response.statusText,
@@ -263,10 +261,10 @@ export async function exportChapter(
         poprako: unwrapRawChapterExport(body.poprako),
       },
     };
-  } catch (err) {
+  } catch (error) {
     return {
       success: false,
-      error: err instanceof Error ? err.message : "导出翻校数据失败",
+      error: error instanceof Error ? error.message : "导出翻校数据失败",
     };
   }
 }
@@ -293,25 +291,25 @@ export async function importChapter(
     `/chapters/${args.chapterId}/translations/import`,
     rawArgs,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   return {
     success: true,
-    data: unwrapRawImportChapterResult(res.data as RawImportChapterResult),
+    data: unwrapRawImportChapterResult(res.data),
   };
 }
 
 export async function joinChapter(
   chapterId: string,
   roleMask: number,
-): Promise<Result<void>> {
-  const res = await api.post<void, { chapter_id: string; roles: number }>(
+): Promise<Result<undefined>> {
+  const res = await api.post<undefined, { chapter_id: string; roles: number }>(
     "/assignments/join",
     {
       chapter_id: chapterId,
       roles: roleMask,
     },
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   isExpanded: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -9,7 +9,7 @@ type Props = {
   teamOption: ReactNode;
   nav: ReactNode;
   footer: ReactNode;
-};
+}
 
 export default function AppSidebarLayout({
   isExpanded,
@@ -21,6 +21,7 @@ export default function AppSidebarLayout({
   footer,
 }: Props) {
   return (
+    /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */
     <nav
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

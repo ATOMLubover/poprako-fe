@@ -10,34 +10,42 @@ import UserTag from "./UserTag";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import TransitionDialog from "./TransitionDialog";
 
-type Props = {
+interface Props {
   label: string;
   role: Role;
   assignments: AssignmentInfo[];
   status: WorkflowStatus;
-  /** Forward (advance) transition available, or null */
+  /**
+  Forward (advance) transition available, or null
+  */
   forwardTransition: WorkflowTransition | null;
-  /** Revert transition available, or null */
+  /**
+  Revert transition available, or null
+  */
   revertTransition: WorkflowTransition | null;
-  /** Whether the tag should appear clickable (has at least one transition) */
+  /**
+  Whether the tag should appear clickable (has at least one transition)
+  */
   onClickable: boolean;
   onTransiteWorkflow: (t: WorkflowTransition) => Promise<Result<void>>;
-  onRemoveUser?: (userId: string, role: Role) => void;
-  /** Called to open the MemberSelectorModal for this role */
-  onAddUser?: () => void;
-  onJoinSelf?: () => void;
-  canJoinSelf?: boolean;
-  isJoiningSelf?: boolean;
-  onLeaveSelf?: () => void;
-  canLeaveSelf?: boolean;
-  isLeavingSelf?: boolean;
-};
+  onRemoveUser?: ((userId: string, role: Role) => void) | undefined;
+  /**
+  Called to open the MemberSelectorModal for this role
+  */
+  onAddUser?: (() => void) | undefined;
+  onJoinSelf?: (() => void) | undefined;
+  canJoinSelf?: boolean | undefined;
+  isJoiningSelf?: boolean | undefined;
+  onLeaveSelf?: (() => void) | undefined;
+  canLeaveSelf?: boolean | undefined;
+  isLeavingSelf?: boolean | undefined;
+}
 
-type StatusConfig = {
+interface StatusConfig {
   labelText: string;
   hoverLabelText: string;
   barColor: string;
-};
+}
 
 const STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
   pending: {
@@ -80,19 +88,19 @@ export default function RoleTag({
   canLeaveSelf = false,
   isLeavingSelf = false,
 }: Props) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+  const cfg = STATUS_CONFIG[status];
   const [showTransitionDialog, setShowTransitionDialog] = useState(false);
   const [pendingLeave, setPendingLeave] = useState(false);
   const transitioningRef = useRef(false);
 
   const handleTransition = async (transition: WorkflowTransition) => {
-    if (transitioningRef.current) return;
+    if (transitioningRef.current) {return;}
     transitioningRef.current = true;
     setShowTransitionDialog(false);
     try {
       await onTransiteWorkflow(transition);
-    } catch (err) {
-      console.error("[RoleTag] 流程操作失败:", err);
+    } catch (error) {
+      console.error("[RoleTag] 流程操作失败:", error); // eslint-disable-line no-console
     } finally {
       transitioningRef.current = false;
     }
@@ -100,23 +108,24 @@ export default function RoleTag({
 
   return (
     <>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         role={onClickable ? "button" : undefined}
-        tabIndex={onClickable ? 0 : undefined}
+        {...(onClickable ? { tabIndex: 0 } : {})}
         onClick={() => {
           if (onClickable && !transitioningRef.current) {
             setShowTransitionDialog(true);
           }
         }}
         onKeyDown={(event) => {
-          if (
-            onClickable &&
+          if (!(onClickable &&
             !transitioningRef.current &&
-            (event.key === "Enter" || event.key === " ")
-          ) {
-            event.preventDefault();
-            setShowTransitionDialog(true);
+            (event.key === "Enter" || event.key === " "))) {
+            return;
           }
+
+          event.preventDefault();
+          setShowTransitionDialog(true);
         }}
         className={clsx(
           "relative flex items-center min-w-0 w-full group",
@@ -165,6 +174,7 @@ export default function RoleTag({
         {/* Add user button */}
         {onAddUser && (
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onAddUser();
@@ -182,6 +192,7 @@ export default function RoleTag({
 
         {canJoinSelf && onJoinSelf && (
           <button
+            type="button"
             onClick={(event) => {
               event.stopPropagation();
               onJoinSelf();
@@ -201,6 +212,7 @@ export default function RoleTag({
 
         {!canJoinSelf && canLeaveSelf && onLeaveSelf && (
           <button
+            type="button"
             onClick={(event) => {
               event.stopPropagation();
               setPendingLeave(true);
@@ -234,8 +246,8 @@ export default function RoleTag({
           status={status}
           forwardTransition={forwardTransition}
           revertTransition={revertTransition}
-          onConfirm={handleTransition}
-          onCancel={() => setShowTransitionDialog(false)}
+          onConfirm={(transition) => { void handleTransition(transition); }}
+          onCancel={() => { setShowTransitionDialog(false); }}
         />
       )}
 
@@ -248,7 +260,7 @@ export default function RoleTag({
             setPendingLeave(false);
             onLeaveSelf();
           }}
-          onCancel={() => setPendingLeave(false)}
+          onCancel={() => { setPendingLeave(false); }}
         />
       )}
     </>

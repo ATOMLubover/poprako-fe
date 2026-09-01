@@ -24,11 +24,11 @@ export type WorkflowTransition =
   | "typeset_revert"
   | "review_revert";
 
-export type ChapterInfo = {
+export interface ChapterInfo {
   id: string;
 
   comicId: string;
-  comic?: ComicInfo;
+  comic?: ComicInfo | undefined;
 
   index: number;
   subtitle: string;
@@ -39,46 +39,46 @@ export type ChapterInfo = {
   translatedUnitCount: number;
   proofreadUnitCount: number;
 
-  stages?: number;
+  stages?: number | undefined;
 
-  uploadedAt?: number;
-  translatingAt?: number;
-  translatedAt?: number;
-  typesetAt?: number;
-  typesettingAt?: number;
-  proofreadAt?: number;
-  proofreadingAt?: number;
-  reviewedAt?: number;
-  publishedAt?: number;
+  uploadedAt?: number | undefined;
+  translatingAt?: number | undefined;
+  translatedAt?: number | undefined;
+  typesetAt?: number | undefined;
+  typesettingAt?: number | undefined;
+  proofreadAt?: number | undefined;
+  proofreadingAt?: number | undefined;
+  reviewedAt?: number | undefined;
+  publishedAt?: number | undefined;
 
   creatorId: string;
-  creator?: UserInfo;
+  creator?: UserInfo | undefined;
 
   createdAt: number;
   updatedAt: number;
-};
+}
 
-export type CreateChapterArgs = {
+export interface CreateChapterArgs {
   comicId: string;
-  subtitle?: string;
-};
+  subtitle?: string | undefined;
+}
 
-export type CreateChapterResult = {
+export interface CreateChapterResult {
   id: string;
-};
+}
 
-export type WithWorkflow = {
-  stages?: number;
-  uploadedAt?: number;
-  translatingAt?: number;
-  translatedAt?: number;
-  typesetAt?: number;
-  typesettingAt?: number;
-  proofreadAt?: number;
-  proofreadingAt?: number;
-  reviewedAt?: number;
-  publishedAt?: number;
-};
+export interface WithWorkflow {
+  stages?: number | undefined;
+  uploadedAt?: number | undefined;
+  translatingAt?: number | undefined;
+  translatedAt?: number | undefined;
+  typesetAt?: number | undefined;
+  typesettingAt?: number | undefined;
+  proofreadAt?: number | undefined;
+  proofreadingAt?: number | undefined;
+  reviewedAt?: number | undefined;
+  publishedAt?: number | undefined;
+}
 
 type WorkflowStage = "upload" | "translate" | "proofread" | "typeset" | "review" | "publish";
 
@@ -99,18 +99,18 @@ function workflowStatusFromStages(
   stages: number | undefined,
   stage: WorkflowStage,
 ): WorkflowStatus | undefined {
-  if (stages === undefined) return undefined;
+  if (stages === undefined) {return undefined;}
 
   const phase = stagePhase(stages, stage);
-  if (phase === 0) return "pending";
-  if (phase === 1) return "ongoing";
-  if (phase === 2) return "completed";
+  if (phase === 0) {return "pending";}
+  if (phase === 1) {return "ongoing";}
+  if (phase === 2) {return "completed";}
   return "unset";
 }
 
 export function uploadWorkflowStatus(chapter: WithWorkflow) {
   const status = workflowStatusFromStages(chapter.stages, "upload");
-  if (status !== undefined) return status;
+  if (status !== undefined) {return status;}
 
   if (chapter.uploadedAt) {
     return "completed" as WorkflowStatus;
@@ -120,7 +120,7 @@ export function uploadWorkflowStatus(chapter: WithWorkflow) {
 
 export function translateWorkflowStatus(chapter: WithWorkflow) {
   const status = workflowStatusFromStages(chapter.stages, "translate");
-  if (status !== undefined) return status;
+  if (status !== undefined) {return status;}
 
   if (chapter.translatedAt) {
     return "completed" as WorkflowStatus;
@@ -133,7 +133,7 @@ export function translateWorkflowStatus(chapter: WithWorkflow) {
 
 export function typesetWorkflowStatus(chapter: WithWorkflow) {
   const status = workflowStatusFromStages(chapter.stages, "typeset");
-  if (status !== undefined) return status;
+  if (status !== undefined) {return status;}
 
   if (chapter.typesetAt) {
     return "completed" as WorkflowStatus;
@@ -146,7 +146,7 @@ export function typesetWorkflowStatus(chapter: WithWorkflow) {
 
 export function proofreadWorkflowStatus(chapter: WithWorkflow) {
   const status = workflowStatusFromStages(chapter.stages, "proofread");
-  if (status !== undefined) return status;
+  if (status !== undefined) {return status;}
 
   if (chapter.proofreadAt) {
     return "completed" as WorkflowStatus;
@@ -159,7 +159,7 @@ export function proofreadWorkflowStatus(chapter: WithWorkflow) {
 
 export function reviewWorkflowStatus(chapter: WithWorkflow) {
   const status = workflowStatusFromStages(chapter.stages, "review");
-  if (status !== undefined) return status;
+  if (status !== undefined) {return status;}
 
   if (chapter.reviewedAt) {
     return "completed" as WorkflowStatus;
@@ -169,7 +169,7 @@ export function reviewWorkflowStatus(chapter: WithWorkflow) {
 
 export function publishWorkflowStatus(chapter: WithWorkflow) {
   const status = workflowStatusFromStages(chapter.stages, "publish");
-  if (status !== undefined) return status;
+  if (status !== undefined) {return status;}
 
   if (chapter.publishedAt) {
     return "completed" as WorkflowStatus;
@@ -206,72 +206,96 @@ export function canApplyWorkflowTransition(
     switch (transition) {
       case "upload_complete":
       case "review_complete":
-      case "publish_complete":
+      case "publish_complete": {
         return status === "pending";
+      }
       case "translate_start":
       case "proofread_start":
-      case "typeset_start":
+      case "typeset_start": {
         return status === "pending";
+      }
       case "translate_complete":
       case "proofread_complete":
-      case "typeset_complete":
+      case "typeset_complete": {
         return status === "ongoing";
+      }
       case "upload_revert":
-      case "review_revert":
+      case "review_revert": {
         return status === "completed";
+      }
       case "translate_start_revert":
       case "proofread_start_revert":
-      case "typeset_start_revert":
+      case "typeset_start_revert": {
         return status === "ongoing";
+      }
       case "translate_revert":
       case "proofread_revert":
-      case "typeset_revert":
+      case "typeset_revert": {
         return status === "completed";
+      }
     }
   }
 
   switch (transition) {
-    case "upload_complete":
+    case "upload_complete": {
       return !chapter.uploadedAt;
-    case "translate_start":
+    }
+    case "translate_start": {
       return !chapter.translatingAt && !chapter.translatedAt;
-    case "translate_complete":
-      return !!chapter.translatingAt && !chapter.translatedAt;
-    case "proofread_start":
+    }
+    case "translate_complete": {
+      return Boolean(chapter.translatingAt) && !chapter.translatedAt;
+    }
+    case "proofread_start": {
       return !chapter.proofreadingAt && !chapter.proofreadAt;
-    case "proofread_complete":
-      return !!chapter.proofreadingAt && !chapter.proofreadAt;
-    case "typeset_start":
+    }
+    case "proofread_complete": {
+      return Boolean(chapter.proofreadingAt) && !chapter.proofreadAt;
+    }
+    case "typeset_start": {
       return !chapter.typesettingAt && !chapter.typesetAt;
-    case "typeset_complete":
-      return !!chapter.typesettingAt && !chapter.typesetAt;
-    case "review_complete":
+    }
+    case "typeset_complete": {
+      return Boolean(chapter.typesettingAt) && !chapter.typesetAt;
+    }
+    case "review_complete": {
       return !chapter.reviewedAt;
-    case "publish_complete":
+    }
+    case "publish_complete": {
       return !chapter.publishedAt;
-    case "upload_revert":
-      return !!chapter.uploadedAt;
-    case "translate_start_revert":
-      return !!chapter.translatingAt && !chapter.translatedAt;
-    case "translate_revert":
-      return !!chapter.translatedAt;
-    case "proofread_start_revert":
-      return !!chapter.proofreadingAt && !chapter.proofreadAt;
-    case "proofread_revert":
-      return !!chapter.proofreadAt;
-    case "typeset_start_revert":
-      return !!chapter.typesettingAt && !chapter.typesetAt;
-    case "typeset_revert":
-      return !!chapter.typesetAt;
-    case "review_revert":
-      return !!chapter.reviewedAt;
-    default:
+    }
+    case "upload_revert": {
+      return Boolean(chapter.uploadedAt);
+    }
+    case "translate_start_revert": {
+      return Boolean(chapter.translatingAt) && !chapter.translatedAt;
+    }
+    case "translate_revert": {
+      return Boolean(chapter.translatedAt);
+    }
+    case "proofread_start_revert": {
+      return Boolean(chapter.proofreadingAt) && !chapter.proofreadAt;
+    }
+    case "proofread_revert": {
+      return Boolean(chapter.proofreadAt);
+    }
+    case "typeset_start_revert": {
+      return Boolean(chapter.typesettingAt) && !chapter.typesetAt;
+    }
+    case "typeset_revert": {
+      return Boolean(chapter.typesetAt);
+    }
+    case "review_revert": {
+      return Boolean(chapter.reviewedAt);
+    }
+    default: {
       return false;
+    }
   }
 }
 
 export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
-  if (!raw) return undefined;
+  if (!raw) {return undefined;}
 
   return {
     id: raw.id,

@@ -18,8 +18,8 @@ describe("user API", () => {
 
   test("gets one user by ID", async () => {
     const fetchMock = installFetch(
-      new Response(
-        JSON.stringify({
+      Response.json(
+        {
           code: 0,
           data: {
             id: "user_1",
@@ -31,7 +31,7 @@ describe("user API", () => {
             created_at: 2,
             updated_at: 3,
           },
-        }),
+        },
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -42,7 +42,7 @@ describe("user API", () => {
     const result = await getUser("user_1");
 
     expect(result.success && result.data.name).toBe("Alice");
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "/api/v1/users/user_1",
     );
   });

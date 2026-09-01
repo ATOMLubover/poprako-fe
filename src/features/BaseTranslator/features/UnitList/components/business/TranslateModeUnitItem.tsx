@@ -1,3 +1,4 @@
+/* eslint-disable @eslint-react/exhaustive-deps, @eslint-react/no-unused-props */
 import {
   useEffect,
   useRef,
@@ -16,28 +17,28 @@ import AutoResizeTextarea from "./AutoResizeTextarea";
 import SpecialCharsBar from "./SpecialCharsBar";
 import type { SpecialCharInsertRequest } from "./UnitList";
 
-type Props = {
+interface Props {
   unit: UnitInfo;
   isFocused: boolean;
-  onSelect?: (unitId: string) => void;
-  onIndexActivate?: (unitId: string) => void;
-  canToggleBubble?: boolean;
-  onModifyUnit?: (unitId: string, updates: UnitEdit) => void;
-  onIndexPointerDown?: (
+  onSelect?: ((unitId: string) => void) | undefined;
+  onIndexActivate?: ((unitId: string) => void) | undefined;
+  canToggleBubble?: boolean | undefined;
+  onModifyUnit?: ((unitId: string, updates: UnitEdit) => void) | undefined;
+  onIndexPointerDown?: ((
     event: ReactPointerEvent<HTMLButtonElement>,
     unitId: string,
-  ) => void;
-  isDragging?: boolean;
-  isDragDimmed?: boolean;
-  showDropIndicator?: boolean;
-  dataUnitId?: string;
-  enableReadOnly?: boolean;
-  translator?: UserInfo;
-  proofreader?: UserInfo;
-  specialCharInsertRequest?: SpecialCharInsertRequest;
-  onSpecialCharUse?: (char: string) => void;
-  onSpecialCharInserted?: (requestId: number, char: string) => void;
-};
+  ) => void) | undefined;
+  isDragging?: boolean | undefined;
+  isDragDimmed?: boolean | undefined;
+  showDropIndicator?: boolean | undefined;
+  dataUnitId?: string | undefined;
+  enableReadOnly?: boolean | undefined;
+  translator?: UserInfo | undefined;
+  proofreader?: UserInfo | undefined;
+  specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  onSpecialCharUse?: ((char: string) => void) | undefined;
+  onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
+}
 
 export default function TranslateModeUnitItem({
   unit,
@@ -77,15 +78,15 @@ export default function TranslateModeUnitItem({
 
   function insertChar(char: string) {
     const textarea = inputRef.current;
-    if (!textarea) return;
+    if (!textarea) {return;}
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = unitTranslatedText(unit) ?? "";
     const next =
-      text.substring(0, start) + char + text.substring(end);
+      text.slice(0, Math.max(0, start)) + char + text.slice(Math.max(0, end));
     onModifyUnit?.(unitId(unit), { translatedText: next });
     setTimeout(() => {
-      if (document.activeElement !== textarea) return;
+      if (document.activeElement !== textarea) {return;}
       textarea.selectionStart = textarea.selectionEnd = start + char.length;
     }, 0);
   }
@@ -94,8 +95,7 @@ export default function TranslateModeUnitItem({
     if (
       !isFocused ||
       enableReadOnly ||
-      !specialCharInsertRequest ||
-      specialCharInsertRequest.targetUnitId !== unitId(unit)
+      specialCharInsertRequest?.targetUnitId !== unitId(unit)
     ) {
       return;
     }

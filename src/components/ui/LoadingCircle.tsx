@@ -1,9 +1,9 @@
 import { LoaderCircle } from "lucide-react"
 
-type Props = {
-  className?: string
-  size?: number
-  "aria-label"?: string
+interface Props {
+  className?: string | undefined
+  size?: number | undefined
+  "aria-label"?: string | undefined
 }
 
 const BASE_STYLE: React.CSSProperties = {

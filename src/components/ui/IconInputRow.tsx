@@ -2,22 +2,36 @@ import clsx from "clsx";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
-export type Props = {
-  /** 图标元素 */
+export interface Props {
+  /**
+  图标元素
+  */
   icon: React.ReactNode;
-  /** 输入框的占位符文本 */
-  placeholder?: string;
-  /** 输入框的当前值 */
-  value?: string;
-  /** 输入框值变化时的回调函数 */
-  onChange?: (newValue: string) => void;
-  /** 当为 true 时，作为密码输入框渲染，右侧显示可切换可见性的眼睛 */
-  password?: boolean;
-  /** 当为 true 时，仅允许输入数字（非 password 模式） */
-  numeric?: boolean;
-  /** 外部注入的样式类 */
-  className?: string;
-};
+  /**
+  输入框的占位符文本
+  */
+  placeholder?: string | undefined;
+  /**
+  输入框的当前值
+  */
+  value?: string | undefined;
+  /**
+  输入框值变化时的回调函数
+  */
+  onChange?: ((newValue: string) => void) | undefined;
+  /**
+  当为 true 时，作为密码输入框渲染，右侧显示可切换可见性的眼睛
+  */
+  password?: boolean | undefined;
+  /**
+  当为 true 时，仅允许输入数字（非 password 模式）
+  */
+  numeric?: boolean | undefined;
+  /**
+  外部注入的样式类
+  */
+  className?: string | undefined;
+}
 
 export default function IconInputRow({
   icon,
@@ -34,6 +48,7 @@ export default function IconInputRow({
 
   if (password && numeric) {
     // Warn developers at runtime if both modes are enabled; TypeScript won't enforce here.
+    // eslint-disable-next-line no-console
     console.error(
       'IconInputRow: "password" and "numeric" cannot be true at the same time.',
     );
@@ -68,13 +83,13 @@ export default function IconInputRow({
         )}
         type={inputType}
         inputMode={numeric ? "numeric" : undefined}
-        pattern={numeric ? "\\d*" : undefined}
+        pattern={numeric ? String.raw`\d*` : undefined}
         placeholder={placeholder}
         value={value}
         onChange={(e) => {
           const v = e.target.value;
           if (numeric) {
-            const sanitized = v.replace(/\D+/g, "");
+            const sanitized = v.replaceAll(/\D+/g, "");
             onChange?.(sanitized);
             return;
           }
@@ -86,7 +101,7 @@ export default function IconInputRow({
       {password && (
         <button
           type="button"
-          onClick={() => setShowPassword((s) => !s)}
+          onClick={() => { setShowPassword((s) => !s); }}
           className={clsx(
             "absolute inset-y-0 right-0 flex items-center pr-2",
             "text-slate-400 hover:text-slate-600",

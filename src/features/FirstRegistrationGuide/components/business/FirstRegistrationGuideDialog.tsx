@@ -2,10 +2,10 @@ import { ArrowUpRight, CircleUserRound, GraduationCap, KeyRound } from "lucide-r
 import clsx from "clsx";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 
-type Props = {
+interface Props {
   onClose: () => void;
   onOpenSettings: () => void;
-};
+}
 
 const guideItems = [
   {

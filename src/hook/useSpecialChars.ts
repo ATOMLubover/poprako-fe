@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
-export type CharItem = {
+export interface CharItem {
   id: string;
   text: string;
   isFavorite: boolean;
-};
+}
 
 const STORAGE_KEY = "specialChars_v2";
 const CHANGE_EVENT = "specialChars:change";
@@ -25,7 +25,7 @@ const DEFAULT_CHARS: CharItem[] = [
 function loadFromStorage(): CharItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as CharItem[];
+    if (raw) {return JSON.parse(raw) as CharItem[];}
   } catch {
     // ignore parse error, fall through to defaults
   }
@@ -34,8 +34,8 @@ function loadFromStorage(): CharItem[] {
 
 function saveToStorage(chars: CharItem[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(chars));
-  window.setTimeout(() => {
-    window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: chars }));
+  setTimeout(() => {
+    dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: chars }));
   }, 0);
 }
 
@@ -52,11 +52,15 @@ export function useSpecialChars() {
       }
     };
 
-    window.addEventListener(CHANGE_EVENT, handleChange);
-    window.addEventListener("storage", handleChange);
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
+    globalThis.addEventListener(CHANGE_EVENT, handleChange);
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
+    globalThis.addEventListener("storage", handleChange);
     return () => {
-      window.removeEventListener(CHANGE_EVENT, handleChange);
-      window.removeEventListener("storage", handleChange);
+      // eslint-disable-next-line unicorn/no-unnecessary-global-this
+      globalThis.removeEventListener(CHANGE_EVENT, handleChange);
+      // eslint-disable-next-line unicorn/no-unnecessary-global-this
+      globalThis.removeEventListener("storage", handleChange);
     };
   }, []);
 
@@ -66,7 +70,7 @@ export function useSpecialChars() {
 
   const addChar = (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed) {return;}
     const next = [
       ...allChars,
       { id: Date.now().toString(), text: trimmed, isFavorite: false },
@@ -90,16 +94,17 @@ export function useSpecialChars() {
   };
 
   const reorderChars = (activeId: string, overId: string) => {
-    if (activeId === overId) return;
+    if (activeId === overId) {return;}
 
     setAllChars((current) => {
       const activeIndex = current.findIndex((c) => c.id === activeId);
       const overIndex = current.findIndex((c) => c.id === overId);
 
-      if (activeIndex === -1 || overIndex === -1) return current;
+      if (activeIndex === -1 || overIndex === -1) {return current;}
 
       const next = [...current];
       const [activeChar] = next.splice(activeIndex, 1);
+      if (!activeChar) {return current;}
       next.splice(overIndex, 0, activeChar);
       saveToStorage(next);
       return next;

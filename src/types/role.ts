@@ -9,44 +9,40 @@ export type Role =
   | "admin";
 
 // 利用 TS 的类型兼容，将任意满足 WithRole 的对象视为具有 Role 的对象
-export type WithRole = {
-  assignedRawProviderAt?: number;
-  assignedTranslatorAt?: number;
-  assignedProofreaderAt?: number;
-  assignedTypesetterAt?: number;
-  assignedRedrawerAt?: number;
-  assignedReviewerAt?: number;
-  assignedPublisherAt?: number;
-  assignedAdminAt?: number;
-};
+export interface WithRole {
+  assignedRawProviderAt?: number | undefined;
+  assignedTranslatorAt?: number | undefined;
+  assignedProofreaderAt?: number | undefined;
+  assignedTypesetterAt?: number | undefined;
+  assignedRedrawerAt?: number | undefined;
+  assignedReviewerAt?: number | undefined;
+  assignedPublisherAt?: number | undefined;
+  assignedAdminAt?: number | undefined;
+}
 
 export function hasRole(withRole: WithRole, role: Role) {
   if (role === "rawProvider") {
-    return !!withRole.assignedRawProviderAt;
+    return Boolean(withRole.assignedRawProviderAt);
   }
   if (role === "translator") {
-    return !!withRole.assignedTranslatorAt;
+    return Boolean(withRole.assignedTranslatorAt);
   }
   if (role === "proofreader") {
-    return !!withRole.assignedProofreaderAt;
+    return Boolean(withRole.assignedProofreaderAt);
   }
   if (role === "typesetter") {
-    return !!withRole.assignedTypesetterAt;
+    return Boolean(withRole.assignedTypesetterAt);
   }
   if (role === "redrawer") {
-    return !!withRole.assignedRedrawerAt;
+    return Boolean(withRole.assignedRedrawerAt);
   }
   if (role === "reviewer") {
-    return !!withRole.assignedReviewerAt;
+    return Boolean(withRole.assignedReviewerAt);
   }
   if (role === "publisher") {
-    return !!withRole.assignedPublisherAt;
+    return Boolean(withRole.assignedPublisherAt);
   }
-  if (role === "admin") {
-    return !!withRole.assignedAdminAt;
-  }
-
-  return false;
+  return Boolean(withRole.assignedAdminAt);
 }
 
 export function matchesAssignmentRole(withRole: WithRole, role: Role) {
@@ -60,7 +56,7 @@ export function matchesAssignmentRole(withRole: WithRole, role: Role) {
 export type RoleMask = number;
 
 const roleToBit: Record<Role, number> = {
-  rawProvider: 1 << 0,  // 1
+  rawProvider: Math.trunc(1),  // 1
   translator:  1 << 1,  // 2
   proofreader: 1 << 2,  // 4
   typesetter:  1 << 3,  // 8

@@ -21,9 +21,15 @@ function makeUnits(): UnitInfo[] {
   }));
 }
 
+function firstUnit(units: UnitInfo[]): UnitInfo {
+  const unit = units[0];
+  if (!unit) {throw new Error("测试 Unit 缺失");}
+  return unit;
+}
+
 function expectOrder(units: UnitInfo[], ids: string[]) {
-  expect(units.map(unitId)).toEqual(ids);
-  expect(units.map(unitIndex)).toEqual(ids.map((_, index) => index));
+  expect(units.map((unit) => unitId(unit))).toEqual(ids);
+  expect(units.map((unit) => unitIndex(unit))).toEqual(ids.map((_, index) => index));
 }
 
 describe("moveUnitToIndex", () => {
@@ -73,7 +79,7 @@ describe("moveUnitToIndex", () => {
 describe("unit contributor ids", () => {
   test("returns contributor ids through the unit accessors", () => {
     const unit = {
-      ...makeUnits()[0],
+      ...firstUnit(makeUnits()),
       translatorId: "translator_1",
       proofreaderId: "proofreader_1",
     };
@@ -83,7 +89,7 @@ describe("unit contributor ids", () => {
   });
 
   test("returns null when a contributor id is absent", () => {
-    const unit = makeUnits()[0];
+    const unit = firstUnit(makeUnits());
 
     expect(unitTranslatorId(unit)).toBeNull();
     expect(unitProofreaderId(unit)).toBeNull();
@@ -93,7 +99,7 @@ describe("unit contributor ids", () => {
 describe("proofreading state", () => {
   test("keeps the proofreading status when revision text is cleared", () => {
     const unit = {
-      ...makeUnits()[0],
+      ...firstUnit(makeUnits()),
       isProofread: true,
       proofreadText: "revision",
     };
@@ -106,7 +112,7 @@ describe("proofreading state", () => {
 
   test("keeps revision text when proofreading status changes", () => {
     const unit = {
-      ...makeUnits()[0],
+      ...firstUnit(makeUnits()),
       isProofread: true,
       proofreadText: "revision",
     };

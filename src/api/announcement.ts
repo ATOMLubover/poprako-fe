@@ -6,11 +6,11 @@ import {
   type RawAnnouncementInfo,
 } from "@/types/raw/announcement";
 
-type ListAnnouncementsArgs = {
+interface ListAnnouncementsArgs {
   teamId: string;
   offset: number;
   limit: number;
-};
+}
 
 export async function listAnnouncements(
   args: ListAnnouncementsArgs,
@@ -23,24 +23,24 @@ export async function listAnnouncements(
       incl: ["user"],
     },
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
   return {
     success: true,
-    data: (result.data ?? []).map(unwrapRawAnnouncementInfo),
+    data: result.data.map((item) => unwrapRawAnnouncementInfo(item)),
   };
 }
 
-type CreateAnnouncementArgs = {
+interface CreateAnnouncementArgs {
   teamId: string;
   title: string;
   content: string;
-};
+}
 
-type RawCreateAnnouncementArgs = {
+interface RawCreateAnnouncementArgs {
   team_id: string;
   title: string;
   content: string;
-};
+}
 
 export async function createAnnouncement(
   args: CreateAnnouncementArgs,
@@ -53,14 +53,14 @@ export async function createAnnouncement(
       content: args.content,
     },
   );
-  if (!result.success) return result;
-  return { success: true, data: result.data!.id };
+  if (!result.success) {return result;}
+  return { success: true, data: result.data.id };
 }
 
-type UpdateAnnouncementArgs = {
+interface UpdateAnnouncementArgs {
   title: string;
   content: string;
-};
+}
 
 type RawUpdateAnnouncementArgs = UpdateAnnouncementArgs & {
   id: string;
@@ -69,19 +69,19 @@ type RawUpdateAnnouncementArgs = UpdateAnnouncementArgs & {
 export async function updateAnnouncement(
   announcementId: string,
   args: UpdateAnnouncementArgs,
-): Promise<Result<void>> {
-  const result = await api.put<void, RawUpdateAnnouncementArgs>(
+): Promise<Result<undefined>> {
+  const result = await api.put<undefined, RawUpdateAnnouncementArgs>(
     `/announcements/${announcementId}`,
     { id: announcementId, ...args },
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
   return { success: true, data: undefined };
 }
 
 export async function deleteAnnouncement(
   announcementId: string,
-): Promise<Result<void>> {
-  const result = await api.delete<void>(`/announcements/${announcementId}`);
-  if (!result.success) return result;
+): Promise<Result<undefined>> {
+  const result = await api.delete<undefined>(`/announcements/${announcementId}`);
+  if (!result.success) {return result;}
   return { success: true, data: undefined };
 }

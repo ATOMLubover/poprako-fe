@@ -4,11 +4,11 @@ import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import type { CommentInfo } from "@/types/comment";
 
-type Props = {
+interface Props {
   comments: CommentInfo[];
   loading: boolean;
   onSend: (content: string) => Promise<void>;
-};
+}
 
 function formatTime(ts: number): string {
   const d = new Date(ts);
@@ -17,7 +17,7 @@ function formatTime(ts: number): string {
   const day = String(d.getDate()).padStart(2, "0");
   const h = String(d.getHours()).padStart(2, "0");
   const m = String(d.getMinutes()).padStart(2, "0");
-  return `${y}/${mo}/${day} ${h}:${m}`;
+  return `${String(y)}/${mo}/${day} ${h}:${m}`;
 }
 
 function avatarChar(name: string | undefined): string {
@@ -35,7 +35,7 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
 
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed || sending) {return;}
     setSending(true);
     setInput("");
     await onSend(trimmed);
@@ -44,10 +44,12 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSend();
+      if (e.key !== "Enter" || e.shiftKey) {
+        return;
       }
+
+      e.preventDefault();
+      void handleSend();
     },
     [handleSend],
   );
@@ -91,7 +93,7 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
                     >
                       {c.user?.avatarThumbnailUrl || c.user?.avatarUrl ? (
                         <img
-                          src={c.user.avatarThumbnailUrl || c.user.avatarUrl}
+                          src={c.user.avatarThumbnailUrl ?? c.user.avatarUrl}
                           alt={c.user.name}
                           className="w-full h-full object-cover"
                         />
@@ -153,18 +155,18 @@ export default function CommentChatBox({ comments, loading, onSend }: Props) {
           rows={1}
           placeholder="写下你的留言吧…"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => { setInput(e.target.value); }}
           onKeyDown={handleKeyDown}
           disabled={sending}
         />
         <Button
           variant="ghost"
           size="icon-sm"
-          onClick={handleSend}
+          onClick={() => { void handleSend(); }}
           disabled={!input.trim() || sending}
           className={clsx(
             "shrink-0",
-            input.trim() && !sending
+            !sending && input.trim()
               ? "text-[var(--color-green-500)] hover:bg-[var(--color-green-50)]/50"
               : "text-muted-foreground",
           )}

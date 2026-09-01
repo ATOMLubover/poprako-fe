@@ -11,7 +11,7 @@ function memoryStorage(initialValue: string | null = null) {
   return {
     getItem: (key: string) => key === FIRST_REGISTRATION_FLAG_KEY ? value : null,
     setItem: (key: string, nextValue: string) => {
-      if (key === FIRST_REGISTRATION_FLAG_KEY) value = nextValue;
+      if (key === FIRST_REGISTRATION_FLAG_KEY) {value = nextValue;}
     },
   };
 }
@@ -47,10 +47,12 @@ describe("first registration flag", () => {
         throw error;
       },
     };
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {
+      // Keep the test output silent while preserving the spy calls.
+    });
 
     expect(readFirstRegistrationFlag(storage)).toBe(false);
-    expect(() => writeFirstRegistrationFlag(false, storage)).not.toThrow();
+    expect(() => { writeFirstRegistrationFlag(false, storage); }).not.toThrow();
     expect(consoleError).toHaveBeenCalledTimes(2);
 
     consoleError.mockRestore();

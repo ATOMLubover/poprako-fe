@@ -4,7 +4,7 @@ import {
   paginationReducer,
 } from "./pagination";
 
-type Item = { id: string; label: string };
+interface Item { id: string; label: string }
 
 describe("terminology pagination reducer", () => {
   test("loads the first page and appends unique items", () => {
@@ -20,7 +20,7 @@ describe("terminology pagination reducer", () => {
         { id: "2", label: "two" },
       ],
       pageSize: 2,
-      append: false,
+      shouldAppend: false,
     });
     state = paginationReducer(state, {
       type: "load-more",
@@ -34,7 +34,7 @@ describe("terminology pagination reducer", () => {
         { id: "3", label: "three" },
       ],
       pageSize: 2,
-      append: true,
+      shouldAppend: true,
     });
 
     expect(state.items.map((item) => item.id)).toEqual(["1", "2", "3"]);
@@ -54,7 +54,7 @@ describe("terminology pagination reducer", () => {
         requestVersion: 1,
         items: [{ id: "old", label: "old" }],
         pageSize: 30,
-        append: false,
+        shouldAppend: false,
       },
     );
 
@@ -79,7 +79,7 @@ describe("terminology pagination reducer", () => {
       requestVersion: 1,
       items: [{ id: "stale", label: "stale" }],
       pageSize: 30,
-      append: false,
+      shouldAppend: false,
     });
 
     expect(resolved).toBe(reset);
@@ -96,7 +96,7 @@ describe("terminology pagination reducer", () => {
         requestVersion: 1,
         items: [{ id: "1", label: "one" }],
         pageSize: 1,
-        append: false,
+      shouldAppend: false,
       },
     );
     const failed = paginationReducer(loaded, {

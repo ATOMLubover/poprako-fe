@@ -17,27 +17,22 @@ import { getPage } from "@/features/ComicPlayground/api/page";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
-type Args = {
+interface Args {
   chapterId: string | null;
   comicId: string;
-  currentUserId?: string | null;
+  currentUserId?: string | null | undefined;
   isSelectedChapterAvailable: boolean;
   onLoadPages: ComicDetailModalProps["onLoadPages"];
   onLoadChapters: ComicDetailModalProps["onLoadChapters"];
-  onAddPages?: ComicDetailModalProps["onAddPages"];
-  onDeleteChapterPages?: ComicDetailModalProps["onDeleteChapterPages"];
-  onAllocPageUpload?: ComicDetailModalProps["onAllocPageUpload"];
+  onAddPages?: ComicDetailModalProps["onAddPages"] | undefined;
+  onDeleteChapterPages?: ComicDetailModalProps["onDeleteChapterPages"] | undefined;
+  onAllocPageUpload?: ComicDetailModalProps["onAllocPageUpload"] | undefined;
   reloadLoadedChapters: () => Promise<unknown>;
   showToast: ShowToast;
-};
+}
 
 function isActiveTask(status: PageUploadTaskStatus): boolean {
-  return (
-    status === "preparing"
-    || status === "queued"
-    || status === "uploading"
-    || status === "confirming"
-  );
+  return ["preparing", "queued", "uploading", "confirming"].includes(status);
 }
 
 function latestTasksByPage(
@@ -46,7 +41,7 @@ function latestTasksByPage(
 ): Map<string, PageUploadTaskView> {
   const latest = new Map<string, PageUploadTaskView>();
   for (const task of Object.values(tasks)) {
-    if (task.chapterId !== chapterId || !task.pageId) continue;
+    if (task.chapterId !== chapterId || !task.pageId) {continue;}
     latest.set(task.pageId, task);
   }
   return latest;
@@ -75,72 +70,73 @@ export function useComicDetailPages({
   );
 
   useEffect(() => {
-    if (chapterId && isSelectedChapterAvailable) return;
-    /* eslint-disable react-hooks/set-state-in-effect */
+    if (chapterId && isSelectedChapterAvailable) {return;}
+    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
     setServerPages([]);
-    setIsPagesLoading(false);
-    /* eslint-enable react-hooks/set-state-in-effect */
+    setIsPagesLoading(false); // eslint-disable-line @eslint-react/set-state-in-effect
   }, [chapterId, isSelectedChapterAvailable]);
 
   useEffect(() => {
-    if (!chapterId || !isSelectedChapterAvailable) return;
-    let cancelled = false;
-    /* eslint-disable react-hooks/set-state-in-effect */
+    if (!chapterId || !isSelectedChapterAvailable) {return;}
+    let isCancelled = false;
+    // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
     setServerPages([]);
-    setIsPagesLoading(true);
-    /* eslint-enable react-hooks/set-state-in-effect */
-    onLoadPages(chapterId)
-      .then((res) => {
-        if (cancelled) return;
+    setIsPagesLoading(true); // eslint-disable-line @eslint-react/set-state-in-effect
+    const loadPages = async () => {
+      try {
+        const res = await onLoadPages(chapterId);
+        if (isCancelled) {return;}
         if (!res.success) {
-          console.error("[ComicDetailModal] 加载页面失败:", res);
+          console.error("[ComicDetailModal] 加载页面失败:", res); // eslint-disable-line no-console
           showLocalApiFailure(res, showToast, "加载页面失败");
           return;
         }
         setServerPages(res.data);
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        console.error("[ComicDetailModal] 加载页面异常:", error);
+      } catch (error) {
+        if (isCancelled) {return;}
+        console.error("[ComicDetailModal] 加载页面异常:", error); // eslint-disable-line no-console
         showLocalCaughtError(error, showToast, "加载页面失败");
-      })
-      .finally(() => {
-        if (!cancelled) setIsPagesLoading(false);
-      });
+      } finally {
+        if (!isCancelled) {setIsPagesLoading(false);}
+      }
+    };
+    void loadPages();
 
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, [chapterId, isSelectedChapterAvailable, onLoadPages, showToast]);
 
   const fetchedTaskIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!chapterId) return;
+    if (!chapterId) {return;}
 
-    for (const task of taskByPageId.values()) {
-      if (task.status !== "succeeded" || !task.pageId) continue;
-      if (fetchedTaskIdsRef.current.has(task.taskId)) continue;
+    const fetchSucceededPages = async () => {
+      for (const task of taskByPageId.values()) {
+        if (task.status !== "succeeded" || !task.pageId) {continue;}
+        if (fetchedTaskIdsRef.current.has(task.taskId)) {continue;}
 
-      fetchedTaskIdsRef.current.add(task.taskId);
+        fetchedTaskIdsRef.current.add(task.taskId);
 
-      getPage(task.pageId).then((res) => {
-        if (!res.success) return;
+        const res = await getPage(task.pageId);
+        if (!res.success) {continue;}
         setServerPages((prev) => {
           const idx = prev.findIndex((p) => p.id === task.pageId);
-          if (idx >= 0) {
+          if (idx !== -1) {
             const next = [...prev];
             next[idx] = res.data;
             return next;
           }
           return [...prev, res.data];
         });
-      });
-    }
+      }
+    };
+    void fetchSucceededPages();
   }, [chapterId, taskByPageId]);
 
   const reloadCurrentPages = useCallback(async () => {
-    if (!chapterId) return;
+    if (!chapterId) {return;}
     const res = await onLoadPages(chapterId);
     if (!res.success) {
       showLocalApiFailure(res, showToast);
@@ -160,9 +156,9 @@ export function useComicDetailPages({
     const serverPageIds = new Set(serverPages.map((page) => page.id));
 
     for (const task of taskByPageId.values()) {
-      if (serverPageIds.has(task.pageId!) || task.index === null) continue;
+      if (!task.pageId || serverPageIds.has(task.pageId) || task.index === null) {continue;}
       merged.push({
-        id: task.pageId!,
+        id: task.pageId,
         chapterId: task.chapterId,
         index: task.index,
         imageUrl: "",
@@ -176,13 +172,14 @@ export function useComicDetailPages({
       });
     }
 
-    return merged.sort((left, right) => left.index - right.index);
+    // eslint-disable-next-line unicorn/no-array-sort
+    return [...merged].sort((left, right) => left.index - right.index);
   }, [currentUserId, serverPages, taskByPageId]);
 
   const uploadProgressByPageId = useMemo(() => {
     const progress: Record<string, number> = {};
     for (const [pageId, task] of taskByPageId) {
-      if (isActiveTask(task.status)) progress[pageId] = task.progress;
+      if (isActiveTask(task.status)) {progress[pageId] = task.progress;}
     }
     return progress;
   }, [taskByPageId]);
@@ -198,7 +195,7 @@ export function useComicDetailPages({
   const uploadErrorByPageId = useMemo(() => {
     const errors: Record<string, string> = {};
     for (const [pageId, task] of taskByPageId) {
-      if (task.status === "failed" && task.error) errors[pageId] = task.error;
+      if (task.status === "failed" && task.error) {errors[pageId] = task.error;}
     }
     return errors;
   }, [taskByPageId]);
@@ -206,21 +203,21 @@ export function useComicDetailPages({
   const reuploadingPageIds = useMemo(() => {
     const active: Record<string, boolean> = {};
     for (const [pageId, task] of taskByPageId) {
-      if (isActiveTask(task.status)) active[pageId] = true;
+      if (isActiveTask(task.status)) {active[pageId] = true;}
     }
     return active;
   }, [taskByPageId]);
 
   const handleAddRawPages = useCallback(
     async (files: File[]) => {
-      if (!chapterId || !onAddPages) return;
+      if (!chapterId || !onAddPages) {return;}
 
       try {
         const started = await startChapterPageUpload(chapterId, files);
         if (started.skippedCount > 0) {
           showToast(
-            `已跳过 ${started.skippedCount} 张重复图片，`
-              + `开始上传 ${started.allocatedCount} 张`,
+            `已跳过 ${String(started.skippedCount)} 张重复图片，`
+              + `开始上传 ${String(started.allocatedCount)} 张`,
             "info",
           );
         }
@@ -229,13 +226,13 @@ export function useComicDetailPages({
           const unreportedFailures = summary.failed - summary.reportedValidationFailures;
           if (unreportedFailures > 0) {
             showToast(
-              `${unreportedFailures} 张图片上传失败，可在对应页面重传`,
+              `${String(unreportedFailures)} 张图片上传失败，可在对应页面重传`,
               "error",
             );
           }
         });
       } catch (error) {
-        console.error("[ComicDetailModal] 分配页面失败:", error);
+        console.error("[ComicDetailModal] 分配页面失败:", error); // eslint-disable-line no-console
         showLocalCaughtError(error, showToast, "分配页面失败", true);
       }
     },
@@ -243,17 +240,18 @@ export function useComicDetailPages({
   );
 
   const handleDeleteAllChapterPages = useCallback(async () => {
-    if (!chapterId || !onDeleteChapterPages) return;
+    if (!chapterId || !onDeleteChapterPages) {return;}
 
     setIsDeletingChapterPages(true);
     const res = await onDeleteChapterPages(chapterId);
     setIsDeletingChapterPages(false);
 
     if (!res.success) {
-      console.error("[ComicDetailModal] 批量删除页面失败:", res);
+      console.error("[ComicDetailModal] 批量删除页面失败:", res); // eslint-disable-line no-console
       showLocalApiFailure(res, showToast);
       return;
     }
+
 
     setServerPages([]);
     clearChapterUploadTasks(chapterId);
@@ -268,7 +266,7 @@ export function useComicDetailPages({
 
   const handleReuploadPage = useCallback(
     async (pageId: string, file: File) => {
-      if (!chapterId || !onAllocPageUpload || reuploadingPageIds[pageId]) return;
+      if (!chapterId || !onAllocPageUpload || reuploadingPageIds[pageId] === true) {return;}
 
       try {
         const started = await startPageReupload(chapterId, pageId, file);
@@ -277,11 +275,11 @@ export function useComicDetailPages({
             showToast("重上传成功", "success");
             return;
           }
-          if (summary.reportedValidationFailures > 0) return;
+          if (summary.reportedValidationFailures > 0) {return;}
           showToast("重上传失败，请检查对应页面", "error");
         });
       } catch (error) {
-        console.error("[ComicDetailModal] 重上传分配失败:", error);
+        console.error("[ComicDetailModal] 重上传分配失败:", error); // eslint-disable-line no-console
         showLocalCaughtError(error, showToast, "重上传失败", true);
       }
     },

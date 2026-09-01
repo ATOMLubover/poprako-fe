@@ -2,14 +2,25 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { AssignmentInfo } from "@/types/assignment";
 import type { ChapterInfo } from "@/types/chapter";
 
-type AssignmentCardProps = {
+interface AssignmentCardProps {
   assignmentInfo: AssignmentInfo;
   mode: "translator" | "reviewer";
   onClick: () => void;
   onLoadAssignments: (chapterId: string) => Promise<AssignmentInfo[]>;
-};
+}
 
-function AssignmentCard({ assignmentInfo, mode, onClick }: AssignmentCardProps) {
+function required<T>(value: T | undefined): T {
+  if (value === undefined) {throw new Error("示例数据缺失");}
+  return value;
+}
+
+function AssignmentCard({
+  assignmentInfo,
+  mode,
+  onClick,
+  onLoadAssignments,
+}: AssignmentCardProps) {
+  void onLoadAssignments;
   const subtitle = assignmentInfo.chapter?.subtitle ?? "未指定章节";
 
   return (
@@ -52,15 +63,15 @@ function makeAssignment(
       id: `chapter-${seed}`,
       comicId: `comic-${seed}`,
       index,
-      subtitle: `第${index}话`,
+      subtitle: `第${String(index)}话`,
       isPinned: false,
       pageCount: 24,
       totalUnitCount: total,
       translatedUnitCount: translated,
       proofreadUnitCount: proofread,
       creatorId: "user-1",
-      createdAt: now - 86400000 * 30,
-      updatedAt: now - 86400000,
+      createdAt: now - 86_400_000 * 30,
+      updatedAt: now - 86_400_000,
       comic: {
         id: `comic-${seed}`,
         worksetId: `workset-${seed}`,
@@ -77,8 +88,8 @@ function makeAssignment(
         updatedAt: now,
       },
     },
-    createdAt: now - 86400000 * 30,
-    updatedAt: now - 86400000,
+    createdAt: now - 86_400_000 * 30,
+    updatedAt: now - 86_400_000,
   };
 }
 
@@ -100,15 +111,15 @@ function makeReviewerAssignment(
       id: `chapter-${seed}`,
       comicId: `comic-${seed}`,
       index,
-      subtitle: `第${index}话`,
+      subtitle: `第${String(index)}话`,
       isPinned: false,
       pageCount: 24,
       totalUnitCount: 156,
       translatedUnitCount: 156,
       proofreadUnitCount: 156,
       creatorId: "user-1",
-      createdAt: now - 86400000 * 30,
-      updatedAt: now - 86400000,
+      createdAt: now - 86_400_000 * 30,
+      updatedAt: now - 86_400_000,
       comic: {
         id: `comic-${seed}`,
         worksetId: `workset-${seed}`,
@@ -126,8 +137,8 @@ function makeReviewerAssignment(
       },
       ...workflow,
     },
-    createdAt: now - 86400000 * 30,
-    updatedAt: now - 86400000,
+    createdAt: now - 86_400_000 * 30,
+    updatedAt: now - 86_400_000,
   };
 }
 
@@ -212,10 +223,10 @@ type Story = StoryObj<typeof AssignmentCard>;
 
 export const TranslatorSingle: Story = {
   args: {
-    assignmentInfo: TRANSLATOR_SAMPLES[0],
+    assignmentInfo: required(TRANSLATOR_SAMPLES[0]),
     mode: "translator",
-    onClick: () => console.log("card clicked"),
-    onLoadAssignments: async () => [],
+    onClick: () => { return; },
+    onLoadAssignments: () => Promise.resolve([]),
   },
   render: (args) => (
     <div className="w-120">
@@ -232,8 +243,8 @@ export const TranslatorGrid: Story = {
           key={item.id}
           assignmentInfo={item}
           mode="translator"
-          onClick={() => console.log(`clicked ${item.id}`)}
-          onLoadAssignments={async () => []}
+          onClick={() => { return; }}
+          onLoadAssignments={() => Promise.resolve([])}
         />
       ))}
     </div>
@@ -244,10 +255,10 @@ export const ReviewerSingle: Story = {
   render: () => (
     <div className="w-120">
       <AssignmentCard
-        assignmentInfo={REVIEWER_SAMPLES[0]}
+        assignmentInfo={required(REVIEWER_SAMPLES[0])}
         mode="reviewer"
-        onClick={() => console.log("card clicked")}
-        onLoadAssignments={async () => [
+        onClick={() => { return; }}
+        onLoadAssignments={async () => [ // eslint-disable-line @typescript-eslint/require-await
           {
             id: "1",
             chapterId: "102",
@@ -316,8 +327,8 @@ export const ReviewerGrid: Story = {
           key={item.id}
           assignmentInfo={item}
           mode="reviewer"
-          onClick={() => console.log(`clicked ${item.id}`)}
-          onLoadAssignments={async () => [
+          onClick={() => { return; }}
+          onLoadAssignments={async () => [ // eslint-disable-line @typescript-eslint/require-await
             {
               id: "1",
               chapterId: item.chapter?.id ?? "",

@@ -24,12 +24,16 @@ import type {
   UnitTextPart,
 } from "@/features/BaseTranslator/types/unitSearchTransform";
 
-export type ListPageUnitsResult = {
+export interface ListPageUnitsResult {
   units: UnitInfo[];
   totalUnitCount: number;
   translatedUnitCount: number;
   proofreadUnitCount: number;
-};
+}
+
+interface RawListEdittedDiffPageIdsResult {
+  page_ids: string[];
+}
 
 export async function listUnits(
   pageId: string,
@@ -37,7 +41,7 @@ export async function listUnits(
   const res = await api.get<RawListPageUnitsResult>(
     `/pages/${pageId}/units`,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const data = unwrapRawListPageUnitsResult(res.data);
   return {
@@ -54,10 +58,10 @@ export async function listUnits(
 export async function saveUnits(
   pageId: string,
   diff: UnitDiff,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   const payload = wrapUnitDiff(diff);
 
-  return api.post<void, RawUnitEdit[]>(
+  return api.post<undefined, RawUnitEdit[]>(
     `/pages/${pageId}/units/save`,
     payload,
   );
@@ -69,23 +73,34 @@ export async function listPages(
   const res = await api.get<RawPageInfo[]>(
     `/chapters/${chapterId}/pages`,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const items = Array.isArray(res.data) ? res.data : [];
-  return { success: true, data: items.map(unwrapRawPageInfo) };
+  return { success: true, data: items.map((item) => unwrapRawPageInfo(item)) };
+}
+
+export async function listEdittedDiffPageIds(
+  chapterId: string,
+): Promise<Result<string[]>> {
+  const res = await api.get<RawListEdittedDiffPageIdsResult>(
+    `/chapters/${chapterId}/pages/editted-diffs`,
+  );
+  if (!res.success) {return res;}
+
+  return { success: true, data: res.data.page_ids };
 }
 
 export async function completeChapterStage(
   chapterId: string,
   stage: TranslatorCompletionStage,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   const payload = {
     id: chapterId,
     stage,
     oper: "advance" as const,
   };
 
-  return api.post<void, typeof payload>(
+  return api.post<undefined, typeof payload>(
     `/chapters/${chapterId}/stage/advance`,
     payload,
   );
@@ -106,18 +121,18 @@ export async function searchChapterUnits(
       phrase: args.phrase,
     },
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: result.data.map(unwrapRawUnitSearchMatch),
+    data: result.data.map((item) => unwrapRawUnitSearchMatch(item)),
   };
 }
 
 export async function transformChapterUnits(
   chapterId: string,
   args: TransformUnitsArgs,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   const payload: RawTransformChapterUnitsArgs = {
     part: wrapUnitTextPart(args.part),
     units: args.unitIds.map((unitId) => ({
@@ -126,7 +141,7 @@ export async function transformChapterUnits(
     })),
   };
 
-  return api.post<void, RawTransformChapterUnitsArgs>(
+  return api.post<undefined, RawTransformChapterUnitsArgs>(
     `/chapters/${chapterId}/units/transform`,
     payload,
   );

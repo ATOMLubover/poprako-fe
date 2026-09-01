@@ -4,8 +4,6 @@ import { Tooltip } from "radix-ui";
 import { useEffect, useRef } from "react";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import type { TranslatorMode } from "@/types/translatorMode";
-import type { ReadOnlyUnitView } from
-  "@/features/BaseTranslator/types/readOnlyUnitView";
 import {
   unitId,
   unitIsBubble,
@@ -22,33 +20,31 @@ import TranslateModeUnitItem from "./TranslateModeUnitItem";
 import ProofreadModeUnitItem from "./ProofreadModeUnitItem";
 import ReadOnlyDiffUnitItem from "./ReadOnlyDiffUnitItem";
 
-export type SpecialCharInsertRequest = {
+export interface SpecialCharInsertRequest {
   id: number;
   char: string;
   targetUnitId: string;
-};
+}
 
-type Props = {
+interface Props {
   units: UnitInfo[];
-  focusedUnitId?: string;
+  focusedUnitId?: string | undefined;
   mode: TranslatorMode;
-  readOnlyUnitView: ReadOnlyUnitView;
-  onFocusUnit?: (unitId: string) => void;
+  onFocusUnit?: ((unitId: string) => void) | undefined;
   // 在 units 长度为 0 时，不存在这个字段
-  onModifyUnit?: (unitId: string, unit: UnitEdit) => void;
-  onReorderUnit?: (unitId: string, targetIndex: number) => void;
+  onModifyUnit?: ((unitId: string, unit: UnitEdit) => void) | undefined;
+  onReorderUnit?: ((unitId: string, targetIndex: number) => void) | undefined;
   onResolveUser: UnitUserResolver;
-  enableReadOnly?: boolean;
-  specialCharInsertRequest?: SpecialCharInsertRequest;
-  onSpecialCharUse?: (char: string) => void;
-  onSpecialCharInserted?: (requestId: number, char: string) => void;
-};
+  enableReadOnly?: boolean | undefined;
+  specialCharInsertRequest?: SpecialCharInsertRequest | undefined;
+  onSpecialCharUse?: ((char: string) => void) | undefined;
+  onSpecialCharInserted?: ((requestId: number, char: string) => void) | undefined;
+}
 
 export default function UnitList({
   units,
   focusedUnitId,
   mode,
-  readOnlyUnitView,
   onFocusUnit,
   onModifyUnit,
   onReorderUnit,
@@ -80,27 +76,25 @@ export default function UnitList({
   const getContributor = useUnitContributors({ units, onResolveUser });
 
   useEffect(() => {
-    if (focusedUnitId && listRef.current) {
-      const focusedElement = listRef.current.querySelector(
-        `[data-unit-id="${focusedUnitId}"]`,
-      );
-      if (focusedElement) {
-        focusedElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }
+    if (!(focusedUnitId && listRef.current)) {
+      return;
+    }
+
+    const focusedElement = listRef.current.querySelector(
+      `[data-unit-id="${CSS.escape(focusedUnitId)}"]`,
+    );
+    if (focusedElement) {
+      focusedElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [focusedUnitId]);
 
-  const showReadOnlyDiff = mode === "readOnly" && readOnlyUnitView === "diff";
-
   const { showToast } = useToastStore();
-  const allUnitsProofread = units.length > 0 && units.every(unitIsProofread);
+  const isAllUnitsProofread = units.length > 0 && units.every(unitIsProofread);
 
   const proofreadAll = () => {
-    units.forEach((unit) =>
-      // 批量操作只切换校对状态；isProofread 与 proofreadText 完全独立。
-      onModifyUnit?.(unitId(unit), { isProofread: !allUnitsProofread }),
-    );
-    showToast(allUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");
+    for (const unit of units) {onModifyUnit?.(unitId(unit), { isProofread: !isAllUnitsProofread })
+    ;}
+    showToast(isAllUnitsProofread ? "已取消全部校对" : "全部校对已确认", "success");
   };
 
   return (
@@ -123,7 +117,7 @@ export default function UnitList({
               proofreader: getContributor(unitProofreaderId(unit)),
               dataUnitId: unitId(unit),
             };
-            if (showReadOnlyDiff) {
+            if (mode === "readOnly") {
               return <ReadOnlyDiffUnitItem key={unitId(unit)} {...commonProps} />;
             }
 
@@ -155,12 +149,12 @@ export default function UnitList({
         {mode === "proofread" && !enableReadOnly && (
           <button
             type="button"
-            title={allUnitsProofread ? "取消全部校对" : "全部确认校对"}
+            title={isAllUnitsProofread ? "取消全部校对" : "全部确认校对"}
             onClick={proofreadAll}
             className={clsx(
               "flex w-full shrink-0 items-center justify-center border-t-2",
               "border-gray-300 bg-stone-50 py-2",
-              allUnitsProofread
+              isAllUnitsProofread
                 ? "text-red-600 hover:bg-red-50 hover:text-red-700"
                 : "text-gray-700 hover:bg-stone-200 hover:text-gray-900",
             )}

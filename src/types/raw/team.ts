@@ -11,15 +11,15 @@ import {
   type RawAllocImageResult,
 } from "./image";
 
-export type RawTeamInfo = {
+export interface RawTeamInfo {
   id: string;
   name: string;
   description: string;
   avatar_url: string | null;
-  avatar_thumbnail_url?: string | null;
+  avatar_thumbnail_url?: string | null | undefined;
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawTeamInfo(raw: RawTeamInfo): TeamInfo {
   return {
@@ -33,25 +33,25 @@ export function unwrapRawTeamInfo(raw: RawTeamInfo): TeamInfo {
   } as TeamInfo;
 }
 
-export type RawCreateTeamArgs = { name: string; description: string };
+export interface RawCreateTeamArgs { name: string; description: string }
 export function unwrapRawCreateTeamArgs(
   raw: RawCreateTeamArgs,
 ): CreateTeamArgs {
   return { name: raw.name, description: raw.description };
 }
 
-export type RawCreateTeamResult = { id: string };
+export interface RawCreateTeamResult { id: string }
 export function unwrapRawCreateTeamResult(
   raw: RawCreateTeamResult,
 ): CreateTeamResult {
   return { id: raw.id };
 }
 
-export type RawUpdateTeamArgs = {
+export interface RawUpdateTeamArgs {
   id: string;
-  name?: string;
-  description?: string;
-};
+  name?: string | undefined;
+  description?: string | undefined;
+}
 export function unwrapRawUpdateTeamArgs(
   raw: RawUpdateTeamArgs,
 ): UpdateTeamArgs {

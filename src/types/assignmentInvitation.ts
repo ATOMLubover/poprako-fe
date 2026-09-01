@@ -1,4 +1,4 @@
-export type AssignmentInvitationInfo = {
+export interface AssignmentInvitationInfo {
   id: string;
   chapterId: string;
   invitationCode: string;
@@ -8,22 +8,22 @@ export type AssignmentInvitationInfo = {
   roles: number;
   createdAt: number;
   updatedAt: number;
-};
+}
 
-export type ListAssignmentInvitationsArgs = {
+export interface ListAssignmentInvitationsArgs {
   chapterId: string;
-  isPending?: boolean;
+  isPending?: boolean | undefined;
   offset: number;
   limit: number;
-};
+}
 
-export type CreateAssignmentInvitationArgs = {
+export interface CreateAssignmentInvitationArgs {
   chapterId: string;
   inviteeQq: string;
   roles: number;
-};
+}
 
-export type CreateAssignmentInvitationResult = {
+export interface CreateAssignmentInvitationResult {
   id: string;
   invitationCode: string;
-};
+}

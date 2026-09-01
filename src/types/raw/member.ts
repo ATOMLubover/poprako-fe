@@ -3,7 +3,7 @@ import { unmaskRoles } from "../role";
 import type { RawTeamInfo } from "./team";
 import { ensureHttpsUrl } from "@/utils/url";
 
-export type RawMemberInfo = {
+export interface RawMemberInfo {
   id: string;
   user_id: string;
   team_id: string;
@@ -12,23 +12,23 @@ export type RawMemberInfo = {
     qid: string;
     nickname: string;
     avatar_url: string | null;
-    avatar_thumbnail_url?: string | null;
+    avatar_thumbnail_url?: string | null | undefined;
     is_sadmin: boolean;
     last_active_at: number;
     created_at: number;
     updated_at: number;
-  };
-  team?: RawTeamInfo;
+  } | undefined;
+  team?: RawTeamInfo | undefined;
   nickname: string;
   last_active_at: number;
   roles: number;
-  created_at?: number;
-  updated_at?: number;
-};
+  created_at?: number | undefined;
+  updated_at?: number | undefined;
+}
 
 export function unwrapRawMemberInfo(raw: RawMemberInfo): MemberInfo {
   const unmaskedRoles = unmaskRoles(raw.roles);
-  const updatedAt = raw.updated_at ?? raw.last_active_at ?? 0;
+  const updatedAt = raw.updated_at ?? raw.last_active_at;
 
   return {
     id: raw.id,

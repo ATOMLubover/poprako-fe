@@ -1,8 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import StatusOptionBar from "@/features/BaseTranslator/components/business/StatusOptionBar";
-import { DEFAULT_READ_ONLY_UNIT_VIEW } from
-  "@/features/BaseTranslator/types/readOnlyUnitView";
 import type { TranslatorMode } from "@/types/translatorMode";
 
 const meta: Meta<typeof StatusOptionBar> = {
@@ -25,9 +23,6 @@ function InteractiveWrapper({
   availableModes: TranslatorMode[];
 }) {
   const [view, setView] = useState<TranslatorMode>(initialMode);
-  const [readOnlyUnitView, setReadOnlyUnitView] = useState(
-    DEFAULT_READ_ONLY_UNIT_VIEW,
-  );
   const [relocation, setRelocation] = useState(false);
   const [isHighResolution, setIsHighResolution] = useState(false);
   const [previewVisibility, setPreviewVisibility] = useState<
@@ -37,17 +32,13 @@ function InteractiveWrapper({
   function switchView() {
     setView((current) => {
       const currentIndex = availableModes.indexOf(current);
-      const next = availableModes[(currentIndex + 1) % availableModes.length];
-      if (next === "readOnly") {
-        setReadOnlyUnitView(DEFAULT_READ_ONLY_UNIT_VIEW);
-      }
-      return next;
+      return availableModes[(currentIndex + 1) % availableModes.length] ?? current;
     });
   }
 
   const nextView = availableModes[
     (availableModes.indexOf(view) + 1) % availableModes.length
-  ];
+  ] ?? view;
 
   return (
     <div className="w-64 border border-border rounded">
@@ -56,27 +47,22 @@ function InteractiveWrapper({
         view={view}
         nextView={nextView}
         canSwitchView={availableModes.length > 1}
-        readOnlyUnitView={readOnlyUnitView}
         isRelocationEnabled={relocation}
         isUnitCreationEnabled={true}
         proofreadPreviewVisibility={previewVisibility}
         isHighResolution={isHighResolution}
         isLoadingPage={false}
         onSwitchView={switchView}
-        onSwitchReadOnlyUnitView={() =>
-          setReadOnlyUnitView((current) =>
-            current === "diff" ? "standard" : "diff",
-          )
-        }
-        onRelocationClick={() => setRelocation((v) => !v)}
-        onUnitCreationClick={() => console.log("unit creation toggled")}
+        onRelocationClick={() => { setRelocation((v) => !v); }}
+        onUnitCreationClick={() => { return; }}
         onToggleProofreadPreviewClick={() =>
-          setPreviewVisibility((v) => (v === "visible" ? "dimmed" : "visible"))
+          { setPreviewVisibility((v) => (v === "visible" ? "dimmed" : "visible")); }
         }
-        onToggleImageQualityClick={async () =>
-          setIsHighResolution((current) => !current)
-        }
-        onSaveClick={async () => console.log("saved")}
+        onToggleImageQualityClick={async () => {
+          await Promise.resolve();
+          setIsHighResolution((current) => !current);
+        }}
+        onSaveClick={() => Promise.resolve()}
         saving={false}
       />
     </div>
@@ -93,22 +79,22 @@ export const TranslateMode: Story = {
   ),
 };
 
-export const ProofreadModeWithTranslationView: Story = {
-  name: "校对模式（可查看翻译视图）",
+export const TranslateAndProofreadMode: Story = {
+  name: "翻校（可切换翻译与只读模式）",
   render: () => (
     <InteractiveWrapper
       initialMode="proofread"
-      availableModes={["proofread", "translate"]}
+      availableModes={["proofread", "translate", "readOnly"]}
     />
   ),
 };
 
 export const ProofreadMode: Story = {
-  name: "校对模式（锁定校对视图）",
+  name: "纯校对（可切换只读模式）",
   render: () => (
     <InteractiveWrapper
       initialMode="proofread"
-      availableModes={["proofread"]}
+      availableModes={["proofread", "readOnly"]}
     />
   ),
 };
