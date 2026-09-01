@@ -6,24 +6,24 @@ import type {
   UpdateUserArgs,
 } from "../auth";
 
-export type RawLoginUserArgs = { qid: string; password: string };
+export interface RawLoginUserArgs { qid: string; password: string }
 export function unwrapRawLoginUserArgs(raw: RawLoginUserArgs): LoginUserArgs {
   return { qq: raw.qid, password: raw.password };
 }
 
-export type RawLoginUserResult = { token: string; user_id: string };
+export interface RawLoginUserResult { token: string; user_id: string }
 export function unwrapRawLoginUserResult(
   raw: RawLoginUserResult,
 ): LoginUserResult {
   return { accessToken: raw.token, userId: raw.user_id };
 }
 
-export type RawRegisterUserArgs = {
+export interface RawRegisterUserArgs {
   qid: string;
   password: string;
   nickname: string;
   code: string;
-};
+}
 export function unwrapRawRegisterUserArgs(
   raw: RawRegisterUserArgs,
 ): RegisterUserArgs {
@@ -35,19 +35,19 @@ export function unwrapRawRegisterUserArgs(
   };
 }
 
-export type RawRegisterUserResult = { token: string; user_id: string };
+export interface RawRegisterUserResult { token: string; user_id: string }
 export function unwrapRawRegisterUserResult(
   raw: RawRegisterUserResult,
 ): RegisterUserResult {
   return { accessToken: raw.token, userId: raw.user_id };
 }
 
-export type RawUpdateUserArgs = {
+export interface RawUpdateUserArgs {
   user_id: string;
   qid?: string;
   name?: string;
   password?: string;
-};
+}
 export function unwrapRawUpdateUserArgs(
   raw: RawUpdateUserArgs,
 ): UpdateUserArgs {

@@ -6,7 +6,7 @@ export default function RootGuard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate("/workspace", { replace: true });
+    void navigate("/workspace", { replace: true });
   }, [navigate]);
 
   return (

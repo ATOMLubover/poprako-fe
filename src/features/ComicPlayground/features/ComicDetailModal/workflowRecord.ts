@@ -11,15 +11,15 @@ import { unmaskRoles, type Role } from "@/types/role";
 
 type UserLabel = (userId: string) => string;
 
-export type WorkflowRecordTextPart = {
+export interface WorkflowRecordTextPart {
   text: string;
   variable: boolean;
-};
+}
 
-export type WorkflowRecordEventPresentation = {
+export interface WorkflowRecordEventPresentation {
   title: WorkflowRecordTextPart[];
   detail: WorkflowRecordTextPart[];
-};
+}
 
 const ROLE_LABELS: Record<Role, string> = {
   rawProvider: "图源",
@@ -87,18 +87,24 @@ function stageOriginLabel(
   stage: ChapterWorkflowRecordStage,
 ): string {
   switch (origin) {
-    case "manual":
+    case "manual": {
       return "手动推进";
-    case "unit_edit":
+    }
+    case "unit_edit": {
       return `${STAGE_LABELS[stage]}翻校单元推进`;
-    case "translation_import":
+    }
+    case "translation_import": {
       return "翻校数据导入推进";
-    case "translation_export":
+    }
+    case "translation_export": {
       return "翻校数据导出推进";
-    case "raw_provide_check":
+    }
+    case "raw_provide_check": {
       return "图源完整性检查推进";
-    default:
+    }
+    default: {
       return assertNever(origin);
+    }
   }
 }
 
@@ -117,7 +123,7 @@ function stageTransitionPresentation(
 }
 
 export function shortWorkflowRecordUserId(userId: string): string {
-  if (userId.length <= 12) return userId;
+  if (userId.length <= 12) {return userId;}
   return `${userId.slice(0, 6)}…${userId.slice(-4)}`;
 }
 
@@ -126,9 +132,10 @@ export function presentWorkflowRecordEvent(
   userLabel: UserLabel = shortWorkflowRecordUserId,
 ): WorkflowRecordEventPresentation {
   switch (event.kind) {
-    case "chapter_created":
+    case "chapter_created": {
       return { title: [fixed("章节创建")], detail: [fixed("创建了章节")] };
-    case "chapter_subtitle_updated":
+    }
+    case "chapter_subtitle_updated": {
       return {
         title: [fixed("章节副标题修改")],
         detail: [
@@ -139,11 +146,14 @@ export function presentWorkflowRecordEvent(
           fixed("”"),
         ],
       };
-    case "chapter_pinned":
+    }
+    case "chapter_pinned": {
       return { title: [fixed("章节置顶")], detail: [fixed("设为置顶章节")] };
-    case "chapter_unpinned":
+    }
+    case "chapter_unpinned": {
       return { title: [fixed("取消章节置顶")], detail: [fixed("取消置顶")] };
-    case "assignment_created":
+    }
+    case "assignment_created": {
       return {
         title: [fixed("章节分工添加")],
         detail: [
@@ -154,7 +164,8 @@ export function presentWorkflowRecordEvent(
           fixed("分工"),
         ],
       };
-    case "assignment_roles_updated":
+    }
+    case "assignment_roles_updated": {
       return {
         title: [fixed("章节分工调整")],
         detail: [
@@ -167,7 +178,8 @@ export function presentWorkflowRecordEvent(
           fixed("”"),
         ],
       };
-    case "assignment_deleted":
+    }
+    case "assignment_deleted": {
       return {
         title: [fixed("章节分工移除")],
         detail: [
@@ -178,7 +190,8 @@ export function presentWorkflowRecordEvent(
           fixed("分工"),
         ],
       };
-    case "translation_imported":
+    }
+    case "translation_imported": {
       return {
         title: [fixed("翻校数据导入")],
         detail: [
@@ -191,7 +204,8 @@ export function presentWorkflowRecordEvent(
           fixed(" 个翻校单元"),
         ],
       };
-    case "translation_exported":
+    }
+    case "translation_exported": {
       return {
         title: [fixed("翻校数据导出")],
         detail: [
@@ -200,10 +214,13 @@ export function presentWorkflowRecordEvent(
           fixed(" 格式导出"),
         ],
       };
-    case "stage_transitioned":
+    }
+    case "stage_transitioned": {
       return stageTransitionPresentation(event);
-    default:
+    }
+    default: {
       return assertNever(event);
+    }
   }
 }
 
@@ -234,7 +251,7 @@ export function formatWorkflowRecordTime(
   const minute = String(date.getMinutes()).padStart(2, "0");
   const datePart = year === currentYear
     ? `${month}月${day}日`
-    : `${year}年${month}月${day}日`;
+    : `${String(year)}年${month}月${day}日`;
   return `${datePart} ${hour}:${minute}`;
 }
 
@@ -247,17 +264,20 @@ export function workflowRecordUserIds(
   switch (event.kind) {
     case "assignment_created":
     case "assignment_roles_updated":
-    case "assignment_deleted":
-      return Array.from(new Set([...ids, event.data.subjectUserId]));
+    case "assignment_deleted": {
+      return [...new Set([...ids, event.data.subjectUserId])];
+    }
     case "chapter_created":
     case "chapter_subtitle_updated":
     case "chapter_pinned":
     case "chapter_unpinned":
     case "translation_imported":
     case "translation_exported":
-    case "stage_transitioned":
+    case "stage_transitioned": {
       return ids;
-    default:
+    }
+    default: {
       return assertNever(event);
+    }
   }
 }

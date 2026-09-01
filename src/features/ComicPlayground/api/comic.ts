@@ -31,7 +31,7 @@ export async function listComics(
     `/worksets/${args.worksetId}/comics`,
     rawArgs,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const payload = res.data;
   const comics = Array.isArray(payload.comics) ? payload.comics : [];
@@ -46,21 +46,26 @@ export async function listComics(
 
   return {
     success: true,
-    data: comics.map((raw, i) => ({
-      ...toComicInfo(raw)!,
-      pinnedChapter: pinnedChapters[i]
-        ? toChapterInfo(pinnedChapters[i]!)
+    data: comics.flatMap((raw, i) => {
+      const comic = toComicInfo(raw);
+      if (!comic) {return [];}
+      const pinnedChapter = pinnedChapters.at(i);
+      return [{
+      ...comic,
+      pinnedChapter: pinnedChapter
+        ? toChapterInfo(pinnedChapter)
         : undefined,
       pinnedChapterAssignments: (
-        pinnedChapterAssignmentsList[i] || []
-      ).map(unwrapRawAssignmentInfo),
-    })),
+        pinnedChapterAssignmentsList.at(i) ?? []
+      ).map((item) => unwrapRawAssignmentInfo(item)),
+    }];
+    }),
   };
 }
 
 export async function getComic(id: string): Promise<Result<ComicInfo>> {
   const res = await api.get<RawComicInfo>(`/comics/${id}`);
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const comic = toComicInfo(res.data);
   if (!comic) {
@@ -86,14 +91,14 @@ export async function createComic(
     "/comics",
     rawArgs,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: (res.data as { id: string }).id };
 }
 
 export async function updateComic(
   id: string,
   args: UpdateComicArgs,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   const rawArgs: RawUpdateComicArgs = {
     id,
     title: args.title,
@@ -101,23 +106,23 @@ export async function updateComic(
     description: args.description,
   };
 
-  const res = await api.put<void, RawUpdateComicArgs>(`/comics/${id}`, rawArgs);
-  if (!res.success) return res;
+  const res = await api.put<undefined, RawUpdateComicArgs>(`/comics/${id}`, rawArgs);
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }
 
-export async function deleteComic(id: string): Promise<Result<void>> {
-  const res = await api.delete<void>(`/comics/${id}`);
-  if (!res.success) return res;
+export async function deleteComic(id: string): Promise<Result<undefined>> {
+  const res = await api.delete<undefined>(`/comics/${id}`);
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }
 
-export async function archiveComic(id: string): Promise<Result<void>> {
+export async function archiveComic(id: string): Promise<Result<undefined>> {
   const res = await api.post<{ archived_comic_id: string }, Record<string, never>>(
     `/comics/${id}/archive`,
     {},
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }
 
@@ -133,7 +138,7 @@ export async function allocCoverUpload(
     new_byte_len: args.newByteLen,
     ext: args.extension,
   });
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return {
     success: true,
     data: res.data.slot === null ? null : {
@@ -148,10 +153,10 @@ export async function markCoverUploaded(
   comicId: string,
   imageVersion: number,
 ): Promise<Result<void>> {
-  const res = await api.post<void, { image_version: number }>(
+  const res = await api.post<undefined, { image_version: number }>(
     `/comics/${comicId}/cover/mark-uploaded`,
     { image_version: imageVersion },
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }

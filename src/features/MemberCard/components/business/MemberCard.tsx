@@ -3,10 +3,10 @@ import { User as UserIcon, ShieldCheck, Clock } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
 import { getMemberActivityColor } from "./activityStatus";
 
-type Props = {
+interface Props {
   member: MemberInfo;
   onClick?: () => void;
-};
+}
 
 const ROLE_MAP: { label: string; field: keyof MemberInfo }[] = [
   { label: "图", field: "assignedRawProviderAt" },
@@ -18,17 +18,17 @@ const ROLE_MAP: { label: string; field: keyof MemberInfo }[] = [
 ];
 
 function formatDate(ts?: number): string {
-  if (!ts) return "—";
+  if (!ts) {return "—";}
   const d = new Date(ts);
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  return `${String(d.getFullYear())}/${String(d.getMonth() + 1)}/${String(d.getDate())}`;
 }
 
-type RoleTagProps = {
+interface RoleTagProps {
   label: string;
   isActive: boolean;
   isFirst: boolean;
   isLast: boolean;
-};
+}
 
 function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps) {
   return (
@@ -48,11 +48,18 @@ function RoleTag({ label, isActive, isFirst, isLast }: RoleTagProps) {
 
 export default function MemberCard({ member, onClick }: Props) {
   const { user } = member;
-  const isAdmin = user?.isSuperAdmin || !!member.assignedAdminAt;
+  const isAdmin = user?.isSuperAdmin ?? Boolean(member.assignedAdminAt);
 
   return (
-    <div
+    <div // eslint-disable-line jsx-a11y/no-static-element-interactions
       onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined} // eslint-disable-line jsx-a11y/no-noninteractive-tabindex
+      onKeyDown={onClick ? (event) => {
+        if (event.key !== "Enter" && event.key !== " ") {return;}
+        event.preventDefault();
+        onClick();
+      } : undefined}
       className={clsx(
         "group flex w-full",
         "bg-stone-50/10 border border-stone-200",
@@ -70,9 +77,9 @@ export default function MemberCard({ member, onClick }: Props) {
             "border border-stone-200",
           )}
         >
-          {user?.avatarThumbnailUrl || user?.avatarUrl ? (
+          {user?.avatarThumbnailUrl ?? user?.avatarUrl ? (
             <img
-              src={user.avatarThumbnailUrl || user.avatarUrl}
+              src={user.avatarThumbnailUrl ?? user.avatarUrl}
               alt={user.name}
               className={clsx(
                 "w-full h-full object-cover",
@@ -133,7 +140,7 @@ export default function MemberCard({ member, onClick }: Props) {
             <RoleTag
               key={role.label}
               label={role.label}
-              isActive={!!member[role.field]}
+              isActive={Boolean(member[role.field])} // eslint-disable-line unicorn/no-computed-property-existence-check
               isFirst={i === 0}
               isLast={i === ROLE_MAP.length - 1}
             />

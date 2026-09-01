@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions -- canvas owns pointer gestures. */
+/* eslint-disable @eslint-react/no-forward-ref -- imperative canvas handle is part of the API. */
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import clsx from "clsx";
 import type { UnitInfo } from "@/types/unit";
@@ -18,11 +20,11 @@ import { useCanvasInteraction } from "../../hook/useCanvasInteraction";
 
 const RELOCATION_DURATION_MS = 200;
 
-export type CanvasHandle = {
+export interface CanvasHandle {
   centerOn: (xCoord: number, yCoord: number) => void;
-};
+}
 
-type Props = {
+interface Props {
   imageSrc: string | null;
   units: UnitInfo[];
   mode: TranslatorMode;
@@ -37,7 +39,7 @@ type Props = {
   onImageLoad?: () => void;
   enableReadOnly?: boolean;
   proofreadPreviewVisibility?: ProofreadPreviewVisibility;
-};
+}
 
 const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
   {
@@ -96,7 +98,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
     () => ({
       centerOn(xCoord: number, yCoord: number) {
         const img = imgRef.current;
-        if (!img) return;
+        if (!img) {return;}
         const scale = transformRef.current.scale;
         const offsetX = -(xCoord - 0.5) * img.offsetWidth * scale;
         const offsetY = -(yCoord - 0.5) * img.offsetHeight * scale;
@@ -126,9 +128,9 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
   // 用 ref-based listener 替代 React onWheel，因为需要 { passive: false } 来支持 preventDefault
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    if (!el) {return;}
     el.addEventListener("wheel", handleWheel, { passive: false });
-    return () => el.removeEventListener("wheel", handleWheel);
+    return () => { el.removeEventListener("wheel", handleWheel); };
   }, [handleWheel, containerRef]);
 
   return (
@@ -145,7 +147,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
         <div className="flex items-center justify-center w-full h-full">
           <LoadingCircle />
         </div>
-      ) : imageSrc ? (
+      ) : (imageSrc ? (
         <div
           className={clsx(
             "absolute inset-0 flex items-center justify-center pointer-events-none",
@@ -155,13 +157,13 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
             ],
           )}
           style={{
-            transform: `translate(${transform.offsetX}px, ${transform.offsetY}px)`,
+            transform: `translate(${String(transform.offsetX)}px, ${String(transform.offsetY)}px)`,
           }}
         >
           <div
             className="relative inline-block pointer-events-auto"
             style={{
-              transform: `scale(${transform.scale})`,
+              transform: `scale(${String(transform.scale)})`,
               transformOrigin: "center center",
             }}
           >
@@ -199,36 +201,36 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                   data-marker={id}
                   className="absolute pointer-events-auto"
                   style={{
-                    left: `${x * 100}%`,
-                    top: `${y * 100}%`,
+                    left: `${String(x * 100)}%`,
+                    top: `${String(y * 100)}%`,
                     transformOrigin: "0 0",
-                    transform: `translate(-${CIRCLE_SIZE / 2 / transform.scale}px, `
-                      + `-${PIN_OFFSET / transform.scale}px) `
-                      + `scale(${1 / transform.scale})`,
+                    transform: `translate(-${String(CIRCLE_SIZE / 2 / transform.scale)}px, `
+                      + `-${String(PIN_OFFSET / transform.scale)}px) `
+                      + `scale(${String(1 / transform.scale)})`,
                   }}
                   onMouseDown={(e) =>
-                    handleMarkerMouseDown(
+                    { handleMarkerMouseDown(
                       e,
                       id,
                       position.xCoord,
                       position.yCoord,
-                    )
+                    ); }
                   }
                   onTouchStart={(e) =>
-                    handleMarkerTouchStart(
+                    { handleMarkerTouchStart(
                       e,
                       id,
                       position.xCoord,
                       position.yCoord,
-                    )
+                    ); }
                   }
                   onDoubleClick={(e) => {
                     e.stopPropagation();
                     onToggleBubble?.(id);
                   }}
-                  onMouseEnter={() => setHoveredUnitId(id)}
+                  onMouseEnter={() => { setHoveredUnitId(id); }}
                   onMouseLeave={() =>
-                    setHoveredUnitId((prev) => (prev === id ? null : prev))
+                    { setHoveredUnitId((prev) => (prev === id ? null : prev)); }
                   }
                 >
                   <Marker
@@ -271,10 +273,10 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
                 <div
                   className="absolute z-50 pointer-events-none"
                   style={{
-                    left: `${pos.xCoord * 100}%`,
-                    top: `${pos.yCoord * 100}%`,
+                    left: `${String(pos.xCoord * 100)}%`,
+                    top: `${String(pos.yCoord * 100)}%`,
                     transformOrigin: "0 0",
-                    transform: `translate(${(CIRCLE_SIZE / 2 + 12) / transform.scale}px, ${-PIN_OFFSET / transform.scale}px) scale(${1 / transform.scale})`,
+                    transform: `translate(${String((CIRCLE_SIZE / 2 + 12) / transform.scale)}px, ${String(-PIN_OFFSET / transform.scale)}px) scale(${String(1 / transform.scale)})`,
                   }}
                 >
                   <div className="px-2 py-1 rounded-sm bg-slate-800/90 text-slate-50 text-xs backdrop-blur-md shadow-xl border border-white/10 whitespace-pre">
@@ -289,7 +291,7 @@ const Canvas = forwardRef<CanvasHandle, Props>(function Canvas(
         <div className="flex items-center justify-center w-full h-full text-muted-foreground">
           暂无图片
         </div>
-      )}
+      ))}
     </div>
   );
 });

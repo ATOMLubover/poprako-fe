@@ -8,8 +8,6 @@ import {
   type UnitInfo,
 } from "@/types/unit";
 import type { TranslatorMode } from "@/types/translatorMode";
-import type { ReadOnlyUnitView } from
-  "@/features/BaseTranslator/types/readOnlyUnitView";
 import type { UserInfo } from "@/types/user";
 import type { Result } from "@/types/utils/result";
 
@@ -63,11 +61,11 @@ const storyUsers = new Map<string, UserInfo>([
   ],
 ]);
 
-async function resolveStoryUser(userId: string): Promise<Result<UserInfo>> {
+function resolveStoryUser(userId: string): Promise<Result<UserInfo>> {
   const user = storyUsers.get(userId);
-  return user
+  return Promise.resolve(user
     ? { success: true, data: user }
-    : { success: false, error: "Story user not found" };
+    : { success: false, error: "Story user not found" });
 }
 
 const meta: Meta<typeof UnitList> = {
@@ -150,7 +148,7 @@ const initialUnits: UnitInfo[] = [
       xCoord: 0,
       yCoord: index / 12,
       isProofread: index % 4 === 0,
-      translatedText: `用于验证长列表自动滚动的 Unit ${index + 1}。`,
+      translatedText: `用于验证长列表自动滚动的 Unit ${String(index + 1)}。`,
     };
   }),
 ];
@@ -194,11 +192,11 @@ const diffShowcaseUnits: UnitInfo[] = [
   },
 ];
 
-type UnitListWrapperProps = {
+interface UnitListWrapperProps {
   initialMode: TranslatorMode;
   readOnly?: boolean;
   initialUnitInfos?: UnitInfo[];
-};
+}
 
 function UnitListWrapper({
   initialMode,
@@ -206,8 +204,6 @@ function UnitListWrapper({
   initialUnitInfos = initialUnits,
 }: UnitListWrapperProps) {
   const [mode, setMode] = useState<TranslatorMode>(initialMode);
-  const [readOnlyUnitView, setReadOnlyUnitView] =
-    useState<ReadOnlyUnitView>("diff");
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>("2");
   const [units, setUnits] = useState<UnitInfo[]>(initialUnitInfos);
 
@@ -242,60 +238,34 @@ function UnitListWrapper({
                 + "支持输入和模式切换"}
           </p>
         </div>
-        <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
-          {readOnly && (
-            <>
-              <button
-                onClick={() => setReadOnlyUnitView("diff")}
-                className={clsx(
-                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
-                  readOnlyUnitView === "diff"
-                    ? "bg-white text-gray-800 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700",
-                )}
-              >
-                Diff 视图
-              </button>
-              <button
-                onClick={() => setReadOnlyUnitView("standard")}
-                className={clsx(
-                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
-                  readOnlyUnitView === "standard"
-                    ? "bg-white text-gray-800 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700",
-                )}
-              >
-                标准视图
-              </button>
-            </>
-          )}
-          {!readOnly && (
-            <>
-              <button
-                onClick={() => setMode("translate")}
-                className={clsx(
-                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
-                  mode === "translate"
-                    ? "bg-white text-gray-800 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700",
-                )}
-              >
-                翻译模式
-              </button>
-              <button
-                onClick={() => setMode("proofread")}
-                className={clsx(
-                  "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
-                  mode === "proofread"
-                    ? "bg-white text-gray-800 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700",
-                )}
-              >
-                校对模式
-              </button>
-            </>
-          )}
-        </div>
+        {!readOnly && (
+          <div className="flex bg-gray-100 p-1 rounded-lg border border-gray-200">
+            <button
+              type="button"
+              onClick={() => { setMode("translate"); }}
+              className={clsx(
+                "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                mode === "translate"
+                  ? "bg-white text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700",
+              )}
+            >
+              翻译模式
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode("proofread"); }}
+              className={clsx(
+                "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                mode === "proofread"
+                  ? "bg-white text-gray-800 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700",
+              )}
+            >
+              校对模式
+            </button>
+          </div>
+        )}
       </header>
 
       <main
@@ -308,7 +278,6 @@ function UnitListWrapper({
           units={units}
           focusedUnitId={focusedUnitId}
           mode={mode}
-          readOnlyUnitView={readOnlyUnitView}
           onFocusUnit={setFocusedUnitId}
           onModifyUnit={readOnly ? undefined : handleModifyUnit}
           onReorderUnit={readOnly ? undefined : handleReorderUnit}

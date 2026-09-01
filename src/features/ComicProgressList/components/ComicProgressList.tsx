@@ -7,10 +7,10 @@ import { showLocalApiFailure, showLocalCaughtError } from "@/api/util";
 import type { Result } from "@/types/utils/result";
 import ComicProgressItem from "./ComicProgressItem";
 
-type Props = {
+interface Props {
   onLoadComics: (offset: number, limit: number) => Promise<Result<ComicInfo[]>>;
   onComicClick: (comicInfo: ComicInfo) => void;
-};
+}
 
 export default function ComicProgressList({
   onLoadComics,
@@ -27,18 +27,18 @@ export default function ComicProgressList({
   const hasMoreRef = useRef(true);
   const offsetRef = useRef(0);
 
-  const loadComics = useCallback(async (reset = false) => {
-    if (isLoadingRef.current) return;
-    if (!reset && !hasMoreRef.current) return;
+  const loadComics = useCallback(async (shouldReset = false) => {
+    if (isLoadingRef.current) {return;}
+    if (!shouldReset && !hasMoreRef.current) {return;}
 
-    if (reset) {
+    if (shouldReset) {
       hasMoreRef.current = true;
       offsetRef.current = 0;
       setComics([]);
       setHasMore(true);
     }
 
-    const requestOffset = reset ? 0 : offsetRef.current;
+    const requestOffset = shouldReset ? 0 : offsetRef.current;
 
     isLoadingRef.current = true;
     setIsLoading(true);
@@ -46,7 +46,7 @@ export default function ComicProgressList({
     try {
       const result = await onLoadComics(requestOffset, pageSize);
       if (!result.success) {
-        console.error("[ComicProgressList] 加载漫画列表失败:", result.error);
+        console.error("[ComicProgressList] 加载漫画列表失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast);
         hasMoreRef.current = false;
         setHasMore(false);
@@ -56,15 +56,15 @@ export default function ComicProgressList({
       const items = result.data;
 
       const nextOffset = requestOffset + items.length;
-      const nextHasMore = items.length === pageSize;
+      const isNextHasMore = items.length === pageSize;
 
       offsetRef.current = nextOffset;
-      hasMoreRef.current = nextHasMore;
-      setHasMore(nextHasMore);
-      setComics((prev) => (reset ? items : [...prev, ...items]));
-    } catch (err) {
-      console.error("[ComicProgressList] 加载漫画列表异常:", err);
-      showLocalCaughtError(err, showToast, "发生未知错误");
+      hasMoreRef.current = isNextHasMore;
+      setHasMore(isNextHasMore);
+      setComics((prev) => (shouldReset ? items : [...prev, ...items]));
+    } catch (error) {
+      console.error("[ComicProgressList] 加载漫画列表异常:", error); // eslint-disable-line no-console
+      showLocalCaughtError(error, showToast, "发生未知错误");
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
@@ -78,12 +78,12 @@ export default function ComicProgressList({
 
   useEffect(() => {
     isLoadingRef.current = false;
-    const timerId = window.setTimeout(() => {
+    const timerId = setTimeout(() => {
       void loadComics(true);
     }, 0);
 
     return () => {
-      window.clearTimeout(timerId);
+      clearTimeout(timerId);
     };
   }, [loadComics]);
 
@@ -93,32 +93,32 @@ export default function ComicProgressList({
     const wasLoading = prevIsLoadingRef.current;
     prevIsLoadingRef.current = isLoading;
 
-    if (!wasLoading || isLoading) return;
-    if (!hasMoreRef.current) return;
-    if (!loadMoreRef.current || !scrollContainerRef.current) return;
+    if (!wasLoading || isLoading) {return;}
+    if (!hasMoreRef.current) {return;}
+    if (!loadMoreRef.current || !scrollContainerRef.current) {return;}
 
     const containerRect = scrollContainerRef.current.getBoundingClientRect();
     const targetRect = loadMoreRef.current.getBoundingClientRect();
 
     if (targetRect.top < containerRect.bottom) {
-      loadComicsRef.current();
+      void loadComicsRef.current();
     }
   }, [isLoading]);
 
   useEffect(() => {
-    if (!loadMoreRef.current) return;
+    if (!loadMoreRef.current) {return;}
 
     const observer = new IntersectionObserver(
       (entries) => {
         const firstEntry = entries[0];
-        if (firstEntry && firstEntry.isIntersecting) {
+        if (firstEntry?.isIntersecting) {
           void loadComics();
         }
       },
       { root: scrollContainerRef.current },
     );
     observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, [loadComics]);
 
   return (
@@ -136,7 +136,7 @@ export default function ComicProgressList({
             key={comic.id}
             comicInfo={comic}
             mode="reviewer"
-            onClick={() => onComicClick(comic)}
+            onClick={() => { onComicClick(comic); }}
           />
         ))}
       </div>

@@ -13,12 +13,12 @@ export async function fetchMyAssignmentComicCards(
     offset,
     limit,
   });
-  if (!result.success) return result;
+  if (!result.success) {return result;}
   const cards: ComicTranslationListItem[] = [];
   for (const assignment of result.data) {
     const chapter = assignment.chapter;
     const comicInfo = chapter?.comic;
-    if (comicInfo && chapter) {
+    if (comicInfo) {
       cards.push({ comicInfo, chapter });
     }
   }
@@ -29,7 +29,7 @@ export async function fetchComicAssignments(
   comicInfo: ComicInfo,
 ): Promise<Result<AssignmentInfo[]>> {
   const chapterId = comicInfo.pinnedChapter?.id;
-  if (!chapterId) return { success: true, data: [] };
+  if (!chapterId) {return { success: true, data: [] };}
   return listAssignmentsByChapter({
     chapterId,
     offset: 0,

@@ -6,13 +6,13 @@ import {
   type RawInvitationInfo,
 } from "@/types/raw/invitation";
 
-type ListInvitationsArgs = {
+interface ListInvitationsArgs {
   teamId: string;
   offset: number;
   limit: number;
-  includes?: Array<"invitor" | "invitee">;
+  includes?: ("invitor" | "invitee")[];
   isPending?: boolean;
-};
+}
 
 export async function listInvitations(
   args: ListInvitationsArgs,
@@ -27,29 +27,29 @@ export async function listInvitations(
     },
   );
 
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: (result.data ?? []).map(unwrapRawInvitationInfo),
+    data: result.data?.map((item) => unwrapRawInvitationInfo(item)) ?? [],
   };
 }
 
-type RawCreateInvitationBody = {
+interface RawCreateInvitationBody {
   team_id: string;
   invitee_qid: string;
   roles: number;
-};
+}
 
-type CreateInvitationRes = {
+interface CreateInvitationRes {
   code: string;
-};
+}
 
 export async function deleteInvitation(
   invitationId: string,
-): Promise<Result<void>> {
-  const result = await api.delete<void>(`/member-invitations/${invitationId}`);
-  if (!result.success) return result;
+): Promise<Result<undefined>> {
+  const result = await api.delete<undefined>(`/member-invitations/${invitationId}`);
+  if (!result.success) {return result;}
   return { success: true, data: undefined };
 }
 
@@ -67,7 +67,7 @@ export async function createInvitation(
     body,
   );
 
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/require-await -- async persistence test doubles. */
 import { describe, expect, test, vi } from "vitest";
 
 import { buildUnitDiff, persistDirtyUnits } from "./useUnitPersistence";

@@ -1,40 +1,40 @@
-export type ListTermsArgs = {
+export interface ListTermsArgs {
   termbaseId: string;
   fuzzySource?: string;
   offset: number;
   limit: number;
-};
+}
 
-export type RawListTermsArgs = {
+export interface RawListTermsArgs {
   termbase_id: string;
   fuzzy_source?: string;
   offset: number;
   limit: number;
-};
+}
 
-export type CreateTermArgs = {
+export interface CreateTermArgs {
   termbaseId: string;
   source: string;
   targets: string[];
   comment?: string;
-};
+}
 
-export type RawCreateTermArgs = {
+export interface RawCreateTermArgs {
   termbase_id: string;
   source: string;
   targets: string[];
   comment?: string;
-};
+}
 
-export type UpdateTermArgs = {
+export interface UpdateTermArgs {
   source: string;
   targets: string[];
   comment?: string;
-};
+}
 
-export type RawUpdateTermArgs = {
+export interface RawUpdateTermArgs {
   id: string;
   source: string;
   targets: string[];
   comment?: string;
-};
+}

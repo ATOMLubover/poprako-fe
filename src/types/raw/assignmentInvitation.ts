@@ -4,7 +4,7 @@ import type {
   CreateAssignmentInvitationResult,
 } from "../assignmentInvitation";
 
-export type RawAssignmentInvitationInfo = {
+export interface RawAssignmentInvitationInfo {
   id: string;
   chapter_id: string;
   code: string;
@@ -14,18 +14,18 @@ export type RawAssignmentInvitationInfo = {
   roles: number;
   created_at: number;
   updated_at: number;
-};
+}
 
-export type RawCreateAssignmentInvitationArgs = {
+export interface RawCreateAssignmentInvitationArgs {
   chapter_id: string;
   invitee_qid: string;
   roles: number;
-};
+}
 
-export type RawCreateAssignmentInvitationResult = {
+export interface RawCreateAssignmentInvitationResult {
   id: string;
   code: string;
-};
+}
 
 export function unwrapRawAssignmentInvitationInfo(
   raw: RawAssignmentInvitationInfo,

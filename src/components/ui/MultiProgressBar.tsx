@@ -1,33 +1,43 @@
 import clsx from "clsx";
 import type React from "react";
 
-export type BarArgs = {
+export interface BarArgs {
   progressPercent: number;
-  /** CSS 颜色值（hex、rgb 等），用于 inline style，避免 Tailwind class 被 purge */
+  /**
+  CSS 颜色值（hex、rgb 等），用于 inline style，避免 Tailwind class 被 purge
+  */
   barColor?: string;
-  /** @deprecated 用 barColor 代替，避免 production build 时 Tailwind class 被 purge */
+  /**
+  @deprecated 用 barColor 代替，避免 production build 时 Tailwind class 被 purge
+  */
   barColorClass?: string;
-};
+}
 
-export type Props = {
+export interface Props {
   bars: BarArgs[];
-  /** 以 rem 为单位，整个进度条容器的宽度，默认  75 rem */
+  /**
+  以 rem 为单位，整个进度条容器的宽度，默认  75 rem
+  */
   width?: number;
-  /** 以 rem 为单位，整个进度条容器的高度，默认 2 rem */
+  /**
+  以 rem 为单位，整个进度条容器的高度，默认 2 rem
+  */
   height?: number;
-  /** 为 true 时宽度 100% 自适应父容器，忽略 width */
+  /**
+  为 true 时宽度 100% 自适应父容器，忽略 width
+  */
   fullWidth?: boolean;
-};
+}
 
 export default function MultiProgressBar({
-  bars = [],
+  bars,
   width = 300,
   height = 8,
   fullWidth = false,
 }: Props) {
   const sizeStyle: React.CSSProperties = {
-    width: fullWidth ? "100%" : `${width}rem`,
-    height: `${height}rem`,
+    width: fullWidth ? "100%" : `${String(width)}rem`,
+    height: `${String(height)}rem`,
   };
 
   return (
@@ -44,19 +54,20 @@ export default function MultiProgressBar({
       {bars.map((bar, index) => {
         const width = Math.max(0, Math.min(100, bar.progressPercent));
 
-        const bgColor = bar.barColor || undefined;
+        const bgColor = bar.barColor;
         // 优先用 barColor inline style，否则 fallback 到 barColorClass（兼容旧用法）
-        const legacyClass = !bgColor
-          ? bar.barColorClass || "bg-blue-500"
-          : undefined;
+        const legacyClass = bgColor
+          ? undefined
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          : (bar.barColorClass ?? "bg-blue-500");
 
         return (
           <div
-            key={index}
+            key={JSON.stringify(bar)}
             style={{
-              width: `${width}%`,
+              width: `${String(width)}%`,
               zIndex: index + 1,
-              ...(bgColor ? { backgroundColor: bgColor } : {}),
+              ...(bgColor && { backgroundColor: bgColor }),
             }}
             className={clsx(
               "absolute top-0 left-0 h-full",

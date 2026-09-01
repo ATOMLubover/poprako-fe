@@ -6,7 +6,7 @@ import { useLongPress } from "@/hooks/useLongPress";
 import ChapterOption from "./ChapterOption";
 import type { ComicDetailModalProps } from "../../types";
 
-type Props = {
+interface Props {
   comicInfo: ComicInfo;
   chapters: ChapterInfo[];
   selectedChapter?: ChapterInfo;
@@ -26,12 +26,13 @@ type Props = {
   onLongPressTitle?: () => void;
   onLongPressChapter?: (chapter: ChapterInfo) => void;
   onClose: () => void;
-};
+}
 
 export default function ComicDetailHeader({
   comicInfo,
   chapters,
   selectedChapter,
+  selectedChapterId,
   hasMore,
   isLoading,
   canCreateChapter,
@@ -45,8 +46,9 @@ export default function ComicDetailHeader({
   onLongPressChapter,
   onClose,
 }: Props) {
+  void selectedChapterId;
   const titleLongPress = useLongPress({
-    onLongPress: onLongPressTitle ?? (() => {}),
+    onLongPress: onLongPressTitle ?? (() => { return; }),
     threshold: 500,
   });
 
@@ -65,7 +67,7 @@ export default function ComicDetailHeader({
               onCreate(subtitle, presetAssignmentRoles)
           : undefined
       }
-      onDelete={onDeleteChapter ? async (id) => onDelete(id) : undefined}
+      onDelete={onDeleteChapter ? (id) => { void onDelete(id); } : undefined}
       onLongPress={onLongPressChapter}
     />
   );
@@ -91,6 +93,7 @@ export default function ComicDetailHeader({
         </h1>
         <div className="hidden sm:block shrink-0">{chapterOption}</div>
         <button
+          type="button"
           onClick={onClose}
           className="text-stone-400 hover:text-stone-700 transition-colors p-1 shrink-0"
         >

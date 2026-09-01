@@ -1,10 +1,10 @@
 import clsx from "clsx";
 import type { WorkflowStatus } from "@/types/workflow";
 
-type Props = {
+interface Props {
   status: WorkflowStatus;
   names: string[];
-};
+}
 
 const STATUS_LABELS: Record<WorkflowStatus, string> = {
   pending: "待开始",

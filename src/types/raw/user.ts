@@ -5,7 +5,7 @@ import {
   type RawAllocImageResult,
 } from "./image";
 
-export type RawUserInfo = {
+export interface RawUserInfo {
   id: string;
   qid: string;
   nickname: string;
@@ -15,7 +15,7 @@ export type RawUserInfo = {
   last_active_at: number;
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
   return {

@@ -68,7 +68,7 @@ describe("UnitContributorCache", () => {
   });
 
   test("does not expose or retry failed users", async () => {
-    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, "error").mockImplementation(vi.fn());
     const resolver = vi.fn<UnitUserResolver>().mockResolvedValue({
       success: false,
       error: "not found",

@@ -1,6 +1,6 @@
 import { LoaderCircle } from "lucide-react"
 
-type Props = {
+interface Props {
   className?: string
   size?: number
   "aria-label"?: string

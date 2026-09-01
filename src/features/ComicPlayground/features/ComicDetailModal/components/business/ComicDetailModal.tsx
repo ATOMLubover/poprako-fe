@@ -82,17 +82,17 @@ export default function ComicDetailModal({
   });
 
   useEffect(() => {
-    let cancelled = false;
+    let isCancelled = false;
 
     const loadActiveMember = async () => {
       try {
         const resolvedMember = await resolveActiveMemberRef.current();
-        if (!cancelled) {
+        if (!isCancelled) {
           setActiveMember(resolvedMember ?? null);
         }
-      } catch (err) {
-        console.error("[ComicDetailModal] 解析团队成员信息异常:", err);
-        if (!cancelled) {
+      } catch (error) {
+        console.error("[ComicDetailModal] 解析团队成员信息异常:", error); // eslint-disable-line no-console
+        if (!isCancelled) {
           setActiveMember(null);
         }
       }
@@ -101,7 +101,7 @@ export default function ComicDetailModal({
     void loadActiveMember();
 
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, []);
 
@@ -142,7 +142,7 @@ export default function ComicDetailModal({
   });
 
   const handleWorkflowRecordsChanged = useCallback(() => {
-    if (activeView === "workflow") void refreshWorkflowRecords();
+    if (activeView === "workflow") {void refreshWorkflowRecords();}
   }, [activeView, refreshWorkflowRecords]);
 
   const {
@@ -249,13 +249,13 @@ export default function ComicDetailModal({
   const canDeleteChapterPages =
     canUploadRawPages &&
     pages.length > 0 &&
-    !!selectedChapterId &&
-    !!onDeleteChapterPages;
+    Boolean(selectedChapterId) &&
+    Boolean(onDeleteChapterPages);
   const canUploadNewRawPages =
     canUploadRawPages &&
-    !!selectedChapterId &&
-    !!onAddPages;
-  const canReuploadRawPages = canUploadRawPages && !!onAllocPageUpload;
+    Boolean(selectedChapterId) &&
+    Boolean(onAddPages);
+  const canReuploadRawPages = canUploadRawPages && Boolean(onAllocPageUpload);
   const canClickPage = canTranslateOrProofread || canReadOnly;
 
   const handleTransition = async (
@@ -273,7 +273,7 @@ export default function ComicDetailModal({
 
     const res = await onTransiteWorkflow(selectedChapterId, transition);
     if (!res.success) {
-      console.error("[ComicDetailModal] 推进流程失败:", res);
+      console.error("[ComicDetailModal] 推进流程失败:", res); // eslint-disable-line no-console
       showLocalApiFailure(res, showToast, "操作失败");
       return res;
     }
@@ -291,14 +291,14 @@ export default function ComicDetailModal({
   };
 
   const handleDeleteCurrentComic = async () => {
-    if (!onDeleteComic) return;
+    if (!onDeleteComic) {return;}
 
     setIsDeletingComic(true);
     const res = await onDeleteComic(comicInfo.id);
     setIsDeletingComic(false);
 
     if (!res.success) {
-      console.error("[ComicDetailModal] 删除漫画失败:", res);
+      console.error("[ComicDetailModal] 删除漫画失败:", res); // eslint-disable-line no-console
       showLocalApiFailure(res, showToast);
       return;
     }
@@ -307,14 +307,14 @@ export default function ComicDetailModal({
   };
 
   const handleArchiveCurrentComic = async () => {
-    if (!onArchiveComic) return;
+    if (!onArchiveComic) {return;}
 
     setIsArchivingComic(true);
     const res = await onArchiveComic(comicInfo.id);
     setIsArchivingComic(false);
 
     if (!res.success) {
-      console.error("[ComicDetailModal] 归档漫画失败:", res);
+      console.error("[ComicDetailModal] 归档漫画失败:", res); // eslint-disable-line no-console
       showLocalApiFailure(res, showToast);
       return;
     }
@@ -355,11 +355,11 @@ export default function ComicDetailModal({
       onDeleteChapter={onDeleteChapter}
       onDelete={(chapterId) => handleDeleteChapter(chapterId, onDeleteChapter)}
       onLongPressTitle={
-        onUpdateComic && isTeamAdmin ? () => setShowComicModifier(true) : undefined
+        onUpdateComic && isTeamAdmin ? () => { setShowComicModifier(true); } : undefined
       }
       onLongPressChapter={
         onUpdateChapter && canManageChapterAssignments
-          ? (ch) => setChapterToModify(ch)
+          ? (ch) => { setChapterToModify(ch); }
           : undefined
       }
       onClose={onClose}
@@ -375,8 +375,8 @@ export default function ComicDetailModal({
       canUploadCover={canUploadCover}
       canTranslateOrProofread={canTranslateOrProofread}
       canDeleteChapterPages={canDeleteChapterPages}
-      canArchiveComic={isTeamAdmin && !!onArchiveComic}
-      isTeamAdmin={isTeamAdmin && !!onDeleteComic}
+      canArchiveComic={isTeamAdmin && Boolean(onArchiveComic)}
+      isTeamAdmin={isTeamAdmin && Boolean(onDeleteComic)}
       isDeletingChapterPages={isDeletingChapterPages}
       isArchivingComic={isArchivingComic}
       isDeletingComic={isDeletingComic}
@@ -395,14 +395,16 @@ export default function ComicDetailModal({
           : undefined
       }
       onExport={
-        onExportChapter ? () => setPendingConfirmAction("export-data") : undefined
+        onExportChapter ? () => { setPendingConfirmAction("export-data"); } : undefined
       }
       onImportFileChange={
-        onImportChapter ? handleImportFileChange : undefined
+        onImportChapter
+          ? (event) => { void handleImportFileChange(event); }
+          : undefined
       }
-      onDeletePages={() => setPendingConfirmAction("delete-pages")}
-      onArchiveComic={() => setPendingConfirmAction("archive-comic")}
-      onDeleteComic={() => setPendingConfirmAction("delete-comic")}
+      onDeletePages={() => { setPendingConfirmAction("delete-pages"); }}
+      onArchiveComic={() => { setPendingConfirmAction("archive-comic"); }}
+      onDeleteComic={() => { setPendingConfirmAction("delete-comic"); }}
       coverInputRef={coverInputRef}
       coverUpload={coverUpload}
     />
@@ -419,16 +421,20 @@ export default function ComicDetailModal({
       onClickPage={
         canClickPage
           ? (pageId) => {
-              if (!selectedChapterId || !onNavigateToTranslator) return;
-              const readOnly = !canTranslateOrProofread;
-              onNavigateToTranslator(selectedChapterId, pageId, readOnly || undefined);
+              if (!selectedChapterId || !onNavigateToTranslator) {return;}
+              const isReadOnly = !canTranslateOrProofread;
+              onNavigateToTranslator(selectedChapterId, pageId, isReadOnly || undefined);
             }
           : undefined
       }
       onAddPages={canUploadNewRawPages ? handleAddRawPages : undefined}
       canReuploadPage={canReuploadRawPages ? () => true : undefined}
-      isPageReuploading={(pageId) => !!reuploadingPageIds[pageId]}
-      onReuploadPage={canReuploadRawPages ? handleReuploadPage : undefined}
+      isPageReuploading={(pageId) => reuploadingPageIds[pageId] === true}
+      onReuploadPage={
+        canReuploadRawPages
+          ? (pageId, file) => { void handleReuploadPage(pageId, file); }
+          : undefined
+      }
       reuploadAccept="image/*"
       accept="image/*"
       uploadProgressByPageId={uploadProgressByPageId}
@@ -446,10 +452,10 @@ export default function ComicDetailModal({
     onAddAssignment: onAddAssignment ? handleOpenMemberSelector : undefined,
     onJoinRole: onJoinChapterRole ? handleJoinRole : undefined,
     canJoinRole: onJoinChapterRole ? canJoinRole : undefined,
-    isRoleJoining: (role: Role) => !!joiningRoles[role],
+    isRoleJoining: (role: Role) => joiningRoles[role] === true,
     onLeaveRole: onRemoveAssignment ? handleLeaveRole : undefined,
     canLeaveRole: onRemoveAssignment ? canLeaveRole : undefined,
-    isRoleLeaving: (role: Role) => !!leavingRoles[role],
+    isRoleLeaving: (role: Role) => leavingRoles[role] === true,
     canOperateWorkflow: canManageChapterAssignments,
     canManageAssignments: canManageChapterAssignments,
   };
@@ -509,15 +515,15 @@ export default function ComicDetailModal({
           onLoadMembers={onLoadAssignableMembers}
           setIsLoading={setIsMemberSelectorLoading}
           isSubmitting={isMemberSelectorLoading || isAddingAssignment}
-          onSelectUser={handleAddAssignment}
-          onClose={() => setMemberSelectorRole(null)}
+          onSelectUser={(userId) => { void handleAddAssignment(userId); }}
+          onClose={() => { setMemberSelectorRole(null); }}
         />
       )}
       {pendingConfirmAction === "delete-pages" && (
         <ConfirmDialog
           title="确认清空页面"
           description={
-            `即将删除当前章节下的 ${pages.length} 页，` +
+            `即将删除当前章节下的 ${String(pages.length)} 页，` +
             "删除后才能重新上传页面，此操作不可撤销。"
           }
           confirmLabel="清空"
@@ -525,7 +531,7 @@ export default function ComicDetailModal({
             setPendingConfirmAction(null);
             void handleDeleteAllChapterPages();
           }}
-          onCancel={() => setPendingConfirmAction(null)}
+          onCancel={() => { setPendingConfirmAction(null); }}
         />
       )}
       {pendingConfirmAction === "delete-comic" && (
@@ -540,7 +546,7 @@ export default function ComicDetailModal({
             setPendingConfirmAction(null);
             void handleDeleteCurrentComic();
           }}
-          onCancel={() => setPendingConfirmAction(null)}
+          onCancel={() => { setPendingConfirmAction(null); }}
         />
       )}
       {pendingConfirmAction === "archive-comic" && (
@@ -555,7 +561,7 @@ export default function ComicDetailModal({
             setPendingConfirmAction(null);
             void handleArchiveCurrentComic();
           }}
-          onCancel={() => setPendingConfirmAction(null)}
+          onCancel={() => { setPendingConfirmAction(null); }}
         />
       )}
       {pendingConfirmAction === "export-data" && (
@@ -563,10 +569,11 @@ export default function ComicDetailModal({
           title="下载数据"
           description="请选择导出方式"
           hideFooter
-          onCancel={() => setPendingConfirmAction(null)}
+          onCancel={() => { setPendingConfirmAction(null); }}
         >
           <div className="flex items-center gap-2 px-5 pb-5 pt-1">
             <button
+              type="button"
               onClick={() => {
                 setPendingConfirmAction(null);
                 void handleExportData({ includeImages: false });
@@ -581,6 +588,7 @@ export default function ComicDetailModal({
               仅翻校数据
             </button>
             <button
+              type="button"
               onClick={() => {
                 setPendingConfirmAction(null);
                 void handleExportData({ includeImages: true });
@@ -604,7 +612,7 @@ export default function ComicDetailModal({
             const res = await onUpdateComic(args);
             return res;
           }}
-          onClose={() => setShowComicModifier(false)}
+          onClose={() => { setShowComicModifier(false); }}
         />
       )}
       {chapterToModify && onUpdateChapter && (
@@ -618,7 +626,7 @@ export default function ComicDetailModal({
             }
             return res;
           }}
-          onClose={() => setChapterToModify(null)}
+          onClose={() => { setChapterToModify(null); }}
         />
       )}
     </>

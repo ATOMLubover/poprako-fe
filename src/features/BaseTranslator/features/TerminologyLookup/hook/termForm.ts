@@ -11,7 +11,7 @@ export function validateTermTargets(targets: string[]) {
 export function moveTermTarget(items: string[], from: number, to: number) {
   const next = [...items];
   const [item] = next.splice(from, 1);
-  if (item === undefined) return items;
+  if (item === undefined) {return items;}
   next.splice(to, 0, item);
   return next;
 }

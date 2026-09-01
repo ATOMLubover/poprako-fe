@@ -1,4 +1,4 @@
-export type TermInfo = {
+export interface TermInfo {
   id: string;
   termbaseId: string;
 
@@ -9,4 +9,4 @@ export type TermInfo = {
   creatorId: string;
   createdAt: number;
   updatedAt: number;
-};
+}

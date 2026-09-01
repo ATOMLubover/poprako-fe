@@ -3,7 +3,7 @@ import type { ImageUploadSlot } from "./image";
 
 export type PageImageQuality = "optimized" | "original";
 
-export type Page = {
+export interface Page {
   id: string;
 
   chapterId: string;
@@ -26,7 +26,7 @@ export type Page = {
 
   createdAt: number;
   updatedAt: number;
-};
+}
 
 export type PageInfo = Page & {
   chapterId: string;
@@ -35,33 +35,33 @@ export type PageInfo = Page & {
   updatedAt: number;
 };
 
-export type PageImageInput = {
+export interface PageImageInput {
   pageId?: string;
   imageHash: string;
   newByteLen?: number;
   extension: string;
-};
+}
 
 export type PageImageUpload = ImageUploadSlot;
 
-export type AllocatedPage = {
+export interface AllocatedPage {
   pageId: string;
   index: number;
   imageHash: string;
   extension: string;
   slot: PageImageUpload | null;
-};
+}
 
-export type AllocChapterPagesArgs = {
+export interface AllocChapterPagesArgs {
   chapterId: string;
   pages: PageImageInput[];
-};
-export type AllocChapterPagesResult = { pages: AllocatedPage[] };
+}
+export interface AllocChapterPagesResult { pages: AllocatedPage[] }
 
-export type PendingPage = { pageId: string; index: number; fileIndex: number };
+export interface PendingPage { pageId: string; index: number; fileIndex: number }
 
-export type UploadProgressCallbacks = {
+export interface UploadProgressCallbacks {
   onPagesAllocated: (pendingPages: PendingPage[]) => void;
   onPageUploaded: (pageId: string, file: File) => void;
   onPageUploadProgress?: (pageId: string, percent: number) => void;
-};
+}

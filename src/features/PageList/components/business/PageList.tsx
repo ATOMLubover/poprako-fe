@@ -6,7 +6,7 @@ import type { PageUploadTaskStatus } from
   "@/features/ComicPlayground/features/ComicDetailModal/pageUploadStore";
 import PageCard from "./PageCard";
 
-type Props = {
+interface Props {
   pages: PageInfo[];
   onClickPage?: (pageId: string) => void;
   onDeletePage?: (pageId: string) => void;
@@ -15,17 +15,19 @@ type Props = {
   isPageReuploading?: (pageId: string) => boolean;
   enableDelete?: boolean;
   enableClick?: boolean;
-  /** 当提供时，区域支持拖放批量上传，文件按 Windows 自然排序顺序排列 */
+  /**
+  当提供时，区域支持拖放批量上传，文件按 Windows 自然排序顺序排列
+  */
   onAddPages?: (files: File[]) => Promise<void>;
   accept?: string;
   reuploadAccept?: string;
   uploadProgressByPageId?: Record<string, number>;
   uploadStatusByPageId?: Record<string, PageUploadTaskStatus>;
   uploadErrorByPageId?: Record<string, string>;
-};
+}
 
 function naturalSort(files: FileList): File[] {
-  return Array.from(files).sort((a, b) =>
+  return [...files].sort((a, b) => // eslint-disable-line unicorn/no-array-sort
     a.name.localeCompare(b.name, undefined, {
       numeric: true,
       sensitivity: "base",
@@ -56,7 +58,7 @@ export default function PageList({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = async (files: FileList | null) => {
-    if (!files || files.length === 0 || !onAddPages) return;
+    if (!onAddPages || !files || files.length === 0) {return;}
     const sorted = naturalSort(files);
     setIsUploading(true);
     try {
@@ -67,18 +69,18 @@ export default function PageList({
   };
 
   return (
-    <div
+    <div // eslint-disable-line jsx-a11y/no-static-element-interactions
       className="relative"
       onDragOver={(e) => {
-        if (!onAddPages) return;
+        if (!onAddPages) {return;}
         e.preventDefault();
         setIsDragging(true);
       }}
-      onDragLeave={() => setIsDragging(false)}
+      onDragLeave={() => { setIsDragging(false); }}
       onDrop={(e) => {
         e.preventDefault();
         setIsDragging(false);
-        handleFiles(e.dataTransfer.files);
+        void handleFiles(e.dataTransfer.files);
       }}
     >
       {/* {onAddPages && !isDragging && (
@@ -113,8 +115,8 @@ export default function PageList({
           <PageCard
             key={page.id}
             page={page}
-            onClick={onClickPage ? () => onClickPage(page.id) : undefined}
-            onDelete={onDeletePage ? () => onDeletePage(page.id) : undefined}
+            onClick={onClickPage ? () => { onClickPage(page.id); } : undefined}
+            onDelete={onDeletePage ? () => { onDeletePage(page.id); } : undefined}
             enableDelete={enableDelete}
             enableClick={enableClick}
             canReupload={canReuploadPage ? canReuploadPage(page) : false}
@@ -123,7 +125,7 @@ export default function PageList({
             }
             onReupload={
               onReuploadPage
-                ? (file) => onReuploadPage(page.id, file)
+                ? (file) => { onReuploadPage(page.id, file); }
                 : undefined
             }
             reuploadAccept={reuploadAccept}
@@ -158,7 +160,7 @@ export default function PageList({
             multiple
             accept={accept ?? "image/*"}
             className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
+            onChange={(e) => { void handleFiles(e.target.files); }}
           />
           {isDragging && (
             <div

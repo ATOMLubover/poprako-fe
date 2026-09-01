@@ -6,7 +6,7 @@ import type {
 } from "../page";
 import { ensureHttpsUrl } from "@/utils/url";
 
-export type RawPageInfo = {
+export interface RawPageInfo {
   id: string;
   chapter_id: string;
   image_url: string | null;
@@ -20,7 +20,7 @@ export type RawPageInfo = {
   translated_unit_count: number;
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
   return {
@@ -33,7 +33,7 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
     imageUrl: ensureHttpsUrl(raw.image_url),
     imageOptimizedUrl: ensureHttpsUrl(raw.image_optimized_url),
     imageThumbnailUrl: ensureHttpsUrl(raw.image_thumbnail_url),
-    isUploaded: !!raw.image_url,
+    isUploaded: Boolean(raw.image_url),
     imageHash: raw.image_hash,
     extension: raw.ext,
     creatorId: "",
@@ -42,7 +42,7 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
   } as PageInfo;
 }
 
-export type RawAllocatedPage = {
+export interface RawAllocatedPage {
   page_id: string;
   index: number;
   image_hash: string;
@@ -52,7 +52,7 @@ export type RawAllocatedPage = {
     image_version: number;
     headers: Record<string, string>;
   } | null;
-};
+}
 export function unwrapRawAllocatedPage(raw: RawAllocatedPage): AllocatedPage {
   return {
     pageId: raw.page_id,
@@ -67,15 +67,15 @@ export function unwrapRawAllocatedPage(raw: RawAllocatedPage): AllocatedPage {
   };
 }
 
-export type RawAllocChapterPagesArgs = {
+export interface RawAllocChapterPagesArgs {
   chapter_id: string;
-  pages: Array<{
+  pages: {
     page_id?: string;
     image_hash: string;
     new_byte_len?: number;
     ext: string;
-  }>;
-};
+  }[];
+}
 export function unwrapRawAllocChapterPagesArgs(
   raw: RawAllocChapterPagesArgs,
 ): AllocChapterPagesArgs {
@@ -90,18 +90,18 @@ export function unwrapRawAllocChapterPagesArgs(
   };
 }
 
-export type RawAllocChapterPagesResult = {
+export interface RawAllocChapterPagesResult {
   pages: RawAllocatedPage[];
-};
+}
 export function unwrapRawAllocChapterPagesResult(
   raw: RawAllocChapterPagesResult,
 ): AllocChapterPagesResult {
   return {
-    pages: raw.pages.map(unwrapRawAllocatedPage),
+    pages: raw.pages.map((page) => unwrapRawAllocatedPage(page)),
   };
 }
 
-export type RawDeleteChapterPagesArgs = { chapter_id: string };
+export interface RawDeleteChapterPagesArgs { chapter_id: string }
 export function wrapDeleteChapterPagesArgs(chapterId: string): RawDeleteChapterPagesArgs {
   return { chapter_id: chapterId };
 }

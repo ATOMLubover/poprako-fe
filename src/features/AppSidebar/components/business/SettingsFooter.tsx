@@ -1,11 +1,11 @@
 import type { NavConfig } from "../../types/types";
 import NavItem from "./NavItem";
 
-type Props = {
+interface Props {
   config: NavConfig;
   isActive: boolean;
   onClick: () => void;
-};
+}
 
 export default function SettingsFooter({ config, isActive, onClick }: Props) {
   return (

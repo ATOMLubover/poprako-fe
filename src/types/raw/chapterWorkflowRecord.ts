@@ -67,13 +67,13 @@ export type RawChapterWorkflowRecordEvent =
       };
     };
 
-export type RawChapterWorkflowRecord = {
+export interface RawChapterWorkflowRecord {
   id: string;
   chapter_id: string;
   actor_user_id: string | null;
   event: RawChapterWorkflowRecordEvent;
   created_at: number;
-};
+}
 
 function unsupportedEvent(event: never): never {
   throw new Error(`Unsupported chapter workflow event: ${JSON.stringify(event)}`);
@@ -85,9 +85,10 @@ export function unwrapRawChapterWorkflowRecordEvent(
   switch (event.kind) {
     case "chapter_created":
     case "chapter_pinned":
-    case "chapter_unpinned":
+    case "chapter_unpinned": {
       return { kind: event.kind };
-    case "chapter_subtitle_updated":
+    }
+    case "chapter_subtitle_updated": {
       return {
         kind: event.kind,
         data: {
@@ -95,7 +96,8 @@ export function unwrapRawChapterWorkflowRecordEvent(
           nextSubtitle: event.data.next_subtitle,
         },
       };
-    case "assignment_created":
+    }
+    case "assignment_created": {
       return {
         kind: event.kind,
         data: {
@@ -103,7 +105,8 @@ export function unwrapRawChapterWorkflowRecordEvent(
           roles: event.data.roles,
         },
       };
-    case "assignment_roles_updated":
+    }
+    case "assignment_roles_updated": {
       return {
         kind: event.kind,
         data: {
@@ -112,7 +115,8 @@ export function unwrapRawChapterWorkflowRecordEvent(
           nextRoles: event.data.next_roles,
         },
       };
-    case "assignment_deleted":
+    }
+    case "assignment_deleted": {
       return {
         kind: event.kind,
         data: {
@@ -120,7 +124,8 @@ export function unwrapRawChapterWorkflowRecordEvent(
           previousRoles: event.data.previous_roles,
         },
       };
-    case "translation_imported":
+    }
+    case "translation_imported": {
       return {
         kind: event.kind,
         data: {
@@ -129,7 +134,8 @@ export function unwrapRawChapterWorkflowRecordEvent(
           importedUnitCount: event.data.imported_unit_count,
         },
       };
-    case "translation_exported":
+    }
+    case "translation_exported": {
       return {
         kind: event.kind,
         data: {
@@ -139,7 +145,8 @@ export function unwrapRawChapterWorkflowRecordEvent(
           },
         },
       };
-    case "stage_transitioned":
+    }
+    case "stage_transitioned": {
       return {
         kind: event.kind,
         data: {
@@ -149,8 +156,10 @@ export function unwrapRawChapterWorkflowRecordEvent(
           origin: event.data.origin,
         },
       };
-    default:
+    }
+    default: {
       return unsupportedEvent(event);
+    }
   }
 }
 

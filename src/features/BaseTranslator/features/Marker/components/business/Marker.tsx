@@ -4,14 +4,14 @@ export const CIRCLE_SIZE = 32;
 export const DOT_SIZE = 8;
 export const PIN_OFFSET = CIRCLE_SIZE + DOT_SIZE - 2;
 
-type Props = {
+interface Props {
   index: number;
   isBubble: boolean;
   isCompleted: boolean;
   isSelected: boolean;
   isDragging: boolean;
   dimmed: boolean;
-};
+}
 
 export default function Marker({
   index,
@@ -27,7 +27,7 @@ export default function Marker({
         isSelected ? "z-30" : "z-10"
       } ${isDragging ? "cursor-grabbing opacity-80" : "cursor-pointer"}`}
       style={{
-        width: `${CIRCLE_SIZE}px`,
+        width: `${String(CIRCLE_SIZE)}px`,
         transform: isDragging ? "scale(1.1)" : undefined,
         transition: isDragging
           ? "none"
@@ -39,22 +39,22 @@ export default function Marker({
           "relative rounded-full flex items-center justify-center",
           "border-2 shadow-lg",
           isBubble
-            ? dimmed
+            ? (dimmed
               ? "bg-pink-300/40 border-pink-400/40"
-              : "bg-pink-300/80 border-pink-400/70"
-            : dimmed
+              : "bg-pink-300/80 border-pink-400/70")
+            : (dimmed
               ? "bg-amber-300/40 border-amber-400/40"
-              : "bg-amber-300/80 border-amber-400/70",
+              : "bg-amber-300/80 border-amber-400/70"),
           isSelected && "ring-4 ring-blue-500/10",
         )}
         style={{
-          width: `${CIRCLE_SIZE}px`,
-          height: `${CIRCLE_SIZE}px`,
+          width: `${String(CIRCLE_SIZE)}px`,
+          height: `${String(CIRCLE_SIZE)}px`,
           borderColor: isSelected
             ? "#3b82f6"
-            : isCompleted
+            : (isCompleted
               ? "var(--color-green-500)"
-              : undefined,
+              : undefined),
           transition: "background-color 0.2s, border-color 0.2s, box-shadow 0.2s",
         }}
       >
@@ -66,14 +66,14 @@ export default function Marker({
         className={clsx(
           "rounded-full -mt-px shadow-sm border-2 border-black/20",
           isBubble
-            ? dimmed
+            ? (dimmed
               ? "bg-pink-300/40"
-              : "bg-pink-300/80"
-            : dimmed
+              : "bg-pink-300/80")
+            : (dimmed
               ? "bg-amber-300/40"
-              : "bg-amber-300/80",
+              : "bg-amber-300/80"),
         )}
-        style={{ width: `${DOT_SIZE}px`, height: `${DOT_SIZE}px` }}
+        style={{ width: `${String(DOT_SIZE)}px`, height: `${String(DOT_SIZE)}px` }}
       />
     </div>
   );

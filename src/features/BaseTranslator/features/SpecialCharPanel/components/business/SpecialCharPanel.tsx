@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- modal. */
+/* eslint-disable unicorn/no-unnecessary-global-this -- browser globals are explicit here. */
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, Plus } from "lucide-react";
@@ -6,9 +8,9 @@ import { useSpecialChars } from "@/hook/useSpecialChars";
 
 type Mode = "select" | "delete";
 
-type Props = {
+interface Props {
   onClose: () => void;
-};
+}
 
 export default function SpecialCharPanel({ onClose }: Props) {
   const { allChars, addChar, deleteChar, toggleFavorite, reorderChars } =
@@ -30,10 +32,10 @@ export default function SpecialCharPanel({ onClose }: Props) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isAdding) onClose();
+      if (!isAdding && e.key === "Escape") {onClose();}
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return () => { globalThis.removeEventListener("keydown", handleKeyDown); };
   }, [onClose, isAdding]);
 
   const submitNewChar = () => {
@@ -56,7 +58,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
   };
 
   const handleCharClick = (id: string) => {
-    if (didDragRef.current) return;
+    if (didDragRef.current) {return;}
 
     if (mode === "select") {
       toggleFavorite(id);
@@ -94,7 +96,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
   const handleDragEnd = () => {
     setDraggingId(null);
     lastDragOverIdRef.current = null;
-    window.setTimeout(() => {
+    globalThis.setTimeout(() => {
       didDragRef.current = false;
     }, 0);
   };
@@ -114,7 +116,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
           "border border-(--color-border-green-200) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); }}
       >
         <div
           className="h-1 w-full opacity-20"
@@ -130,7 +132,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
           <span className="text-base font-bold text-slate-800">
             特殊符号面板
           </span>
-          <button
+          <button type="button"
             className={clsx(
               "flex size-7 items-center justify-center rounded-md text-slate-300",
               "transition-colors hover:bg-slate-50 hover:text-slate-500",
@@ -147,9 +149,9 @@ export default function SpecialCharPanel({ onClose }: Props) {
           <div className="flex justify-center mb-5">
             <div className="inline-flex items-center gap-0.5 rounded-lg bg-slate-50 p-1">
               {(["select", "delete"] as Mode[]).map((m) => (
-                <button
+                <button type="button"
                   key={m}
-                  onClick={() => handleModeChange(m)}
+                  onClick={() => { handleModeChange(m); }}
                   className={clsx(
                     "rounded-md px-5 py-1.5 text-sm outline-none",
                     "transition-all duration-200",
@@ -167,14 +169,14 @@ export default function SpecialCharPanel({ onClose }: Props) {
           {/* Char Grid */}
           <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
             {allChars.map((char) => (
-              <button
+              <button type="button"
                 key={char.id}
                 draggable
-                onClick={() => handleCharClick(char.id)}
-                onDragStart={(e) => handleDragStart(e, char.id)}
-                onDragEnter={() => handleDragEnter(char.id)}
+                onClick={() => { handleCharClick(char.id); }}
+                onDragStart={(e) => { handleDragStart(e, char.id); }}
+                onDragEnter={() => { handleDragEnter(char.id); }}
                 onDragEnd={handleDragEnd}
-                onDragOver={(e) => e.preventDefault()}
+                onDragOver={(e) => { e.preventDefault(); }}
                 className={clsx(
                   "group relative flex items-center justify-center",
                   "h-12 rounded-lg text-sm transition-all duration-200",
@@ -182,7 +184,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
                   "cursor-grab active:cursor-grabbing",
                   draggingId === char.id && "opacity-60 ring-2 ring-primary/30",
                   mode === "select"
-                    ? char.isFavorite
+                    ? (char.isFavorite
                       ? [
                           "bg-[var(--color-green-50)]",
                           "text-[var(--color-green-500)]",
@@ -191,7 +193,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
                       : [
                           "bg-muted text-muted-foreground",
                           "hover:bg-accent hover:text-foreground",
-                        ]
+                        ])
                     : [
                         "bg-muted text-muted-foreground",
                         "hover:bg-destructive/10 hover:text-destructive",
@@ -211,7 +213,7 @@ export default function SpecialCharPanel({ onClose }: Props) {
                   <textarea
                     ref={textareaRef}
                     value={newCharText}
-                    onChange={(e) => setNewCharText(e.target.value)}
+                    onChange={(e) => { setNewCharText(e.target.value); }}
                     onKeyDown={handleTextareaKeyDown}
                     onBlur={submitNewChar}
                     placeholder="…"
@@ -224,8 +226,8 @@ export default function SpecialCharPanel({ onClose }: Props) {
                     )}
                   />
                 ) : (
-                  <button
-                    onClick={() => setIsAdding(true)}
+                  <button type="button"
+                    onClick={() => { setIsAdding(true); }}
                     className={clsx(
                       "w-full h-full flex items-center justify-center",
                       "rounded-lg bg-muted/60 text-muted-foreground/60",

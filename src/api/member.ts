@@ -3,11 +3,11 @@ import { api, toApiRequestError } from "./util";
 import type { Result } from "@/types/utils/result";
 import type { MemberInfo } from "@/types/member";
 
-type ListMyMembersArgs = {
+interface ListMyMembersArgs {
   ownerId: string;
   offset?: number;
   limit?: number;
-};
+}
 
 export async function listMyMembers(args: ListMyMembersArgs) {
   const result = await api.get<RawMemberInfo[] | null>("/members", {
@@ -16,28 +16,28 @@ export async function listMyMembers(args: ListMyMembersArgs) {
     offset: args.offset ?? 0,
     limit: args.limit ?? 20,
   });
-  if (!result.success) throw toApiRequestError(result);
-  return (result.data ?? []).map(unwrapRawMemberInfo);
+  if (!result.success) {throw toApiRequestError(result);}
+  return result.data?.map((item) => unwrapRawMemberInfo(item)) ?? [];
 }
 
-type ListMembersArgs = {
+interface ListMembersArgs {
   teamId: string;
   offset: number;
   limit: number;
   includes?: string[];
   userNicknameKeyword?: string;
   role?: number;
-};
+}
 
-type UpdateMemberRoleArgs = {
+interface UpdateMemberRoleArgs {
   id: string;
   roles: number;
-};
+}
 
 export async function updateMemberRole(
   args: UpdateMemberRoleArgs,
-): Promise<Result<void>> {
-  return api.put<void, UpdateMemberRoleArgs>(
+): Promise<Result<undefined>> {
+  return api.put<undefined, UpdateMemberRoleArgs>(
     `/members/${args.id}/roles`,
     args,
   );
@@ -45,8 +45,8 @@ export async function updateMemberRole(
 
 export async function joinMember(
   invitationCode: string,
-): Promise<Result<void>> {
-  return api.post<void, { code: string }>("/members/join", {
+): Promise<Result<undefined>> {
+  return api.post<undefined, { code: string }>("/members/join", {
     code: invitationCode,
   });
 }
@@ -64,22 +64,22 @@ export async function listMembers(
   };
 
   if (args.includes) {
-    query.incl = args.includes;
+    query["incl"] = args.includes;
   }
 
   if (args.userNicknameKeyword) {
-    query.fuzzy_nickname = args.userNicknameKeyword;
+    query["fuzzy_nickname"] = args.userNicknameKeyword;
   }
 
   if (args.role !== undefined) {
-    query.role = args.role;
+    query["role"] = args.role;
   }
 
   const result = await api.get<RawMemberInfo[] | null>("/members", query);
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: (result.data ?? []).map(unwrapRawMemberInfo),
+    data: result.data?.map((item) => unwrapRawMemberInfo(item)) ?? [],
   };
 }

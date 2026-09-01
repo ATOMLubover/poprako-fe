@@ -4,19 +4,19 @@ import { CirclePlus, Search } from "lucide-react";
 import IconInputRow from "@/components/ui/IconInputRow";
 import type { RoleFilter } from "../../types/types";
 
-type Props = {
+interface Props {
   activeFuzzyName: string;
   onChangeFuzzyName: (name: string) => void;
   activeRole: RoleFilter | null;
   onChangeRole: (role: RoleFilter | null) => void;
   onCreateMember: () => void;
-};
+}
 
-type RoleButton = {
+interface RoleButton {
   key: RoleFilter;
   label: string;
   activeClass: string;
-};
+}
 
 const ROLE_BUTTONS: RoleButton[] = [
   {
@@ -66,12 +66,12 @@ export default function MemberListFilterHeader({
   const [inputValue, setInputValue] = useState(activeFuzzyName);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
     setInputValue(activeFuzzyName);
   }, [activeFuzzyName]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Enter") return;
+    if (e.key !== "Enter") {return;}
     onChangeFuzzyName(inputValue.trim());
   };
 
@@ -83,12 +83,18 @@ export default function MemberListFilterHeader({
     <div className="flex w-full flex-col gap-2">
       {/* 第一行：搜索框 + 创建按钮 */}
       <div className="flex h-10 w-full items-center gap-2">
-        <div className="min-w-0 flex-1" onKeyDown={handleKeyDown}>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+        <div
+          className="min-w-0 flex-1"
+          role="group"
+          tabIndex={-1}
+          onKeyDown={handleKeyDown}
+        >
           <IconInputRow
             icon={<Search />}
             placeholder="昵称模糊搜索..."
             value={inputValue}
-            onChange={(v) => setInputValue(v)}
+            onChange={(v) => { setInputValue(v); }}
           />
         </div>
         <button
@@ -113,7 +119,7 @@ export default function MemberListFilterHeader({
             <button
               key={key}
               type="button"
-              onClick={() => toggleRole(key)}
+              onClick={() => { toggleRole(key); }}
               className={clsx(
                 "flex flex-1 items-center justify-center py-1.5",
                 "rounded-sm border text-[12px] font-bold transition-all",

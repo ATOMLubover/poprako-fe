@@ -3,7 +3,7 @@ import { unmaskRoles } from "../role";
 import { unwrapRawChapterDetail, type RawChapterInfo } from "./chapter";
 import { unwrapRawUserInfo, type RawUserInfo } from "./user";
 
-export type RawAssignmentInfo = {
+export interface RawAssignmentInfo {
   id: string;
 
   user_id: string;
@@ -16,7 +16,7 @@ export type RawAssignmentInfo = {
 
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawAssignmentInfo(
   raw: RawAssignmentInfo,
@@ -43,9 +43,9 @@ export function unwrapRawAssignmentInfo(
   } as AssignmentInfo;
 }
 
-export type RawListAssignmentArgs = {
+export interface RawListAssignmentArgs {
   chapter_id: string;
   includes?: string[];
   offset: number;
   limit: number;
-};
+}

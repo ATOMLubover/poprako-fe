@@ -2,7 +2,7 @@ import type { ChapterInfo } from "./chapter";
 import { hasRole, type Role } from "./role";
 import type { UserInfo } from "./user";
 
-export type AssignmentInfo = {
+export interface AssignmentInfo {
   id: string;
 
   chapterId: string;
@@ -22,7 +22,7 @@ export type AssignmentInfo = {
 
   createdAt: number;
   updatedAt: number;
-};
+}
 
 const ASSIGNMENT_ROLES: Role[] = [
   "rawProvider",

@@ -3,18 +3,24 @@ import clsx from "clsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
-type Props = {
-  /** 未选中时的提示文本 */
+interface Props {
+  /**
+  未选中时的提示文本
+  */
   hintText?: string;
   checkedOptionId: string;
   options: Option[];
   onSelect: (optionId: string) => void;
-  /** 最大高度，以 tailwind 单位为单位 */
+  /**
+  最大高度，以 tailwind 单位为单位
+  */
   maxHeight?: number;
-  /** 是否处于 active 状态；active 时显示绿色边框 */
+  /**
+  是否处于 active 状态；active 时显示绿色边框
+  */
   isActive?: boolean;
   className?: string;
-};
+}
 
 export default function HoverSelect({
   hintText = "请选择",
@@ -30,26 +36,30 @@ export default function HoverSelect({
   // 交互逻辑：hover 500ms 后展开
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearOpenTimer = useCallback(() => {
-    if (openTimerRef.current) {
-      clearTimeout(openTimerRef.current);
-      openTimerRef.current = null;
+    if (!openTimerRef.current) {
+      return;
     }
+
+    clearTimeout(openTimerRef.current);
+    openTimerRef.current = null;
   }, []);
 
   // 交互逻辑：离开 150ms 后关闭（避免鼠标经过按钮与下拉菜单间隙时意外收起）
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearCloseTimer = useCallback(() => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
+    if (!closeTimerRef.current) {
+      return;
     }
+
+    clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
   }, []);
 
   // 用于处理点击外部直接关闭的逻辑
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption =
-    options.find((opt) => opt.id === checkedOptionId) || null;
+    options.find((opt) => opt.id === checkedOptionId) ?? null;
 
   // 立即关闭（用于点击外部、选中选项等场景）
   const closeDropdown = useCallback(() => {
@@ -108,7 +118,7 @@ export default function HoverSelect({
   };
 
   return (
-    <div
+    <div // eslint-disable-line jsx-a11y/no-static-element-interactions
       ref={containerRef}
       className={clsx("relative font-sans text-sm", className)}
       onMouseEnter={() => {
@@ -180,17 +190,19 @@ export default function HoverSelect({
       >
         <div
           className="scrollbar-thin scrollbar-thumb-slate-200 overflow-y-auto"
-          style={{ maxHeight: `${maxHeight}rem` }}
+          style={{ maxHeight: `${String(maxHeight)}rem` }}
         >
           {options.map((option) => {
             const isSelected = checkedOptionId === option.id;
             return (
-              <div
+              <button
+                type="button"
                 key={option.id}
-                onClick={() => handleSelect(option)}
+                onClick={() => { handleSelect(option); }}
                 className={clsx(
                   "flex transform-gpu cursor-pointer items-center justify-between px-4 py-2.5 transition-colors duration-300 ease-in-out",
                   "text-slate-600",
+                  "w-full text-left",
                   {
                     // 选中项：淡淡的灰色背景，不抢眼但有区分度
                     "bg-gray-200 font-semibold text-slate-900": isSelected,
@@ -200,7 +212,7 @@ export default function HoverSelect({
               >
                 <span className="truncate">{option.text}</span>
                 {isSelected && <Check className="h-3.5 w-3.5" />}
-              </div>
+              </button>
             );
           })}
           {options.length === 0 && (

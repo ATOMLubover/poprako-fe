@@ -6,11 +6,12 @@ import type { TeamConfig } from "../types/types";
 function deriveTeamConfigs(
   loginState: ReturnType<typeof useAppStore.getState>["loginState"],
 ): TeamConfig[] {
-  if (!loginState?.memberInfos) return [];
+  if (!loginState?.memberInfos) {return [];}
   return loginState.memberInfos
     .filter((m) => m.team)
     .map((m) => {
-      const team = m.team!;
+      if (!m.team) {return null;}
+      const team = m.team;
       return {
         id: team.id,
         name: team.name,
@@ -19,7 +20,7 @@ function deriveTeamConfigs(
         avatarUrl: team.avatarUrl,
         avatarThumbnailUrl: team.avatarThumbnailUrl,
       };
-    });
+    }).filter((team): team is TeamConfig => team !== null);
 }
 
 export function useTeamConfigs() {
@@ -31,13 +32,13 @@ export function useTeamConfigs() {
   );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
     setTeamConfigs(deriveTeamConfigs(loginState));
   }, [loginState]);
 
   const refreshTeams = useCallback(async () => {
     const state = useAppStore.getState().loginState;
-    if (!state) return;
+    if (!state) {return;}
     const memberInfos = await listMyMembers({ ownerId: state.userInfo.id });
     const newLoginState = { userInfo: state.userInfo, memberInfos };
     setLoginState(newLoginState);

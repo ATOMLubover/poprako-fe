@@ -2,13 +2,13 @@ import clsx from "clsx";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 
-type Props = {
+interface Props {
   open: boolean;
   title: string;
   description: string;
   progress: number;
   onCancel: () => void;
-};
+}
 
 export default function ExportProgressDialog({
   open,
@@ -17,7 +17,7 @@ export default function ExportProgressDialog({
   progress,
   onCancel,
 }: Props) {
-  if (!open) return null;
+  if (!open) {return null;}
 
   return (
     <AppDialog
@@ -47,7 +47,7 @@ export default function ExportProgressDialog({
                 "h-full rounded-full bg-(--color-green-500)",
                 "transition-[width] duration-200",
               )}
-              style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }}
+              style={{ width: `${String(Math.max(0, Math.min(progress, 100)))}%` }}
             />
           </div>
           <p className="mt-2 text-right text-xs tabular-nums text-slate-400">

@@ -1,3 +1,5 @@
+/* eslint-disable no-console, unicorn/consistent-boolean-name, unicorn/no-unnecessary-global-this, jsx-a11y/role-supports-aria-props, @typescript-eslint/no-non-null-assertion -- lookup lifecycle. */
+/* eslint-disable @typescript-eslint/no-misused-spread -- code-point aware query display. */
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import clsx from "clsx";
@@ -26,20 +28,20 @@ type EditorState =
   | { kind: "termbase"; termbase?: TermbaseInfo }
   | { kind: "term"; term?: TermInfo };
 
-type Props = {
+interface Props {
   dataSource: TerminologyDataSource;
-};
+}
 
 function firstGrapheme(value: string) {
   const normalized = value.trim();
-  if (!normalized) return "术";
+  if (!normalized) {return "术";}
 
   if ("Segmenter" in Intl) {
     const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
     return segmenter.segment(normalized)[Symbol.iterator]().next().value?.segment ?? "术";
   }
 
-  return Array.from(normalized)[0] ?? "术";
+  return [...normalized][0] ?? "术";
 }
 
 export default function TerminologyLookupBar({ dataSource }: Props) {
@@ -59,13 +61,13 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
   const isExpanded = panel !== "closed";
 
   useEffect(() => {
-    if (panel !== "closed" || !renderedPanel) return;
+    if (panel !== "closed" || !renderedPanel) {return;}
 
-    const timeoutId = window.setTimeout(() => {
+    const timeoutId = globalThis.setTimeout(() => {
       setRenderedPanel(undefined);
     }, PANEL_ANIMATION_MS);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => { globalThis.clearTimeout(timeoutId); };
   }, [panel, renderedPanel]);
 
   useEffect(() => {
@@ -73,14 +75,14 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
       if (
         event.target instanceof Element &&
         event.target.closest("[data-app-dialog]")
-      ) return;
+      ) {return;}
       if (!rootRef.current?.contains(event.target as Node)) {
         setPanel("closed");
       }
     };
 
     document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
+    return () => { document.removeEventListener("pointerdown", handlePointerDown); };
   }, []);
 
   const handleError = useCallback((failure: ResultFailure) => {
@@ -104,7 +106,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
   ) => {
     if (!termbase) {
       const result = await dataSource.createTermbase(args);
-      if (!result.success) return handleMutationError("创建术语库", result);
+      if (!result.success) {return handleMutationError("创建术语库", result);}
       setTermbaseQuery("");
       setTermbaseRevision((revision) => revision + 1);
       showToast("术语库已创建", "success");
@@ -112,7 +114,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     }
 
     const result = await dataSource.updateTermbase(termbase.id, args);
-    if (!result.success) return handleMutationError("更新术语库", result);
+    if (!result.success) {return handleMutationError("更新术语库", result);}
     setSelectedTermbase((current) => current?.id === termbase.id
       ? { ...current, ...args, description: args.description ?? "" }
       : current);
@@ -123,7 +125,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
 
   const handleDeleteTermbase = async (termbase: TermbaseInfo) => {
     const result = await dataSource.deleteTermbase(termbase.id);
-    if (!result.success) return handleMutationError("删除术语库", result);
+    if (!result.success) {return handleMutationError("删除术语库", result);}
     if (selectedTermbase?.id === termbase.id) {
       setSelectedTermbase(undefined);
       setSourceQuery("");
@@ -140,13 +142,13 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     term: TermInfo | undefined,
     args: UpdateTermArgs,
   ) => {
-    if (!selectedTermbase) return false;
+    if (!selectedTermbase) {return false;}
     if (!term) {
       const result = await dataSource.createTerm({
         termbaseId: selectedTermbase.id,
         ...args,
       });
-      if (!result.success) return handleMutationError("创建术语", result);
+      if (!result.success) {return handleMutationError("创建术语", result);}
       setSourceQuery("");
       setSelectedTermbase((current) => current
         ? { ...current, termCount: current.termCount + 1 }
@@ -158,7 +160,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
     }
 
     const result = await dataSource.updateTerm(term.id, args);
-    if (!result.success) return handleMutationError("更新术语", result);
+    if (!result.success) {return handleMutationError("更新术语", result);}
     setTermRevision((revision) => revision + 1);
     showToast("术语已更新", "success");
     return true;
@@ -166,7 +168,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
 
   const handleDeleteTerm = async (term: TermInfo) => {
     const result = await dataSource.deleteTerm(term.id);
-    if (!result.success) return handleMutationError("删除术语", result);
+    if (!result.success) {return handleMutationError("删除术语", result);}
     setSelectedTermbase((current) => current
       ? { ...current, termCount: Math.max(0, current.termCount - 1) }
       : current);
@@ -243,21 +245,21 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
               revision={termbaseRevision}
               onQueryChange={setTermbaseQuery}
               onSelect={handleSelectTermbase}
-              onCreate={() => setEditor({ kind: "termbase" })}
-              onEdit={(termbase) => setEditor({ kind: "termbase", termbase })}
+              onCreate={() => { setEditor({ kind: "termbase" }); }}
+              onEdit={(termbase) => { setEditor({ kind: "termbase", termbase }); }}
               onError={handleError}
             />
-          ) : selectedTermbase ? (
+          ) : (selectedTermbase ? (
             <TermPanel
               dataSource={dataSource}
               termbase={selectedTermbase}
               query={debouncedSourceQuery}
               revision={termRevision}
-              onCreate={() => setEditor({ kind: "term" })}
-              onEdit={(term) => setEditor({ kind: "term", term })}
+              onCreate={() => { setEditor({ kind: "term" }); }}
+              onEdit={(term) => { setEditor({ kind: "term", term }); }}
               onError={handleError}
             />
-          ) : null}
+          ) : null)}
         </div>
       )}
 
@@ -306,7 +308,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
             aria-expanded={panel === "terms"}
             aria-controls={panel === "terms" ? popoverId : undefined}
             onFocus={handleOpenTerms}
-            onChange={(event) => setSourceQuery(event.target.value)}
+            onChange={(event) => { setSourceQuery(event.target.value); }}
             placeholder={selectedTermbase ? "搜索原文…" : "先选择术语库"}
             className={clsx(
               "h-full w-full bg-stone-50/45 pl-7.5 pr-2.5 text-xs text-stone-700",
@@ -325,7 +327,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
           onDelete={editor.termbase
             ? () => handleDeleteTermbase(editor.termbase!)
             : undefined}
-          onClose={() => setEditor(undefined)}
+          onClose={() => { setEditor(undefined); }}
         />
       )}
       {editor?.kind === "term" && (
@@ -333,7 +335,7 @@ export default function TerminologyLookupBar({ dataSource }: Props) {
           term={editor.term}
           onSave={(args) => handleSaveTerm(editor.term, args)}
           onDelete={editor.term ? () => handleDeleteTerm(editor.term!) : undefined}
-          onClose={() => setEditor(undefined)}
+          onClose={() => { setEditor(undefined); }}
         />
       )}
     </>

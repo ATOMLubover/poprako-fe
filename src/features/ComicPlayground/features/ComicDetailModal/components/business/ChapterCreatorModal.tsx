@@ -8,14 +8,14 @@ import type { Result } from "@/types/utils/result";
 import type { ComicInfo } from "@/types";
 import PresetAssignmentRoleSwitchGroup from "../../../../components/business/PresetAssignmentRoleSwitchGroup";
 
-type Props = {
+interface Props {
   comicInfo: ComicInfo;
   onCreateChapter: (
     subtitle?: string,
     presetAssignmentRoles?: number,
   ) => Promise<Result<string>>;
   onClose: () => void;
-};
+}
 
 export default function ChapterCreatorModal({
   comicInfo,
@@ -27,7 +27,7 @@ export default function ChapterCreatorModal({
   const [presetRoles, setPresetRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     const result = await onCreateChapter(
@@ -35,7 +35,7 @@ export default function ChapterCreatorModal({
       presetRoles.length > 0 ? roleMask(presetRoles) : undefined,
     );
     setIsSubmitting(false);
-    if (result.success) onClose();
+    if (result.success) {onClose();}
   };
 
   return (
@@ -78,7 +78,7 @@ export default function ChapterCreatorModal({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+        <form onSubmit={(event) => { void handleSubmit(event); }} className="px-5 pb-5 pt-3">
           <IconInputRow
             icon={<AlignLeft size={14} />}
             placeholder="章节副标题（选填）"

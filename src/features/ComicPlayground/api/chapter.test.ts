@@ -10,14 +10,14 @@ import {
 import { useAppStore } from "@/store/app";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 
-type FetchCall = {
+interface FetchCall {
   url: string;
   init?: RequestInit;
-};
+}
 
 function okJson(data: unknown): Promise<Response> {
   return Promise.resolve(
-    new Response(JSON.stringify({ code: 0, data }), {
+    Response.json({ code: 0, data }, {
       status: 200,
       headers: { "Content-Type": "application/json" },
     }),
@@ -29,10 +29,11 @@ function noContent(): Promise<Response> {
 }
 
 function installFetch(response: Promise<Response>) {
-  const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     void input;
     void init;
-    return response.then((value) => value.clone());
+    const value = await response;
+    return value.clone();
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -43,10 +44,11 @@ function fetchCallAt(
   index: number,
 ): FetchCall {
   const call = fetchMock.mock.calls[index];
-  expect(call).toBeDefined();
+  if (!call) {throw new Error(`Missing fetch call at index ${String(index)}`);}
   return {
-    url: String(call![0]),
-    init: call![1] as RequestInit | undefined,
+    // RequestInfo can be a Request object in browser-like test environments.
+    url: String(call[0]), // eslint-disable-line @typescript-eslint/no-base-to-string
+    init: call[1],
   };
 }
 
@@ -55,7 +57,8 @@ function lastFetchCall(fetchMock: ReturnType<typeof installFetch>): FetchCall {
 }
 
 function bodyOf(call: FetchCall): unknown {
-  return JSON.parse(String(call.init?.body));
+  const body = call.init?.body;
+  return JSON.parse(typeof body === "string" ? body : JSON.stringify(body));
 }
 
 describe("chapter API", () => {
@@ -390,7 +393,7 @@ describe("chapter API", () => {
     });
 
     const exportFetch = installFetch(Promise.resolve(
-      new Response(JSON.stringify({
+      Response.json({
         label_plus: "text",
         poprako: {
           comic_id: "comic_1",
@@ -400,7 +403,7 @@ describe("chapter API", () => {
           chapter_subtitle: "Chapter",
           pages: [],
         },
-      }), { status: 200 }),
+      }, { status: 200 }),
     ));
     const exportResult = await exportChapter("chapter_1");
     expect(lastFetchCall(exportFetch).url).toBe(
@@ -435,7 +438,7 @@ describe("chapter API", () => {
   test("reports export 422 messages through the shared HTTP failure path", async () => {
     const showToast = vi.spyOn(useToastStore.getState(), "showToast");
     installFetch(Promise.resolve(
-      new Response(JSON.stringify({ message: "导出参数无效" }), {
+      Response.json({ message: "导出参数无效" }, {
         status: 422,
         headers: { "Content-Type": "application/json" },
       }),

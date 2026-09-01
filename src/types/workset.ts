@@ -1,7 +1,7 @@
 import type { RawWorksetInfo } from "./raw/workset";
 import { toTeamInfo, type TeamInfo } from "./team";
 
-export type WorksetInfo = {
+export interface WorksetInfo {
   id: string;
 
   teamId: string;
@@ -14,10 +14,10 @@ export type WorksetInfo = {
 
   createdAt: number;
   updatedAt: number;
-};
+}
 
 export function toWorksetInfo(raw?: RawWorksetInfo) {
-  if (!raw) return undefined;
+  if (!raw) {return;}
 
   return {
     id: raw.id,

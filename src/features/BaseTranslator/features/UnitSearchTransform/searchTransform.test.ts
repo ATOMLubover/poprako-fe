@@ -49,7 +49,7 @@ function makeMatch(
 
 describe("unit search transform helpers", () => {
   test("normalizes surrounding Unicode whitespace like the backend", () => {
-    expect(normalizeSearchPhrase("\u0085 旧词\u3000")).toBe("旧词");
+    expect(normalizeSearchPhrase("\u{85} 旧词\u{3000}")).toBe("旧词");
   });
 
   test("splits repeated literal matches without interpreting regexp syntax", () => {
@@ -91,7 +91,7 @@ describe("unit search transform helpers", () => {
 
   test("defaults to the first 100 unique units and enforces the limit", () => {
     const matches = Array.from({ length: 102 }, (_, index) =>
-      makeMatch(`unit-${index}`, "page-1"),
+      makeMatch(`unit-${String(index)}`, "page-1"),
     );
     const selected = defaultSelectedUnitIds(matches);
 
@@ -107,7 +107,7 @@ describe("unit search transform helpers", () => {
       makeMatch("unit-2", "page-1"),
     ];
     const nearlyFull = new Set(
-      Array.from({ length: 99 }, (_, index) => `existing-${index}`),
+      Array.from({ length: 99 }, (_, index) => `existing-${String(index)}`),
     );
     const filled = togglePageSelection(nearlyFull, matches);
 

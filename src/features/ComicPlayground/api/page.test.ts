@@ -14,9 +14,9 @@ class MockXmlHttpRequest {
   onerror: (() => void) | null = null;
   onabort: (() => void) | null = null;
 
-  open(): void {}
+  open(): void { return; }
 
-  setRequestHeader(): void {}
+  setRequestHeader(): void { return; }
 
   send(): void {
     this.onload?.();

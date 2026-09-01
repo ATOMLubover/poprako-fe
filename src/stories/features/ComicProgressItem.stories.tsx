@@ -51,14 +51,14 @@ function makePinnedChapter(props?: Partial<ChapterInfo>): ChapterInfo {
   };
 }
 
-function makeTranslatorAssignment(userId: string, userName: string) {
+function makeTranslatorAssignment(userId: string, username: string) {
   return {
     id: `a-${userId}`,
     chapterId: "chapter-1",
     userId,
     user: {
       id: userId,
-      name: userName,
+      name: username,
       qq: "",
       avatarUrl: "",
       isSuperAdmin: false,
@@ -72,14 +72,14 @@ function makeTranslatorAssignment(userId: string, userName: string) {
   } as AssignmentInfo;
 }
 
-function makeProofreaderAssignment(userId: string, userName: string) {
+function makeProofreaderAssignment(userId: string, username: string) {
   return {
     id: `a-${userId}`,
     chapterId: "chapter-1",
     userId,
     user: {
       id: userId,
-      name: userName,
+      name: username,
       qq: "",
       avatarUrl: "",
       isSuperAdmin: false,
@@ -93,14 +93,14 @@ function makeProofreaderAssignment(userId: string, userName: string) {
   } as AssignmentInfo;
 }
 
-function makeTypesetterAssignment(userId: string, userName: string) {
+function makeTypesetterAssignment(userId: string, username: string) {
   return {
     id: `a-${userId}`,
     chapterId: "chapter-1",
     userId,
     user: {
       id: userId,
-      name: userName,
+      name: username,
       qq: "",
       avatarUrl: "",
       isSuperAdmin: false,
@@ -139,7 +139,7 @@ function createStoryComponent(
       <ComicProgressItem
         comicInfo={storyComic}
         mode="translator"
-        onClick={() => console.log("clicked:", comic.title)}
+        onClick={() => { return; }}
       />
     </div>
   );

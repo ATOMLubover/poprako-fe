@@ -7,12 +7,12 @@ import type { Result } from "@/types/utils/result";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
-type Args = {
+interface Args {
   returnTo: string;
   logPrefix: string;
   showToast: ShowToast;
   restoreComic: (comicId: string) => Promise<Result<ComicInfo>>;
-};
+}
 
 export function useComicDetailHost({
   returnTo,
@@ -64,8 +64,8 @@ export function useComicDetailHost({
   );
 
   const clearComicDetail = useCallback(
-    (markUserClosed = false) => {
-      userClosedRef.current = markUserClosed;
+    (isUserClosed = false) => {
+      userClosedRef.current = isUserClosed;
       setSelectedComic(null);
       setComicDetailSearchParams(null, null);
     },
@@ -78,32 +78,34 @@ export function useComicDetailHost({
       return;
     }
 
-    let cancelled = false;
+    let isCancelled = false;
 
-    restoreComic(urlComicId)
-      .then((result) => {
+    const restoreSelectedComic = async () => {
+      try {
+        const result = await restoreComic(urlComicId);
         if (!result.success) {
           showLocalApiFailure(result, showToast);
-          if (!cancelled) {
+          if (!isCancelled) {
             setComicDetailSearchParams(null, null);
           }
           return;
         }
 
-        if (!cancelled) {
+        if (!isCancelled) {
           openComicDetail(result.data, urlChapterId);
         }
-      })
-      .catch((err) => {
-        console.error(`[${logPrefix}] 恢复漫画详情失败:`, err);
-        showLocalCaughtError(err, showToast, "恢复漫画详情失败");
-        if (!cancelled) {
+      } catch (error) {
+        console.error(`[${logPrefix}] 恢复漫画详情失败:`, error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "恢复漫画详情失败");
+        if (!isCancelled) {
           setComicDetailSearchParams(null, null);
         }
-      });
+      }
+    };
+    void restoreSelectedComic();
 
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, [
     logPrefix,
@@ -118,9 +120,9 @@ export function useComicDetailHost({
 
   /* eslint-disable react-hooks/preserve-manual-memoization */
   const navigateToTranslator = useCallback(
-    (chapterId: string, pageId: string, readOnly?: boolean) => {
+    (chapterId: string, pageId: string, isReadOnly?: boolean) => {
       if (!selectedComic?.id) {
-        navigate(`/translator/${chapterId}/${pageId}`);
+        void navigate(`/translator/${chapterId}/${pageId}`);
         return;
       }
 
@@ -130,11 +132,11 @@ export function useComicDetailHost({
         chapterId,
       });
 
-      if (readOnly) {
+      if (isReadOnly) {
         nextSearchParams.set("readOnly", "true");
       }
 
-      navigate({
+      void navigate({
         pathname: `/translator/${chapterId}/${pageId}`,
         search: `?${nextSearchParams.toString()}`,
       });

@@ -14,6 +14,7 @@ import {
   listUnits,
   saveUnits,
   listPages,
+  listEdittedDiffPageIds,
   searchChapterUnits,
   completeChapterStage,
   transformChapterUnits,
@@ -41,12 +42,12 @@ import type {
   TranslatorCompletionStage,
 } from "@/features/BaseTranslator/types/access";
 
-type Props = {
+interface Props {
   chapterId: string;
-  startPageId?: string;
+  startPageId: string;
   onExit: () => void;
-  startMode?: TranslatorMode;
-};
+  startMode: TranslatorMode | "auto";
+}
 
 type LoadingState =
   | { status: "loading" }
@@ -95,7 +96,7 @@ function mergePageCounters(
 export default function WebTranslator({ chapterId, startPageId, onExit, startMode }: Props) {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
   const { showToast } = useToastStore();
-  const currentUserId = useAppStore((state) => state.loginState?.userInfo?.id);
+  const currentUserId = useAppStore((state) => state.loginState.userInfo.id);
 
   const handleResolveUser = useCallback(async (userId: string) => {
     const currentUser = useAppStore.getState().loginState?.userInfo;
@@ -107,7 +108,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    let isCancelled = false;
 
     async function load() {
       setState({ status: "loading" });
@@ -118,20 +119,21 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         listPages(chapterId),
       ]);
       if (!chapterResult.success) {
-        if (!cancelled) {
+        if (!isCancelled) {
           setState({ status: "error", message: chapterResult.error });
         }
         return;
       }
       if (!pagesResult.success) {
-        if (!cancelled) {
+        if (!isCancelled) {
           setState({ status: "error", message: pagesResult.error });
         }
         return;
       }
+      // eslint-disable-next-line unicorn/no-array-sort
       const pages = pagesResult.data.sort((a, b) => a.index - b.index);
       if (pages.length === 0) {
-        if (!cancelled) {
+        if (!isCancelled) {
           setState({ status: "error", message: "当前章节暂无页面" });
         }
         return;
@@ -139,7 +141,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
 
       // 2. Determine the current user's assignment permissions.
       // An unavailable assignment lookup must fail closed to read-only.
-      const userId = useAppStore.getState().loginState?.userInfo?.id;
+      const userId = useAppStore.getState().loginState.userInfo.id;
       let canTranslate = false;
       let canProofread = false;
 
@@ -150,15 +152,15 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
             offset,
             limit: ASSIGNMENT_PAGE_SIZE,
           });
-          if (!assignResult.success) break;
+          if (!assignResult.success) {break;}
 
           const assignment = assignResult.data.find((item) => item.userId === userId);
           if (assignment) {
-            canTranslate = assignment.assignedTranslatorAt != null;
-            canProofread = assignment.assignedProofreaderAt != null;
+            canTranslate = assignment.assignedTranslatorAt !== undefined;
+            canProofread = assignment.assignedProofreaderAt !== undefined;
             break;
           }
-          if (assignResult.data.length < ASSIGNMENT_PAGE_SIZE) break;
+          if (assignResult.data.length < ASSIGNMENT_PAGE_SIZE) {break;}
         }
       }
 
@@ -182,7 +184,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
           imageOptimizedUrl: p.imageOptimizedUrl,
           imageThumbnailUrl: p.imageThumbnailUrl,
           isUploaded: p.isUploaded,
-          creatorId: p.creatorId ?? "",
+          creatorId: p.creatorId,
           creator: p.creator,
           totalUnitCount: p.totalUnitCount,
           translatedUnitCount: p.translatedUnitCount,
@@ -192,7 +194,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
         })),
       };
 
-      if (!cancelled) {
+      if (!isCancelled) {
         setState({
           status: "ready",
           project,
@@ -203,17 +205,17 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       }
     }
 
-    load();
-    return () => { cancelled = true; };
+    void load();
+    return () => { isCancelled = true; };
   }, [chapterId]);
 
   const handleFetchUnits = useCallback(
     async (pageId: string) => {
       const result = await listUnits(pageId);
-      if (!result.success) return result;
+      if (!result.success) {return result;}
 
       setState((prev) => {
-        if (prev.status !== "ready") return prev;
+        if (prev.status !== "ready") {return prev;}
 
         const nextPages = mergePageCounters(prev.project.pages, pageId, {
           totalUnitCount: result.data.totalUnitCount,
@@ -234,6 +236,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
 
       return {
         success: true as const,
+        // eslint-disable-next-line unicorn/no-array-sort
         data: [...result.data.units].sort((lhs, rhs) => lhs.index - rhs.index),
       };
     },
@@ -244,7 +247,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     async (pageId: string) => {
       const result = await handleFetchUnits(pageId);
       if (!result.success) {
-        console.error("[WebTranslator] 加载单页单位失败", {
+        console.error("[WebTranslator] 加载单页单位失败", { // eslint-disable-line no-console
           pageId,
           error: result.error,
         });
@@ -261,7 +264,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     async (pageId: string, diff: UnitDiff): Promise<void> => {
       const result = await saveUnits(pageId, diff);
       if (!result.success) {
-        console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error });
+        console.error("[WebTranslator] 保存单页单位失败", { pageId, diff, error: result.error }); // eslint-disable-line no-console
         throw toApiRequestError(result);
       }
 
@@ -278,13 +281,13 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       // falls back to the original while older servers are still in use.
       if (state.status === "ready") {
         const page = state.project.pages.find((p) => p.id === pageId);
-        if (page) return selectPageImageUrl(page, quality);
+        if (page) {return selectPageImageUrl(page, quality);}
       }
       // Fallback: fetch pages again
       const result = await listPages(chapterId);
       if (result.success) {
         const page = result.data.find((p) => p.id === pageId);
-        if (page) return selectPageImageUrl(page, quality);
+        if (page) {return selectPageImageUrl(page, quality);}
       }
       return "";
     },
@@ -294,14 +297,20 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
   const handleCompleteStage = useCallback(
     async (stage: TranslatorCompletionStage) => {
       const result = await completeChapterStage(chapterId, stage);
-      if (!result.success) throw toApiRequestError(result);
+      if (!result.success) {throw toApiRequestError(result);}
     },
     [chapterId],
   );
 
+  const handleListEditedPageIds = useCallback(async () => {
+    const result = await listEdittedDiffPageIds(chapterId);
+    if (!result.success) {throw toApiRequestError(result);}
+    return result.data;
+  }, [chapterId]);
+
   const comicId = state.status === "ready" ? state.comicId : undefined;
   const terminology = useMemo<TerminologyDataSource | undefined>(() => {
-    if (!comicId) return undefined;
+    if (!comicId) {return;}
 
     return {
       listTermbases: (args) => listComicTermbases({ comicId, ...args }),
@@ -339,6 +348,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       >
         <p className="text-sm text-destructive">{state.message}</p>
         <button
+          type="button"
           onClick={onExit}
           className={
             "text-sm text-muted-foreground hover:text-foreground " +
@@ -351,6 +361,13 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
     );
   }
 
+  if (!currentUserId) {
+    throw new Error("[WebTranslator] 缺少当前登录用户 ID");
+  }
+  if (!terminology) {
+    throw new Error("[WebTranslator] 缺少术语数据源");
+  }
+
   return (
     <BaseTranslator
       project={state.project}
@@ -359,6 +376,7 @@ export default function WebTranslator({ chapterId, startPageId, onExit, startMod
       onLoadPageImage={handleLoadPageImage}
       onResolveUser={handleResolveUser}
       onCompleteStage={handleCompleteStage}
+      onListEditedPageIds={handleListEditedPageIds}
       onExit={onExit}
       currentUserId={currentUserId}
       canTranslate={state.canTranslate}

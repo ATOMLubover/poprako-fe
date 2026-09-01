@@ -6,7 +6,7 @@ import clsx from "clsx";
 type Size = "compact" | "default" | "large" | "wide";
 type Tone = "brand" | "warning";
 
-type Props = {
+interface Props {
   title: string;
   description?: string;
   children: ReactNode;
@@ -20,7 +20,7 @@ type Props = {
   closeOnBackdrop?: boolean;
   bodyClassName?: string;
   contentClassName?: string;
-};
+}
 
 export default function AppDialog({
   title,
@@ -41,7 +41,7 @@ export default function AppDialog({
     <Dialog.Root
       open
       onOpenChange={(open) => {
-        if (!open && !locked) onClose();
+        if (!open && !locked) {onClose();}
       }}
     >
       <Dialog.Portal>
@@ -57,10 +57,10 @@ export default function AppDialog({
         <Dialog.Content
           data-app-dialog
           onEscapeKeyDown={(event) => {
-            if (locked || !closeOnEscape) event.preventDefault();
+            if (locked || !closeOnEscape) {event.preventDefault();}
           }}
           onPointerDownOutside={(event) => {
-            if (locked || !closeOnBackdrop) event.preventDefault();
+            if (locked || !closeOnBackdrop) {event.preventDefault();}
           }}
           className={clsx(
             "fixed left-1/2 top-1/2 z-100 flex w-[calc(100%-2rem)]",
@@ -120,7 +120,7 @@ export default function AppDialog({
           <div className={clsx("min-h-0 flex-1 overflow-y-auto px-5 py-3", bodyClassName)}>
             {children}
           </div>
-          {footer && (
+          {footer !== null && footer !== undefined && (
             <div className="shrink-0 px-5 pb-5 pt-2">
               {footer}
             </div>
@@ -142,6 +142,7 @@ export function AppDialogAction({
 }: ActionProps) {
   return (
     <button
+      type="button"
       {...props}
       className={clsx(
         "flex h-8 items-center justify-center gap-1 rounded-lg border px-3",

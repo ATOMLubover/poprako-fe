@@ -8,11 +8,11 @@ import {
   workflowRecordUserIds,
 } from "../workflowRecord";
 
-type Args = {
+interface Args {
   records: ChapterWorkflowRecord[];
   assignments: AssignmentInfo[];
   onResolveUser: ComicDetailModalProps["onResolveWorkflowRecordUser"];
-};
+}
 
 export function useWorkflowRecordUsers({
   records,
@@ -28,15 +28,15 @@ export function useWorkflowRecordUsers({
 
   const assignmentUsers = useMemo(() => {
     const users = new Map<string, UserInfo>();
-    assignments.forEach((assignment) => {
-      if (assignment.user) users.set(assignment.userId, assignment.user);
-    });
+    for (const assignment of assignments) {
+      if (assignment.user) {users.set(assignment.userId, assignment.user);}
+    }
     return users;
   }, [assignments]);
 
   useEffect(() => {
-    const userIds = new Set(records.flatMap(workflowRecordUserIds));
-    const missingUserIds = Array.from(userIds).filter(
+    const userIds = new Set(records.flatMap((record) => workflowRecordUserIds(record)));
+    const missingUserIds = [...userIds].filter(
       (userId) =>
         !assignmentUsers.has(userId) &&
         !resolvedUsersRef.current.has(userId) &&
@@ -44,13 +44,13 @@ export function useWorkflowRecordUsers({
         !failedUserIdsRef.current.has(userId),
     );
 
-    missingUserIds.forEach((userId) => {
+    for (const userId of missingUserIds) {
       pendingUserIdsRef.current.add(userId);
       void onResolveUser(userId)
         .then((result) => {
           if (!result.success) {
             failedUserIdsRef.current.add(userId);
-            console.error(
+            console.error( // eslint-disable-line no-console
               "[ComicDetailModal] 解析 workflow record 用户失败:",
               result.error,
             );
@@ -64,9 +64,9 @@ export function useWorkflowRecordUsers({
             return next;
           });
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
           failedUserIdsRef.current.add(userId);
-          console.error(
+          console.error( // eslint-disable-line no-console
             "[ComicDetailModal] 解析 workflow record 用户异常:",
             error,
           );
@@ -74,13 +74,13 @@ export function useWorkflowRecordUsers({
         .finally(() => {
           pendingUserIdsRef.current.delete(userId);
         });
-    });
+    }
   }, [assignmentUsers, onResolveUser, records]);
 
   return useCallback(
     (userId: string) => {
       const user = assignmentUsers.get(userId) ?? resolvedUsers.get(userId);
-      return user?.name.trim() || shortWorkflowRecordUserId(userId);
+      return user?.name.trim() || shortWorkflowRecordUserId(userId); // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing
     },
     [assignmentUsers, resolvedUsers],
   );

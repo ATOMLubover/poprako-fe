@@ -1,7 +1,7 @@
-export type FixedShortcut = {
+export interface FixedShortcut {
   label: string;
   keys: string[];
-};
+}
 
 export type ShortcutAction =
   | "toggleMode"
@@ -17,11 +17,11 @@ export type ShortcutAction =
   | "quickSpecialChar3"
   | "save";
 
-export type ConfigurableShortcut = {
+export interface ConfigurableShortcut {
   action: ShortcutAction;
   label: string;
   keys: string[];
-};
+}
 
 const MODIFIER_KEYS = new Set(["Control", "Shift", "Alt", "Meta"]);
 
@@ -30,33 +30,42 @@ const DISPLAY_KEY_MAP: Record<string, string> = {
   Meta: "Cmd",
 };
 
+function normalizeShortcutKeys(keys: string[]): string {
+  return [...keys]
+    .map((key) => key.toLowerCase())
+    // eslint-disable-next-line unicorn/no-array-sort
+    .sort((left, right) => left.localeCompare(right))
+    .join("+");
+}
+
 export function formatKeys(keys: string[]): string {
   return keys
     .map((k) => {
-      if (k === "Alt" && navigator.platform.includes("Mac")) return "Opt";
+      if (k === "Alt" && navigator.userAgent.includes("Mac")) {return "Opt";}
       return DISPLAY_KEY_MAP[k] ?? k;
     })
     .map((s) => s.toUpperCase())
     .join(" + ");
 }
 
-export function matchesShortcut(e: KeyboardEvent, keys: string[]): boolean {
-  const modifiers = keys.filter((k) => MODIFIER_KEYS.has(k));
+export function isShortcutMatch(e: KeyboardEvent, keys: string[]): boolean {
   const nonModifiers = keys.filter((k) => !MODIFIER_KEYS.has(k));
-  if (nonModifiers.length !== 1) return false;
+  if (nonModifiers.length !== 1) {return false;}
+  const modifiers = new Set(keys.filter((k) => MODIFIER_KEYS.has(k)));
 
-  const wantCtrl = modifiers.includes("Control");
-  const wantShift = modifiers.includes("Shift");
-  const wantAlt = modifiers.includes("Alt");
-  const wantMeta = modifiers.includes("Meta");
+  const isWantCtrl = modifiers.has("Control");
 
-  if (e.ctrlKey !== wantCtrl) return false;
-  if (e.shiftKey !== wantShift) return false;
-  if (e.altKey !== wantAlt) return false;
-  if (e.metaKey !== wantMeta) return false;
+  if (e.ctrlKey !== isWantCtrl) {return false;}
+  const isWantShift = modifiers.has("Shift");
+  if (e.shiftKey !== isWantShift) {return false;}
+  const isWantAlt = modifiers.has("Alt");
+  if (e.altKey !== isWantAlt) {return false;}
+  const isWantMeta = modifiers.has("Meta");
+  if (e.metaKey !== isWantMeta) {return false;}
 
   const expectedKey = nonModifiers[0];
-  if (/^\d$/.test(expectedKey)) return e.code === `Digit${expectedKey}`;
+  if (!expectedKey) {return false;}
+  if (/^\d$/.test(expectedKey)) {return e.code === `Digit${expectedKey}`;}
 
   return e.key.toLowerCase() === expectedKey.toLowerCase();
 }
@@ -66,11 +75,8 @@ export function hasConflict(
   index: number,
   newKeys: string[],
 ): boolean {
-  const normalize = (keys: string[]) =>
-    keys
-      .map((k) => k.toLowerCase())
-      .sort()
-      .join("+");
-  const newNorm = normalize(newKeys);
-  return shortcuts.some((s, i) => i !== index && normalize(s.keys) === newNorm);
+  const newNorm = normalizeShortcutKeys(newKeys);
+  return shortcuts.some((shortcut, shortcutIndex) =>
+    shortcutIndex !== index && normalizeShortcutKeys(shortcut.keys) === newNorm,
+  );
 }

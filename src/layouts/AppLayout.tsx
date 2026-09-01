@@ -40,12 +40,12 @@ function MobileBottomNav() {
     >
       {mobileNavItems.map((item) => {
         const isActive = location.pathname === item.path;
-        const showBadge = item.path === "/system-mail" && hasUnread;
+        const isShowBadge = item.path === "/system-mail" && hasUnread;
         return (
           <button
             key={item.path}
             type="button"
-            onClick={() => navigate(item.path)}
+            onClick={() => { void navigate(item.path); }}
             className={clsx(
               "flex flex-col items-center gap-0.5 px-4 py-1 transition-colors",
               isActive ? "text-[#166534]" : "text-[#7A6D63]",
@@ -53,7 +53,7 @@ function MobileBottomNav() {
           >
             <span className="relative">
               <item.icon size={20} strokeWidth={isActive ? 2.4 : 2} />
-              {showBadge && (
+              {isShowBadge && (
                 <span
                   className={clsx(
                     "absolute -top-0.5 -right-0.5",
@@ -88,30 +88,37 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (loginState !== null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsReady(true);
-      setShowFirstRegistrationGuide(!readFirstRegistrationFlag());
+      setIsReady(true); // eslint-disable-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
+      setShowFirstRegistrationGuide(!readFirstRegistrationFlag()); // eslint-disable-line @eslint-react/set-state-in-effect
       return;
     }
 
-    getMyUser()
-      .then(async (userInfo) => {
+    async function loadUser() {
+      try {
+        const userInfo = await getMyUser();
         const memberInfos = await listMyMembers({ ownerId: userInfo.id });
         setLoginState({ userInfo, memberInfos });
         setIsReady(true);
         setShowFirstRegistrationGuide(!readFirstRegistrationFlag());
-      })
-      .catch(() => navigate("/login", { replace: true }));
+      } catch {
+        void navigate("/login", { replace: true });
+      }
+    }
+
+    void loadUser();
   }, [loginState, navigate, setLoginState]);
 
   useEffect(() => {
-    if (sysMailCache !== null) return;
-    listSysMails(0, MAIL_PREFETCH_SIZE + 1).then((result) => {
-      if (!result.success) return;
+    if (sysMailCache !== null) {return;}
+    async function loadMail() {
+      const result = await listSysMails(0, MAIL_PREFETCH_SIZE + 1);
+      if (!result.success) {return;}
       const batch = result.data.slice(0, MAIL_PREFETCH_SIZE);
       const hasMore = result.data.length > MAIL_PREFETCH_SIZE;
       setSysMailCache({ mails: batch, hasMore });
-    });
+    }
+
+    void loadMail();
   }, [sysMailCache, setSysMailCache]);
 
   if (!isReady) {
@@ -140,7 +147,7 @@ export default function AppLayout() {
           onClose={closeFirstRegistrationGuide}
           onOpenSettings={() => {
             closeFirstRegistrationGuide();
-            navigate("/settings");
+            void navigate("/settings");
           }}
         />
       )}

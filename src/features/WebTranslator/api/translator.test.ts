@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
+  listEdittedDiffPageIds,
   searchChapterUnits,
   transformChapterUnits,
 } from "./translator";
 
 function okJson(data: unknown) {
-  return new Response(JSON.stringify({ code: 0, data }), {
+  return Response.json({ code: 0, data }, {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
@@ -14,6 +15,23 @@ function okJson(data: unknown) {
 describe("chapter unit search and transform API", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+  });
+
+  test("unwraps editted diff page IDs in server page order", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(okJson({
+      page_ids: ["page-2", "page-5"],
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await listEdittedDiffPageIds("chapter-1");
+
+    expect(String(fetchMock.mock.calls[0][0])).toBe(
+      "/api/v1/chapters/chapter-1/pages/editted-diffs",
+    );
+    expect(result).toEqual({
+      success: true,
+      data: ["page-2", "page-5"],
+    });
   });
 
   test("maps search query fields and unwraps page ownership", async () => {
@@ -60,7 +78,7 @@ describe("chapter unit search and transform API", () => {
     expect(String(fetchMock.mock.calls[0][0])).toBe(
       "/api/v1/chapters/chapter-1/units/transform",
     );
-    expect(JSON.parse(String(request.body))).toEqual({
+    expect(JSON.parse(request.body as string)).toEqual({
       part: "proofread_text",
       units: [
         {

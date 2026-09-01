@@ -1,36 +1,36 @@
-export type ListComicTermbasesArgs = {
+export interface ListComicTermbasesArgs {
   comicId: string;
   fuzzyName?: string;
   offset: number;
   limit: number;
-};
+}
 
-export type RawListComicTermbasesArgs = {
+export interface RawListComicTermbasesArgs {
   comic_id: string;
   fuzzy_name?: string;
   offset: number;
   limit: number;
-};
+}
 
-export type CreateComicTermbaseArgs = {
+export interface CreateComicTermbaseArgs {
   comicId: string;
   name: string;
   description?: string;
-};
+}
 
-export type RawCreateComicTermbaseArgs = {
+export interface RawCreateComicTermbaseArgs {
   comic_id: string;
   name: string;
   description?: string;
-};
+}
 
-export type UpdateTermbaseArgs = {
+export interface UpdateTermbaseArgs {
   name: string;
   description?: string;
-};
+}
 
-export type RawUpdateTermbaseArgs = {
+export interface RawUpdateTermbaseArgs {
   id: string;
   name: string;
   description?: string;
-};
+}

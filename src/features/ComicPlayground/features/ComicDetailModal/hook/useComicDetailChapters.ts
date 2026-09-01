@@ -8,13 +8,13 @@ import { pickFallbackChapterId } from "../utils";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
-type Args = {
+interface Args {
   comicId: string;
   pinnedChapter: ChapterInfo | null;
   initialChapterId?: string | null;
   onLoadChapters: ComicDetailModalProps["onLoadChapters"];
   showToast: ShowToast;
-};
+}
 
 const CHAPTERS_LIMIT = 20;
 
@@ -45,7 +45,7 @@ export function useComicDetailChapters({
       pinnedChapter?.id === selectedChapterId);
 
   useEffect(() => {
-    let cancelled = false;
+    let isCancelled = false;
 
     const loadInitialChapters = async () => {
       setIsChaptersLoading(true);
@@ -55,7 +55,7 @@ export function useComicDetailChapters({
         let hasMore = true;
         const loadedChapters: ChapterInfo[] = [];
 
-        while (hasMore) {
+        for (;;) {
           const res = await onLoadChapters({
             comicId,
             offset,
@@ -63,7 +63,7 @@ export function useComicDetailChapters({
           });
 
           if (!res.success) {
-            console.error("[ComicDetailModal] 加载章节失败:", res);
+            console.error("[ComicDetailModal] 加载章节失败:", res); // eslint-disable-line no-console
             showLocalApiFailure(res, showToast, "加载章节失败");
             return;
           }
@@ -72,11 +72,11 @@ export function useComicDetailChapters({
           hasMore = res.data.length === CHAPTERS_LIMIT;
 
           if (
+            !hasMore ||
             !initialChapterId ||
-            loadedChapters.some((chapter) => chapter.id === initialChapterId) ||
-            !hasMore
+            loadedChapters.some((chapter) => chapter.id === initialChapterId)
           ) {
-            if (!cancelled) {
+            if (!isCancelled) {
               setChapters(loadedChapters);
               setChaptersHasMore(hasMore);
               setSelectedChapterId(() => {
@@ -101,16 +101,16 @@ export function useComicDetailChapters({
           offset += res.data.length;
         }
 
-        if (!cancelled) {
+        if (!isCancelled) {
           setChapters(loadedChapters);
           setChaptersHasMore(false);
           setSelectedChapterId(loadedChapters[0]?.id ?? null);
         }
-      } catch (err) {
-        console.error("[ComicDetailModal] 加载章节异常:", err);
-        showLocalCaughtError(err, showToast, "加载章节失败");
+      } catch (error) {
+      console.error("[ComicDetailModal] 加载章节异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "加载章节失败");
       } finally {
-        if (!cancelled) {
+        if (!isCancelled) {
           setIsChaptersLoading(false);
         }
       }
@@ -119,30 +119,33 @@ export function useComicDetailChapters({
     void loadInitialChapters();
 
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, [comicId, initialChapterId, onLoadChapters, pinnedChapter?.id, showToast]);
 
   const handleLoadMoreChapters = useCallback(() => {
-    if (isChaptersLoading || !chaptersHasMore) return;
+    if (isChaptersLoading || !chaptersHasMore) {return;}
     setIsChaptersLoading(true);
-    onLoadChapters({
-      comicId,
-      offset: chapters.length,
-      limit: CHAPTERS_LIMIT,
-    })
-      .then((res) => {
+    const loadMoreChapters = async () => {
+      try {
+        const res = await onLoadChapters({
+          comicId,
+          offset: chapters.length,
+          limit: CHAPTERS_LIMIT,
+        });
         if (!res.success) {
           showLocalApiFailure(res, showToast, "加载更多章节失败");
           return;
         }
         setChapters((prev) => [...prev, ...res.data]);
         setChaptersHasMore(res.data.length === CHAPTERS_LIMIT);
-      })
-      .catch((error) => {
+      } catch (error) {
         showLocalCaughtError(error, showToast, "加载更多章节失败");
-      })
-      .finally(() => setIsChaptersLoading(false));
+      } finally {
+        setIsChaptersLoading(false);
+      }
+    };
+    void loadMoreChapters();
   }, [chapters.length, chaptersHasMore, comicId, isChaptersLoading, onLoadChapters, showToast]);
 
   const reloadLoadedChapters = useCallback(async () => {
@@ -153,7 +156,7 @@ export function useComicDetailChapters({
     });
 
     if (!res.success) {
-      console.error("[ComicDetailModal] 刷新章节失败:", res);
+      console.error("[ComicDetailModal] 刷新章节失败:", res); // eslint-disable-line no-console
       showLocalApiFailure(res, showToast, "刷新章节失败");
       return null;
     }

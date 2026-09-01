@@ -25,7 +25,7 @@ import { resolveComicDetailCoverUrl } from "../coverUrl";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
-type Args = {
+interface Args {
   accessToken: string | null;
   comicId: string;
   comicTitle: string;
@@ -48,13 +48,13 @@ type Args = {
   reloadLoadedChapters: () => Promise<unknown>;
   onWorkflowRecordsChanged?: () => void;
   showToast: ShowToast;
-};
+}
 
 function sanitizeFileName(value: string) {
   return (
     (value || "")
       // eslint-disable-next-line no-control-regex
-      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+      .replaceAll(/[<>:"/\\|?*\u{0}-\u{1F}]/gu, "_")
       .trim()
       .slice(0, 120) || "chapter-export"
   );
@@ -67,49 +67,60 @@ function wait(ms: number) {
 }
 
 function getFileExtensionFromContentType(contentType: string | null) {
-  switch (contentType?.split(";")[0].trim().toLowerCase()) {
-    case "image/jpeg":
-      return "jpg";
-    case "image/png":
-      return "png";
-    case "image/webp":
-      return "webp";
-    case "image/gif":
-      return "gif";
-    case "image/avif":
-      return "avif";
-    case "image/bmp":
-      return "bmp";
-    case "image/tiff":
-      return "tiff";
-    default:
+  switch (contentType?.split(";", 1)[0].trim().toLowerCase()) {
+    case undefined: {
       return null;
+    }
+    case "image/jpeg": {
+      return "jpg";
+    }
+    case "image/png": {
+      return "png";
+    }
+    case "image/webp": {
+      return "webp";
+    }
+    case "image/gif": {
+      return "gif";
+    }
+    case "image/avif": {
+      return "avif";
+    }
+    case "image/bmp": {
+      return "bmp";
+    }
+    case "image/tiff": {
+      return "tiff";
+    }
+    default: {
+      return null;
+    }
   }
 }
 
 function getFileExtensionFromUrl(imageUrl: string) {
   try {
     const pathname = new URL(imageUrl).pathname;
-    const match = pathname.match(/\.([a-zA-Z0-9]+)$/);
+    const match = /\.([a-zA-Z0-9]+)$/.exec(pathname);
     return match?.[1]?.toLowerCase() ?? null;
   } catch {
-    const normalized = imageUrl.split("?")[0]?.split("#")[0] ?? "";
-    const match = normalized.match(/\.([a-zA-Z0-9]+)$/);
+    const normalized = imageUrl.split("?", 1)[0]?.split("#", 1)[0] ?? "";
+    const match = /\.([a-zA-Z0-9]+)$/.exec(normalized);
     return match?.[1]?.toLowerCase() ?? null;
   }
 }
 
 function appendDownloadCacheBuster(imageUrl: string) {
-  const cacheBuster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const cacheBuster = `${String(Date.now())}-${Math.random().toString(36).slice(2)}`;
 
   try {
     const url = new URL(imageUrl);
     url.searchParams.set("_download_bust", cacheBuster);
-    return url.toString();
+    return url.href;
   } catch {
     const hashIndex = imageUrl.indexOf("#");
-    const base = hashIndex >= 0 ? imageUrl.slice(0, hashIndex) : imageUrl;
-    const hash = hashIndex >= 0 ? imageUrl.slice(hashIndex) : "";
+    const base = hashIndex === -1 ? imageUrl : imageUrl.slice(0, hashIndex);
+    const hash = hashIndex === -1 ? "" : imageUrl.slice(hashIndex);
     const separator = base.includes("?") ? "&" : "?";
     return `${base}${separator}_download_bust=${encodeURIComponent(cacheBuster)}${hash}`;
   }
@@ -159,12 +170,12 @@ export function useComicDetailExport({
   const buildExportBaseName = useCallback(() => {
     const normalizedComicIndex = (comicIndex ?? 0) + 1;
     const chapterIndex = (selectedChapter?.index ?? 0) + 1;
-    const author = comicAuthor || "未知作者";
-    const title = comicTitle || "未命名漫画";
-    const subtitle = selectedChapter?.subtitle || "";
+    const author = comicAuthor ?? "未知作者";
+    const title = comicTitle;
+    const subtitle = selectedChapter?.subtitle ?? "";
 
     return sanitizeFileName(
-      `【#${normalizedComicIndex}-${chapterIndex}】[${author}]${title}（${subtitle}）`,
+      `【#${String(normalizedComicIndex)}-${String(chapterIndex)}】[${author}]${title}（${subtitle}）`,
     );
   }, [comicAuthor, comicIndex, comicTitle, selectedChapter?.index, selectedChapter?.subtitle]);
 
@@ -205,13 +216,13 @@ export function useComicDetailExport({
           });
           if (!response.ok) {
             const responseText = await response.text();
-            let message = responseText || response.statusText || `HTTP ${response.status}`;
+            let message = responseText || response.statusText || `HTTP ${String(response.status)}`;
             try {
               const body = JSON.parse(responseText) as { message?: unknown };
-              if (typeof body.message === "string") message = body.message;
+              if (typeof body.message === "string") {message = body.message;}
             } catch {
               const xmlMessage = /<Message>([^<]+)<\/Message>/.exec(responseText);
-              if (xmlMessage?.[1]) message = xmlMessage[1];
+              if (xmlMessage?.[1]) {message = xmlMessage[1];}
             }
             throw toApiRequestError(createHttpFailure(message, response.status));
           }
@@ -222,12 +233,14 @@ export function useComicDetailExport({
             "png";
 
           return { blob, extension };
-        } catch (err) {
-          if (err instanceof DOMException && err.name === "AbortError") {
-            throw err;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            throw error;
           }
           if (attempt >= maxAttempts) {
-            console.error("[ComicDetailModal] 下载图片失败，已跳过:", imageUrl, err);
+            console.error( // eslint-disable-line no-console -- report skipped download.
+              "[ComicDetailModal] 下载图片失败，已跳过:", imageUrl, error,
+            );
             return null;
           }
           await wait(300 * attempt);
@@ -239,15 +252,13 @@ export function useComicDetailExport({
   );
 
   const toAssignmentText = useCallback(() => {
-    const pickNames = (predicate: (item: AssignmentInfo) => boolean) => {
-      const uniqueNames = Array.from(
-        new Set(
+    const pickNames = (isMatch: (item: AssignmentInfo) => boolean) => {
+      const uniqueNames = [...new Set(
           assignments
-            .filter(predicate)
-            .map((item) => item.user?.name || item.userId)
-            .filter((name) => !!name),
-        ),
-      );
+            .filter((item) => isMatch(item))
+            .map((item) => item.user?.name ?? item.userId)
+            .filter(Boolean),
+        )];
       return uniqueNames.join("、");
     };
 
@@ -264,9 +275,9 @@ export function useComicDetailExport({
   }, [assignments]);
 
   const handleExportData = useCallback(async (opts?: { includeImages?: boolean }) => {
-    const includeImages = opts?.includeImages ?? true;
-    if (!selectedChapterId || !onExportChapter) return;
-    if (isExportingData) return;
+    if (!selectedChapterId || !onExportChapter) {return;}
+    if (isExportingData) {return;}
+    const isIncludeImages = opts?.includeImages ?? true;
 
     const abortController = new AbortController();
     exportAbortControllerRef.current = abortController;
@@ -294,7 +305,7 @@ export function useComicDetailExport({
       const zip = new JSZip();
       let skippedImages = 0;
 
-      if (includeImages) {
+      if (isIncludeImages) {
         const imageFolder = zip.folder("images");
         const totalPages = poprako.pages.length;
         const imageUrlsByPageId = new Map(
@@ -312,7 +323,7 @@ export function useComicDetailExport({
               completedPages += 1;
               setExportProgressStep(
                 "正在下载页面图片",
-                `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+                `正在处理第 ${String(completedPages)} / ${String(totalPages)} 页图片。`,
                 20 + (completedPages / Math.max(totalPages, 1)) * 60,
               );
               return {
@@ -333,7 +344,7 @@ export function useComicDetailExport({
               completedPages += 1;
               setExportProgressStep(
                 "正在下载页面图片",
-                `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+                `正在处理第 ${String(completedPages)} / ${String(totalPages)} 页图片。`,
                 20 + (completedPages / Math.max(totalPages, 1)) * 60,
               );
 
@@ -347,7 +358,7 @@ export function useComicDetailExport({
             completedPages += 1;
             setExportProgressStep(
               "正在下载页面图片",
-              `正在处理第 ${completedPages} / ${totalPages} 页图片。`,
+              `正在处理第 ${String(completedPages)} / ${String(totalPages)} 页图片。`,
               20 + (completedPages / Math.max(totalPages, 1)) * 60,
             );
 
@@ -363,7 +374,11 @@ export function useComicDetailExport({
           ...poprako,
           exportedAt: new Date().toISOString(),
           skippedImageCount: skippedImages,
-          pages: pagesWithAssets.map(({ sourceImageUrl: _, ...page }) => page),
+          pages: pagesWithAssets.map((pageWithImage) => {
+            const { sourceImageUrl, ...page } = pageWithImage;
+            void sourceImageUrl;
+            return page;
+          }),
         };
 
         zip.file("translation.prk.json", JSON.stringify(payload, null, 2));
@@ -411,37 +426,37 @@ export function useComicDetailExport({
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = includeImages
+      link.download = isIncludeImages
         ? `${fileBaseName}.zip`
         : `${fileBaseName}-翻校数据.zip`;
-      document.body.appendChild(link);
+      document.body.append(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(downloadUrl);
 
       setExportProgressStep("下载完成", "文件已开始下载。", 100);
 
-      if (includeImages && skippedImages > 0) {
+      if (isIncludeImages && skippedImages > 0) {
         showToast(
           "导出完成，已打包图片、translation.prk.json、translation.lp.txt、" +
-            `assignments.txt，${skippedImages} 张图片下载失败后已跳过`,
+            `assignments.txt，${String(skippedImages)} 张图片下载失败后已跳过`,
           "error",
         );
         return;
       }
       showToast(
-        includeImages
+        isIncludeImages
           ? "导出成功，已打包图片、translation.prk.json、translation.lp.txt、assignments.txt"
           : "导出成功，已打包 translation.prk.json、translation.lp.txt、assignments.txt",
         "success",
       );
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
         showToast("下载已取消", "info");
         return;
       }
-      console.error("[ComicDetailModal] 导出章节数据异常:", err);
-      showLocalCaughtError(err, showToast, "导出失败");
+      console.error("[ComicDetailModal] 导出章节数据异常:", error); // eslint-disable-line no-console
+      showLocalCaughtError(error, showToast, "导出失败");
     } finally {
       exportAbortControllerRef.current = null;
       setIsExportingData(false);
@@ -463,8 +478,8 @@ export function useComicDetailExport({
 
   const detectImportFormat = useCallback((file: File) => {
     const name = file.name.toLowerCase();
-    if (name.endsWith(".json")) return "json" as const;
-    if (name.endsWith(".txt")) return "lp" as const;
+    if (name.endsWith(".json")) {return "json" as const;}
+    if (name.endsWith(".txt")) {return "lp" as const;}
     return null;
   }, []);
 
@@ -472,7 +487,7 @@ export function useComicDetailExport({
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFile = event.target.files?.[0];
       event.target.value = "";
-      if (!selectedFile || !selectedChapterId || !onImportChapter) return;
+      if (!selectedFile || !selectedChapterId || !onImportChapter) {return;}
 
       const format = detectImportFormat(selectedFile);
       if (!format) {
@@ -498,12 +513,12 @@ export function useComicDetailExport({
         onWorkflowRecordsChanged?.();
 
         showToast(
-          `导入成功：${result.data.importedPageCount} 页，${result.data.importedUnitCount} 单元`,
+          `导入成功：${String(result.data.importedPageCount)} 页，${String(result.data.importedUnitCount)} 单元`,
           "success",
         );
-      } catch (err) {
-        console.error("[ComicDetailModal] 导入章节数据异常:", err);
-        showLocalCaughtError(err, showToast, "导入失败");
+      } catch (error) {
+        console.error("[ComicDetailModal] 导入章节数据异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "导入失败");
       } finally {
         setIsImportingData(false);
       }
@@ -521,7 +536,7 @@ export function useComicDetailExport({
 
   const handleUploadCover = useCallback(
     async (file: File) => {
-      if (isUploadingCover) return;
+      if (isUploadingCover) {return;}
 
       const ext = getFileExtension(file);
       if (!ext) {
@@ -554,7 +569,7 @@ export function useComicDetailExport({
           slot.putUrl,
           file,
           slot.headers,
-          (percent) => setCoverUploadProgress(percent),
+          (percent) => { setCoverUploadProgress(percent); },
         );
         if (!uploadRes.success) {
           showLocalApiFailure(uploadRes, showToast);
@@ -571,13 +586,13 @@ export function useComicDetailExport({
         }
 
         setLocalCoverUrl((prev) => {
-          if (prev) URL.revokeObjectURL(prev);
+          if (prev) {URL.revokeObjectURL(prev);}
           return URL.createObjectURL(file);
         });
         showToast("封面上传成功", "success");
-      } catch (err) {
-        console.error("[ComicDetailModal] 封面上传异常:", err);
-        showLocalCaughtError(err, showToast, "封面上传失败", true);
+      } catch (error) {
+        console.error("[ComicDetailModal] 封面上传异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "封面上传失败", true);
       } finally {
         setIsUploadingCover(false);
         setCoverUploadProgress(null);
@@ -590,7 +605,7 @@ export function useComicDetailExport({
     (event) => {
       const file = event.target.files?.[0];
       event.target.value = "";
-      if (!file) return;
+      if (!file) {return;}
       void handleUploadCover(file);
     },
     [handleUploadCover],

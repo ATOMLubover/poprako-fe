@@ -1,7 +1,7 @@
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import AppDialog, { AppDialogAction } from "@/components/ui/AppDialog";
 
-type Props = {
+interface Props {
   title: string;
   description?: string;
   children?: React.ReactNode;
@@ -13,7 +13,7 @@ type Props = {
   confirmDisabled?: boolean;
   confirmTone?: "danger" | "success";
   hideFooter?: boolean;
-};
+}
 
 export default function ConfirmDialog({
   title,

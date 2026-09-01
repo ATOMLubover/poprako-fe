@@ -7,18 +7,18 @@ export type NavId =
   | "system-mail"
   | "settings";
 
-export type NavConfig = {
+export interface NavConfig {
   id: NavId;
   path: string;
   label: string;
   icon: LucideIcon;
-};
+}
 
-export type TeamConfig = {
+export interface TeamConfig {
   id: string;
   name: string;
   short: string;
   desc: string;
   avatarUrl: string;
   avatarThumbnailUrl?: string;
-};
+}

@@ -10,7 +10,7 @@ import UnitContributorTooltip, {
   type UnitContributor,
 } from "./UnitContributorTooltip";
 
-type Props = {
+interface Props {
   unit: UnitInfo;
   isFocused: boolean;
   onIndexActivate?: (unitId: string) => void;
@@ -26,7 +26,7 @@ type Props = {
   contributors: UnitContributor[];
   children: React.ReactNode;
   dataUnitId?: string;
-};
+}
 
 export default function BaseUnitItem({
   unit,
@@ -56,15 +56,16 @@ export default function BaseUnitItem({
   }, [isFocused]);
 
   const canReorder = onIndexPointerDown !== undefined;
-  const indexTitle = canToggleBubble
-    ? canReorder
+  let indexTitle = "点击选择 Unit";
+  if (enableReadOnly && !canReorder) {
+    indexTitle = "点击选择 Unit；只读模式下不可调整顺序";
+  } else if (canReorder) {
+    indexTitle = canToggleBubble
       ? "轻触切换气泡状态，拖动序号调整顺序"
-      : "轻触切换气泡状态"
-    : canReorder
-      ? "拖动序号调整顺序"
-      : enableReadOnly
-        ? "点击选择 Unit；只读模式下不可调整顺序"
-        : "点击选择 Unit";
+      : "拖动序号调整顺序";
+  } else if (canToggleBubble) {
+    indexTitle = "轻触切换气泡状态";
+  }
   const activateIndex = () => onIndexActivate?.(unitId(unit));
 
   return (
@@ -105,19 +106,19 @@ export default function BaseUnitItem({
         type="button"
         onPointerDown={
           canReorder
-            ? (event) => onIndexPointerDown(event, unitId(unit))
+            ? (event) => { onIndexPointerDown(event, unitId(unit)); }
             : undefined
         }
         onClick={
           canReorder
             ? (event) => {
-                if (event.detail === 0) activateIndex();
+                if (event.detail === 0) {activateIndex();}
               }
             : activateIndex
         }
-        onContextMenu={(event) => event.preventDefault()}
+        onContextMenu={(event) => { event.preventDefault(); }}
         title={indexTitle}
-        aria-label={`Unit ${unitIndex(unit) + 1}：${indexTitle}`}
+        aria-label={`Unit ${String(unitIndex(unit) + 1)}：${indexTitle}`}
         aria-pressed={canToggleBubble ? isBubble : undefined}
         className={clsx(
           "w-8 shrink-0 flex items-center justify-center select-none touch-none",
@@ -127,9 +128,9 @@ export default function BaseUnitItem({
             : "cursor-pointer hover:bg-stone-200/70",
           isDragging
             ? "bg-stone-200/80 text-stone-700"
-            : isFocused
+            : (isFocused
               ? "text-stone-500"
-              : "text-stone-300 hover:text-stone-500",
+              : "text-stone-300 hover:text-stone-500"),
         )}
       >
         {unitIndex(unit) + 1}

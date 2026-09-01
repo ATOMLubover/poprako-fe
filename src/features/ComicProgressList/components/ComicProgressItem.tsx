@@ -15,11 +15,11 @@ import {
 } from "@/types/chapter";
 import WorkflowStepDropdown from "./WorkflowStepDropdown";
 
-type Props = {
+interface Props {
   comicInfo: ComicInfo;
   mode: ViewMode;
   onClick: () => void;
-};
+}
 
 const WORKFLOW_STEPS = [
   {
@@ -97,26 +97,28 @@ const STATUS_LABELS: Record<WorkflowStatus, string> = {
 };
 
 function getActivityStatusColor(lastActiveAt: number | undefined): string {
-  if (!lastActiveAt) return "bg-stone-300";
-  const diff = Date.now() - lastActiveAt;
+  if (!lastActiveAt) {return "bg-stone-300";}
   const threeMonths = 1000 * 60 * 60 * 24 * 90;
   const sixMonths = 1000 * 60 * 60 * 24 * 180;
-  if (diff <= threeMonths) return "bg-[#2e5c33]";
-  if (diff <= sixMonths) return "bg-amber-200";
+  const diff = Date.now() - lastActiveAt;
+  if (diff <= threeMonths) {return "bg-[#2e5c33]";}
+  if (diff <= sixMonths) {return "bg-amber-200";}
   return "bg-stone-300";
 }
 
 function formatDate(ts: number | undefined): string {
-  if (!ts) return "";
+  if (!ts) {return "";}
   const d = new Date(ts);
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  return `${String(d.getFullYear())}/${String(d.getMonth() + 1)}/${String(d.getDate())}`;
 }
 
 export default function ComicProgressItem({
   comicInfo,
+  mode,
   // mode is reserved for future differentiated rendering
   onClick,
 }: Props) {
+  void mode;
   const chapter: ChapterInfo | null = comicInfo.pinnedChapter ?? null;
   const [assignments] = useState<AssignmentInfo[]>(
     comicInfo.pinnedChapterAssignments ?? [],
@@ -134,10 +136,12 @@ export default function ComicProgressItem({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
+        if (!(e.key === "Enter" || e.key === " ")) {
+          return;
         }
+
+        e.preventDefault();
+        onClick();
       }}
       className={clsx(
         "group relative w-full flex items-center gap-2 px-3 py-2",
@@ -147,7 +151,7 @@ export default function ComicProgressItem({
         "hover:-translate-y-0.5 shadow-xs",
         "shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-sm",
         "py-2",
-        (showCover || hoveredStep || showTitleDropdown || showMobileProgress) &&
+        (showCover || Boolean(hoveredStep) || showTitleDropdown || showMobileProgress) &&
           "z-10",
       )}
     >
@@ -164,13 +168,13 @@ export default function ComicProgressItem({
         />
 
         {/* 漫画序号 */}
-        <span
+        <span // eslint-disable-line jsx-a11y/no-static-element-interactions
           className={clsx(
             "relative text-xs font-mono text-slate-400",
             "bg-slate-100 px-2 py-0.5 rounded shrink-0",
           )}
-          onMouseEnter={() => setShowCover(true)}
-          onMouseLeave={() => setShowCover(false)}
+          onMouseEnter={() => { setShowCover(true); }}
+          onMouseLeave={() => { setShowCover(false); }}
         >
           #{comicInfo.index + 1}
           {showCover && comicInfo.coverThumbnailUrl && (
@@ -191,10 +195,10 @@ export default function ComicProgressItem({
         </span>
 
         {/* 漫画标题 */}
-        <div
+        <div // eslint-disable-line jsx-a11y/no-static-element-interactions
           className="relative min-w-0"
-          onMouseEnter={() => setShowTitleDropdown(true)}
-          onMouseLeave={() => setShowTitleDropdown(false)}
+          onMouseEnter={() => { setShowTitleDropdown(true); }}
+          onMouseLeave={() => { setShowTitleDropdown(false); }}
         >
           <h3
             className={clsx(
@@ -221,25 +225,25 @@ export default function ComicProgressItem({
 
         {/* 章节信息 */}
         <span className="text-[11px] text-slate-400 truncate shrink-0 max-w-[120px]">
-          {chapter?.index ? `[#${chapter.index}]` : "—"}
+          {chapter?.index ? `[#${String(chapter.index)}]` : "—"}
         </span>
       </div>
 
       {/* ===== 右对齐：六个进度槽 (桌面版) ===== */}
       <div className="hidden sm:flex items-center gap-1 shrink-0">
         {WORKFLOW_STEPS.map((step) => {
-          const matched = assignments.filter((a) => a[step.field] != null);
+          const matched = assignments.filter((a) => a[step.field] !== undefined);
           const status = chapter
             ? step.getStatus(chapter)
             : ("pending" as WorkflowStatus);
-          const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+          const cfg = STATUS_CONFIG[status];
           const names = matched
             .map((a) => a.user?.name ?? a.userId)
             .filter(Boolean);
 
           return (
             <div key={step.label} className="relative">
-              <div
+              <div // eslint-disable-line jsx-a11y/no-static-element-interactions
                 className={clsx(
                   "w-9 h-6 rounded-xs flex items-center justify-center",
                   "text-xs font-bold font-mono select-none",
@@ -247,8 +251,8 @@ export default function ComicProgressItem({
                   cfg.bg,
                   cfg.text,
                 )}
-                onMouseEnter={() => setHoveredStep(step.label)}
-                onMouseLeave={() => setHoveredStep(null)}
+                onMouseEnter={() => { setHoveredStep(step.label); }}
+                onMouseLeave={() => { setHoveredStep(null); }}
               >
                 {step.label}
               </div>
@@ -273,7 +277,7 @@ export default function ComicProgressItem({
       {/* ===== 移动版：紧凑 accent bar ===== */}
       <div className="flex sm:hidden items-center shrink-0">
         <div className="relative">
-          <div
+          <div // eslint-disable-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
             className="flex rounded-xs overflow-hidden cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
@@ -284,7 +288,8 @@ export default function ComicProgressItem({
               const status = chapter
                 ? step.getStatus(chapter)
                 : ("pending" as WorkflowStatus);
-              const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
+
+              const cfg = STATUS_CONFIG[status];
               return (
                 <div
                   key={step.label}
@@ -305,7 +310,7 @@ export default function ComicProgressItem({
                 {WORKFLOW_STEPS.map((step) => {
                   const status = step.getStatus(chapter);
                   const matched = assignments.filter(
-                    (a) => a[step.field] != null,
+                    (a) => a[step.field] !== undefined,
                   );
                   const names = matched
                     .map((a) => a.user?.name ?? a.userId)

@@ -20,7 +20,7 @@ const ROLE_LABEL: Record<string, string> = {
   admin: "管",
 };
 
-type Props = {
+interface Props {
   title: string;
   chapterId: string | null;
   role: Role;
@@ -33,11 +33,11 @@ type Props = {
       limit: number;
     },
   ) => Promise<Result<MemberInfo[]>>;
-  setIsLoading: (value: boolean) => void;
+  setIsLoading: (isLoading: boolean) => void;
   isSubmitting?: boolean;
   onSelectUser: (userId: string) => void;
   onClose: () => void;
-};
+}
 
 export default function MemberSelectorModal({
   title,
@@ -56,48 +56,48 @@ export default function MemberSelectorModal({
 
   useEffect(() => {
     if (!chapterId || !onLoadMembers) {
-      /* eslint-disable react-hooks/set-state-in-effect */
-      setMembers([]);
+      setMembers([]); // eslint-disable-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
       setIsLoading(false);
-      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 
     const requestId = latestRequestIdRef.current + 1;
     latestRequestIdRef.current = requestId;
-    const timer = window.setTimeout(() => {
+    const timer = setTimeout(() => {
       setIsFetching(true);
       setIsLoading(true);
-      onLoadMembers(chapterId, {
-        role,
-        keyword: keyword.trim() || undefined,
-        offset: 0,
-        limit: 20,
-      })
-        .then((result) => {
-          if (latestRequestIdRef.current !== requestId) return;
+      const loadMembers = async () => {
+        try {
+          const result = await onLoadMembers(chapterId, {
+            role,
+            keyword: keyword.trim() || undefined,
+            offset: 0,
+            limit: 20,
+          });
+          if (latestRequestIdRef.current !== requestId) {return;}
           if (!result.success) {
-            console.error("[MemberSelectorModal] 加载成员失败:", result.error);
+            console.error("[MemberSelectorModal] 加载成员失败:", result.error); // eslint-disable-line no-console
             setMembers([]);
             return;
           }
 
           setMembers(result.data);
-        })
-        .catch((err) => {
-          if (latestRequestIdRef.current !== requestId) return;
-          console.error("[MemberSelectorModal] 加载成员异常:", err);
+        } catch (error) {
+          if (latestRequestIdRef.current !== requestId) {return;}
+          console.error("[MemberSelectorModal] 加载成员异常:", error); // eslint-disable-line no-console
           setMembers([]);
-        })
-        .finally(() => {
-          if (latestRequestIdRef.current !== requestId) return;
-          setIsFetching(false);
-          setIsLoading(false);
-        });
+        } finally {
+          if (latestRequestIdRef.current === requestId) {
+            setIsFetching(false);
+            setIsLoading(false);
+          }
+        }
+      };
+      void loadMembers();
     }, 250);
 
     return () => {
-      window.clearTimeout(timer);
+      clearTimeout(timer);
     };
   }, [chapterId, keyword, onLoadMembers, role, setIsLoading]);
 
@@ -118,9 +118,8 @@ export default function MemberSelectorModal({
         >
           <Search size={14} className="text-slate-400" />
           <input
-            autoFocus
             value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
+            onChange={(event) => { setKeyword(event.target.value); }}
             placeholder="搜索昵称 / QQ"
             className={clsx(
               "w-full bg-transparent text-sm text-slate-700 outline-none",
@@ -136,7 +135,7 @@ export default function MemberSelectorModal({
               <button
                 key={member.id}
                 type="button"
-                onClick={() => onSelectUser(member.userId)}
+                onClick={() => { onSelectUser(member.userId); }}
                 disabled={isSubmitting}
                 className={clsx(
                   "flex items-center gap-3 rounded-lg border px-3 py-2 text-left",
@@ -155,7 +154,7 @@ export default function MemberSelectorModal({
                   {member.user?.avatarThumbnailUrl ? (
                     <img
                       src={member.user.avatarThumbnailUrl}
-                      alt={member.user?.name ?? member.userId}
+                      alt={member.user.name}
                       className="h-full w-full object-cover"
                     />
                   ) : (

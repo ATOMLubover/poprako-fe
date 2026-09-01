@@ -24,10 +24,13 @@ export async function listWorksets(
     `/teams/${args.teamId}/worksets`,
     rawArgs,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const items = Array.isArray(res.data) ? res.data : [];
-  return { success: true, data: items.map((raw) => toWorksetInfo(raw)!) };
+  return { success: true, data: items.flatMap((raw) => {
+    const workset = toWorksetInfo(raw);
+    return workset ? [workset] : [];
+  }) };
 }
 
 export async function createWorkset(
@@ -43,30 +46,30 @@ export async function createWorkset(
     "/worksets",
     rawArgs,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: (res.data as { id: string }).id };
 }
 
 export async function updateWorkset(
   id: string,
   args: UpdateWorksetArgs,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   const rawArgs: RawUpdateWorksetArgs = {
     id,
     name: args.name,
     description: args.description,
   };
 
-  const res = await api.put<void, RawUpdateWorksetArgs>(
+  const res = await api.put<undefined, RawUpdateWorksetArgs>(
     `/worksets/${id}`,
     rawArgs,
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }
 
-export async function deleteWorkset(id: string): Promise<Result<void>> {
-  const res = await api.delete<void>(`/worksets/${id}`);
-  if (!res.success) return res;
+export async function deleteWorkset(id: string): Promise<Result<undefined>> {
+  const res = await api.delete<undefined>(`/worksets/${id}`);
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }

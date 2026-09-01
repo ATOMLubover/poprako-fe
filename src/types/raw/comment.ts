@@ -1,14 +1,14 @@
 import type { CommentInfo, CommentCreatedResult } from "../comment";
 import { unwrapRawUserInfo, type RawUserInfo } from "./user";
 
-export type RawCommentInfo = {
+export interface RawCommentInfo {
   id: string;
   team_id: string;
   user_id: string;
   user?: RawUserInfo;
   content: string;
   created_at: number;
-};
+}
 
 export function unwrapRawCommentInfo(raw: RawCommentInfo): CommentInfo {
   return {
@@ -21,9 +21,9 @@ export function unwrapRawCommentInfo(raw: RawCommentInfo): CommentInfo {
   };
 }
 
-export type RawCommentCreatedResult = {
+export interface RawCommentCreatedResult {
   id: string;
-};
+}
 
 export function unwrapRawCommentCreatedResult(
   raw: RawCommentCreatedResult,

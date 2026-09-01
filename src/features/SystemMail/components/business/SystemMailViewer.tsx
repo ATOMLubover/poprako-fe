@@ -37,7 +37,7 @@ export default function SystemMailViewer() {
 
   // always refresh from offset 0 on mount — never rely on stale cache
   const refreshAll = useCallback(async () => {
-    if (isFetchingRef.current) return;
+    if (isFetchingRef.current) {return;}
     isFetchingRef.current = true;
     setIsFetching(true);
     setLoadedOnce(false);
@@ -48,32 +48,32 @@ export default function SystemMailViewer() {
 
     if (!result.success) {
       showLocalApiFailure(result, showToast);
-      console.error("[SystemMailViewer] refreshAll:", result.error);
+      console.error("[SystemMailViewer] refreshAll:", result.error); // eslint-disable-line no-console
       setLoadedOnce(true);
       return;
     }
 
     const batch = result.data.slice(0, PAGE_SIZE);
-    const nextHasMore = result.data.length > PAGE_SIZE;
+    const isNextHasMore = result.data.length > PAGE_SIZE;
 
     setItems(batch);
     offsetRef.current = batch.length;
-    setHasMore(nextHasMore);
+    setHasMore(isNextHasMore);
     setLoadedOnce(true);
     setCutoff(Date.now() - THREE_DAYS_MS);
-    setSysMailCache({ mails: batch, hasMore: nextHasMore });
+    setSysMailCache({ mails: batch, hasMore: isNextHasMore });
   }, [showToast, setSysMailCache]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       void refreshAll();
-    });
+    }, 0);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => { clearTimeout(timeoutId); };
   }, [refreshAll]);
 
   const fetchMore = useCallback(async () => {
-    if (isFetchingRef.current) return;
+    if (isFetchingRef.current) {return;}
     isFetchingRef.current = true;
     setIsFetching(true);
 
@@ -83,41 +83,41 @@ export default function SystemMailViewer() {
 
     if (!result.success) {
       showLocalApiFailure(result, showToast);
-      console.error("[SystemMailViewer] fetchMore:", result.error);
+      console.error("[SystemMailViewer] fetchMore:", result.error); // eslint-disable-line no-console
       return;
     }
 
     const batch = result.data.slice(0, PAGE_SIZE);
-    const nextHasMore = result.data.length > PAGE_SIZE;
+    const isNextHasMore = result.data.length > PAGE_SIZE;
 
     setItems((prev) => {
       const seen = new Set(prev.map((m) => m.id));
       const merged = [...prev, ...batch.filter((m) => !seen.has(m.id))];
-      setSysMailCache({ mails: merged, hasMore: nextHasMore });
+      setSysMailCache({ mails: merged, hasMore: isNextHasMore });
       return merged;
     });
     offsetRef.current += batch.length;
-    setHasMore(nextHasMore);
+    setHasMore(isNextHasMore);
   }, [showToast, setSysMailCache]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    if (!sentinel) {return;}
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore) fetchMore();
+        if (hasMore && entries[0].isIntersecting) { void fetchMore(); }
       },
       { threshold: 0.1 },
     );
     observer.observe(sentinel);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, [hasMore, fetchMore]);
 
   const handleMarkRead = async (sysMailId: string) => {
     const result = await markSysMailRead(sysMailId);
     if (!result.success) {
       showLocalApiFailure(result, showToast);
-      console.error("[SystemMailViewer] markSysMailRead:", result.error);
+      console.error("[SystemMailViewer] markSysMailRead:", result.error); // eslint-disable-line no-console
       return;
     }
     showToast("已标记为已读", "success");
@@ -132,11 +132,7 @@ export default function SystemMailViewer() {
 
   return (
     <div className="w-full h-full flex flex-col pt-2">
-      {!loadedOnce ? (
-        <div className="flex justify-center py-12">
-          <LoadingCircle size={32} />
-        </div>
-      ) : items.length === 0 ? (
+      {loadedOnce ? (items.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-2">
           <Mail size={28} className="text-slate-300" />
           <p className="text-sm text-slate-400">暂无系统消息</p>
@@ -151,7 +147,7 @@ export default function SystemMailViewer() {
                   <MailItem
                     key={mail.id}
                     mail={mail}
-                    onMarkRead={handleMarkRead}
+                    onMarkRead={(id) => { void handleMarkRead(id); }}
                     isLast={
                       i === recentItems.length - 1 &&
                       olderItems.length === 0
@@ -170,7 +166,7 @@ export default function SystemMailViewer() {
                   <MailItem
                     key={mail.id}
                     mail={mail}
-                    onMarkRead={handleMarkRead}
+                    onMarkRead={(id) => { void handleMarkRead(id); }}
                     isLast={i === olderItems.length - 1}
                   />
                 ))}
@@ -180,21 +176,25 @@ export default function SystemMailViewer() {
 
           {/* infinite scroll sentinel */}
           <div ref={sentinelRef} className="h-1" />
-          {isFetching && loadedOnce && (
+          {isFetching && (
             <div className="flex justify-center py-3">
               <LoadingCircle size={20} />
             </div>
           )}
+        </div>
+      )) : (
+        <div className="flex justify-center py-12">
+          <LoadingCircle size={32} />
         </div>
       )}
     </div>
   );
 }
 
-type SectionLabelProps = {
+interface SectionLabelProps {
   label: string;
   hasTopMargin: boolean;
-};
+}
 
 function SectionLabel({ label, hasTopMargin }: SectionLabelProps) {
   return (
@@ -215,11 +215,11 @@ function SectionLabel({ label, hasTopMargin }: SectionLabelProps) {
   );
 }
 
-type MailItemProps = {
+interface MailItemProps {
   mail: SysMailInfo;
   onMarkRead: (id: string) => void;
   isLast: boolean;
-};
+}
 
 function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
   return (
@@ -238,9 +238,9 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
           className={clsx(
             "w-2.5 h-2.5 rounded-full shrink-0 z-10",
             "transition-colors duration-300",
-            !mail.isRead
-              ? "bg-green-500"
-              : "border-2 border-stone-300 bg-[#FEFDF9]",
+            mail.isRead
+              ? "border-2 border-stone-300 bg-[#FEFDF9]"
+              : "bg-green-500",
           )}
         />
         {/* gap below dot — clean break before line */}
@@ -255,9 +255,9 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
             <h3
               className={clsx(
                 "leading-snug",
-                !mail.isRead
-                  ? "text-base font-semibold text-stone-800"
-                  : "text-sm font-medium text-stone-500",
+                mail.isRead
+                  ? "text-sm font-medium text-stone-500"
+                  : "text-base font-semibold text-stone-800",
               )}
             >
               {mail.title}
@@ -269,7 +269,7 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
           <p
             className={clsx(
               "text-sm leading-relaxed mt-0.5",
-              !mail.isRead ? "text-stone-600" : "text-stone-400",
+              mail.isRead ? "text-stone-400" : "text-stone-600",
             )}
           >
             {mail.content}
@@ -278,18 +278,19 @@ function MailItem({ mail, onMarkRead, isLast }: MailItemProps) {
 
         {/* mark-read button */}
         <button
-          onClick={() => onMarkRead(mail.id)}
+          type="button"
+          onClick={() => { onMarkRead(mail.id); }}
           title={mail.isRead ? "已读" : "标记为已读"}
           className={clsx(
             "shrink-0 p-1.5 rounded-md mt-0.5",
             "transition-all duration-200",
-            !mail.isRead
-              ? [
+            mail.isRead
+              ? "text-stone-300 cursor-default"
+              : [
                   "opacity-0 group-hover:opacity-100 max-sm:opacity-100",
                   "text-stone-400 hover:text-green-500",
                   "hover:bg-green-50",
-                ]
-              : "text-stone-300 cursor-default",
+                ],
           )}
         >
           <Check size={15} strokeWidth={2.5} />

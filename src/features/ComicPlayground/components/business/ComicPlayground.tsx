@@ -93,7 +93,7 @@ export default function ComicPlayground() {
       limit: number,
       mode: "translator" | "reviewer",
     ): Promise<Result<ComicInfo[]>> => {
-      if (!activeWorksetId) return { success: true, data: [] };
+      if (!activeWorksetId) {return { success: true, data: [] };}
       const result = await listComics({
         worksetId: activeWorksetId,
         withs: mode === "reviewer"
@@ -160,7 +160,7 @@ export default function ComicPlayground() {
 
       if (remainingRoles.length === 0) {
         const result = await deleteAssignment(target.id);
-        if (!result.success) return result;
+        if (!result.success) {return result;}
         return { success: true, data: undefined };
       }
 
@@ -170,7 +170,7 @@ export default function ComicPlayground() {
         roles: roleMask(remainingRoles),
       });
 
-      if (!result.success) return result;
+      if (!result.success) {return result;}
       return { success: true, data: undefined };
     },
     [handleLoadAssignments],
@@ -217,7 +217,7 @@ export default function ComicPlayground() {
         (assignment) => assignment.userId === userId,
       );
       const mergedRoles = existing
-        ? Array.from(new Set([...assignmentRoles(existing), role]))
+        ? [...new Set([...assignmentRoles(existing), role])]
         : [role];
 
       const result = await upsertAssignment({
@@ -226,7 +226,7 @@ export default function ComicPlayground() {
         roles: roleMask(mergedRoles),
       });
 
-      if (!result.success) return result;
+      if (!result.success) {return result;}
       return { success: true, data: undefined };
     },
     [handleLoadAssignments],
@@ -252,7 +252,7 @@ export default function ComicPlayground() {
     async (chapterId: string, role: Role): Promise<Result<void>> => {
       const result = await joinChapter(chapterId, roleMask([role]));
       if (!result.success) {
-        console.error("[ComicPlayground] 加入章节分工失败:", result.error);
+        console.error("[ComicPlayground] 加入章节分工失败:", result.error); // eslint-disable-line no-console
       }
       return result;
     },
@@ -315,7 +315,7 @@ export default function ComicPlayground() {
       }
       const result = await updateComic(selectedComic.id, args);
       if (!result.success) {
-        console.error("[ComicPlayground] 更新漫画信息失败:", result.error);
+        console.error("[ComicPlayground] 更新漫画信息失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast);
         return result;
       }
@@ -330,7 +330,7 @@ export default function ComicPlayground() {
     async (chapterId: string, subtitle?: string) => {
       const result = await updateChapter(chapterId, { subtitle });
       if (!result.success) {
-        console.error("[ComicPlayground] 更新章节信息失败:", result.error);
+        console.error("[ComicPlayground] 更新章节信息失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast);
         return result;
       }
@@ -344,7 +344,7 @@ export default function ComicPlayground() {
     async (id: string, args: { name: string; description?: string }) => {
       const result = await updateWorkset(id, args);
       if (!result.success) {
-        console.error("[ComicPlayground] 更新作品集失败:", result.error);
+        console.error("[ComicPlayground] 更新作品集失败:", result.error); // eslint-disable-line no-console
         showLocalApiFailure(result, showToast);
         return result;
       }
@@ -359,7 +359,7 @@ export default function ComicPlayground() {
     async (comicId: string): Promise<Result<void>> => {
       const result = await deleteComic(comicId);
       if (!result.success) {
-        console.error("[ComicPlayground] 删除漫画失败:", result.error);
+        console.error("[ComicPlayground] 删除漫画失败:", result.error); // eslint-disable-line no-console
         return result;
       }
 
@@ -376,7 +376,7 @@ export default function ComicPlayground() {
     async (comicId: string): Promise<Result<void>> => {
       const result = await archiveComic(comicId);
       if (!result.success) {
-        console.error("[ComicPlayground] 归档漫画失败:", result.error);
+        console.error("[ComicPlayground] 归档漫画失败:", result.error); // eslint-disable-line no-console
         return result;
       }
 
@@ -408,12 +408,12 @@ export default function ComicPlayground() {
     args: CreateComicArgs,
   ): Promise<Result<string>> => {
     const result = await createComic(args);
-    if (!result.success) {
-      console.error("[ComicPlayground] 创建漫画失败:", result.error);
-      showLocalApiFailure(result, showToast);
-    } else {
+    if (result.success) {
       await loadWorksets();
       setComicListRefreshKey((k) => k + 1);
+    } else {
+      console.error("[ComicPlayground] 创建漫画失败:", result.error); // eslint-disable-line no-console
+      showLocalApiFailure(result, showToast);
     }
     return result;
   };
@@ -429,12 +429,12 @@ export default function ComicPlayground() {
         worksets={worksets}
         activeWorksetId={activeWorksetId}
         onChangeWorkset={setActiveWorksetId}
-        onCreateWorkset={() => setShowWorksetCreatorModal(true)}
-        onDeleteWorkset={handleDeleteWorkset}
+        onCreateWorkset={() => { setShowWorksetCreatorModal(true); }}
+        onDeleteWorkset={(id) => { void handleDeleteWorkset(id); }}
         onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
         onComicClick={openComicDetail}
-        onCreateComic={isAdmin ? () => setComicCreatorTeamId(teamId) : undefined}
+        onCreateComic={isAdmin ? () => { setComicCreatorTeamId(teamId); } : undefined}
         onChangeFuzzyTitle={setActiveFuzzyTitle}
         activeFuzzyTitle={activeFuzzyTitle}
         activeUploadStatus={activeUploadStatus}
@@ -481,21 +481,21 @@ export default function ComicPlayground() {
           onUpdateComic={handleUpdateComic}
           onUpdateChapter={handleUpdateChapter}
           onResolveActiveMember={resolveActiveMember}
-          onClose={() => clearComicDetail(true)}
+          onClose={() => { clearComicDetail(true); }}
         />
       )}
       {comicCreatorTeamId === teamId && isAdmin && activeWorkset && (
         <ComicCreatorModal
           currWorkset={activeWorkset}
           onCreateComic={handleCreateComic}
-          onClose={() => setComicCreatorTeamId(null)}
+          onClose={() => { setComicCreatorTeamId(null); }}
         />
       )}
       {showWorksetCreatorModal && teamId && (
         <WorksetCreatorModal
           teamId={teamId}
           onCreateWorkset={handleCreateWorkset}
-          onClose={() => setShowWorksetCreatorModal(false)}
+          onClose={() => { setShowWorksetCreatorModal(false); }}
         />
       )}
     </>

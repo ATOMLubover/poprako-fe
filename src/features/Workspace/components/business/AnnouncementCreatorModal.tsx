@@ -4,14 +4,14 @@ import clsx from "clsx";
 import IconInputRow from "@/components/ui/IconInputRow";
 import type { Result } from "@/types/utils/result";
 
-type Props = {
+interface Props {
   teamName: string;
   onSubmit: (args: {
     title: string;
     content: string;
   }) => Promise<Result<string>>;
   onClose: () => void;
-};
+}
 
 export default function AnnouncementCreatorModal({ teamName, onSubmit, onClose }: Props) {
   const [formData, setFormData] = useState({
@@ -23,16 +23,16 @@ export default function AnnouncementCreatorModal({ teamName, onSubmit, onClose }
   const isValid =
     formData.title.trim().length > 0 && formData.content.trim().length > 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {return;}
     setIsSubmitting(true);
     const result = await onSubmit({
       title: formData.title.trim(),
       content: formData.content.trim(),
     });
     setIsSubmitting(false);
-    if (result.success) onClose();
+    if (result.success) {onClose();}
   };
 
   return (
@@ -73,13 +73,13 @@ export default function AnnouncementCreatorModal({ teamName, onSubmit, onClose }
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+        <form onSubmit={(event) => { void handleSubmit(event); }} className="px-5 pb-5 pt-3">
           <div className="space-y-2.5">
             <IconInputRow
               icon={<Type size={14} />}
               placeholder="公告主题"
               value={formData.title}
-              onChange={(v) => setFormData({ ...formData, title: v })}
+              onChange={(v) => { setFormData({ ...formData, title: v }); }}
             />
 
             {/* 内容 textarea — 与 IconInputRow 风格对齐 */}
@@ -101,7 +101,7 @@ export default function AnnouncementCreatorModal({ teamName, onSubmit, onClose }
                 )}
                 value={formData.content}
                 onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
+                  { setFormData({ ...formData, content: e.target.value }); }
                 }
               />
             </div>

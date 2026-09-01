@@ -23,15 +23,19 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 // class strings: one for the checkbox toggle (active state) and one for the
 // tag chip shown on pending invitation cards.
 
-type RoleConfig = {
+interface RoleConfig {
   roleKey: string;
   label: string;
   value: number;
-  /** Applied to the toggle button when selected. */
+  /**
+  Applied to the toggle button when selected.
+  */
   activeClass: string;
-  /** Applied to the small label chip on pending invitation cards. */
+  /**
+  Applied to the small label chip on pending invitation cards.
+  */
   chipClass: string;
-};
+}
 
 const ROLE_CONFIG: RoleConfig[] = [
   {
@@ -105,19 +109,19 @@ function getRoleConfigs(roleMask: number): RoleConfig[] {
 function copyToClipboard(text: string) {
   const el = document.createElement("textarea");
   el.value = text;
-  document.body.appendChild(el);
+  document.body.append(el);
   el.select();
   try {
-    document.execCommand("copy");
+    document.execCommand("copy"); // eslint-disable-line @typescript-eslint/no-deprecated
   } catch {
     // ignore
   }
-  document.body.removeChild(el);
+  el.remove();
 }
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
-type Props = {
+interface Props {
   teamId: string;
   onClose: () => void;
   onLoadInvitations: (
@@ -126,7 +130,7 @@ type Props = {
   ) => Promise<Result<InvitationInfo[]>>;
   onCreateInvitation: (args: CreateInvitationArgs) => Promise<Result<string>>;
   onDeleteInvitation?: (invitationId: string) => Promise<Result<void>>;
-};
+}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -159,32 +163,33 @@ export default function MemberInvitorModal({
   }, [onLoadInvitations, showToast]);
 
   useEffect(() => {
-    let alive = true;
-    onLoadInvitations(0, 100).then((result) => {
-      if (!alive) return;
+    let isAlive = true;
+    async function loadInvitations() {
+      const result = await onLoadInvitations(0, 100);
+      if (!isAlive) {return;}
       if (!result.success) {
         showLocalApiFailure(result, showToast);
         return;
       }
       setPendingInvitations(result.data);
-    });
+    }
+    void loadInvitations();
     return () => {
-      alive = false;
+      isAlive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [onLoadInvitations, showToast]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const toggleBit = (value: number) =>
-    setSelectedBits((prev) =>
+    { setSelectedBits((prev) =>
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
-    );
+    ); };
 
   const roleMaskFromSelected = selectedBits.reduce((acc, v) => acc | v, 0);
   const isFormValid = qq.trim().length > 4 && selectedBits.length > 0;
 
   const handleInvite = async () => {
-    if (!isFormValid || isSubmitting) return;
+    if (!isFormValid || isSubmitting) {return;}
     setIsSubmitting(true);
     try {
       const result = await onCreateInvitation({
@@ -205,7 +210,7 @@ export default function MemberInvitorModal({
 
   const handleDelete = useCallback(
     async (invitationId: string) => {
-      if (!onDeleteInvitation) return;
+      if (!onDeleteInvitation) {return;}
       const result = await onDeleteInvitation(invitationId);
       if (!result.success) {
         showLocalApiFailure(result, showToast);
@@ -270,7 +275,7 @@ export default function MemberInvitorModal({
               <input
                 type="text"
                 value={qq}
-                onChange={(e) => setQq(e.target.value.replace(/\D/g, ""))}
+                onChange={(e) => { setQq(e.target.value.replaceAll(/\D/g, "")); }}
                 className={clsx(
                   "w-full bg-transparent text-sm text-slate-700",
                   "placeholder:text-slate-400 outline-none",
@@ -287,7 +292,7 @@ export default function MemberInvitorModal({
                   <button
                     key={role.value}
                     type="button"
-                    onClick={() => toggleBit(role.value)}
+                    onClick={() => { toggleBit(role.value); }}
                     className={clsx(
                       "flex items-center justify-center gap-1 rounded-md border",
                       "py-2 text-[12px] font-bold transition-all active:scale-95",
@@ -356,7 +361,7 @@ export default function MemberInvitorModal({
               <button
                 type="button"
                 disabled={!isFormValid || isSubmitting}
-                onClick={handleInvite}
+                onClick={() => { void handleInvite(); }}
                 className={clsx(
                   "flex-1 flex items-center justify-center gap-1 rounded-lg py-2",
                   "text-xs font-semibold transition-all active:scale-[0.98]",
@@ -394,7 +399,7 @@ export default function MemberInvitorModal({
                   copyToClipboard(code);
                   showToast("已复制邀请码", "success");
                 }}
-                onDelete={onDeleteInvitation ? setPendingDeleteId : undefined}
+                onDelete={onDeleteInvitation ? (id) => { setPendingDeleteId(id); } : undefined}
               />
             ))}
 
@@ -411,10 +416,10 @@ export default function MemberInvitorModal({
           title="确认撤销邀请"
           description="撤销邀请后，该邀请码将立即失效。此操作不可撤销。"
           onConfirm={() => {
-            handleDelete(pendingDeleteId);
+            void handleDelete(pendingDeleteId);
             setPendingDeleteId(null);
           }}
-          onCancel={() => setPendingDeleteId(null)}
+          onCancel={() => { setPendingDeleteId(null); }}
         />
       )}
     </div>
@@ -423,11 +428,11 @@ export default function MemberInvitorModal({
 
 // ── Pending card ─────────────────────────────────────────────────────────────
 
-type PendingCardProps = {
+interface PendingCardProps {
   invitation: InvitationInfo;
   onCopy: (code: string) => void;
   onDelete?: (invitationId: string) => void;
-};
+}
 
 function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProps) {
   const roleConfigs = getRoleConfigs(invitation.roles);
@@ -455,7 +460,7 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
           </code>
           <button
             type="button"
-            onClick={() => onCopy(invitation.invitationCode)}
+            onClick={() => { onCopy(invitation.invitationCode); }}
             className="text-slate-300 transition-colors hover:text-slate-500"
             title="复制邀请码"
           >
@@ -483,7 +488,7 @@ function PendingInvitationCard({ invitation, onCopy, onDelete }: PendingCardProp
         {onDelete && (
           <button
             type="button"
-            onClick={() => onDelete(invitation.id)}
+            onClick={() => { onDelete(invitation.id); }}
             className="shrink-0 text-slate-300 transition-colors hover:text-red-400"
             title="撤销邀请"
           >

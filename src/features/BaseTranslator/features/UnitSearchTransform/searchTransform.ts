@@ -11,18 +11,18 @@ import type {
 
 export const MAX_SELECTED_UNIT_COUNT = 100;
 
-export type MatchSegment = {
+export interface MatchSegment {
   text: string;
   matched: boolean;
-};
+}
 
-export type UnitSearchPageGroup = {
+export interface UnitSearchPageGroup {
   page: Page;
   matches: UnitSearchMatch[];
-};
+}
 
 export function normalizeSearchPhrase(phrase: string): string {
-  return phrase.replace(
+  return phrase.replaceAll(
     /^\p{White_Space}+|\p{White_Space}+$/gu,
     "",
   );
@@ -43,7 +43,7 @@ export function splitLiteralMatches(
   text: string,
   phrase: string,
 ): MatchSegment[] {
-  if (phrase === "") return [{ text, matched: false }];
+  if (phrase === "") {return [{ text, matched: false }];}
 
   const segments: MatchSegment[] = [];
   let cursor = 0;
@@ -78,6 +78,8 @@ export function groupUnitSearchMatches(
   }
 
   return [...pages]
+    // The spread above creates a local copy before sorting.
+    // eslint-disable-next-line unicorn/no-array-sort
     .sort((left, right) => left.index - right.index)
     .flatMap((page) => {
       const pageMatches = matchesByPage.get(page.id);
@@ -113,16 +115,16 @@ export function togglePageSelection(
   matches: UnitSearchMatch[],
 ): Set<string> {
   const pageUnitIds = matches.map((match) => unitId(match.unit));
-  const allSelected = pageUnitIds.every((id) => selectedIds.has(id));
+  const isAllSelected = pageUnitIds.every((id) => selectedIds.has(id));
   const nextIds = new Set(selectedIds);
 
-  if (allSelected) {
-    pageUnitIds.forEach((id) => nextIds.delete(id));
+  if (isAllSelected) {
+    for (const id of pageUnitIds) {nextIds.delete(id);}
     return nextIds;
   }
 
   for (const id of pageUnitIds) {
-    if (nextIds.size >= MAX_SELECTED_UNIT_COUNT) break;
+    if (nextIds.size >= MAX_SELECTED_UNIT_COUNT) {break;}
     nextIds.add(id);
   }
   return nextIds;

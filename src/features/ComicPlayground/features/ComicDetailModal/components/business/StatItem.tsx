@@ -1,10 +1,10 @@
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   icon: React.ElementType;
   label: string;
   value: number | string;
-};
+}
 
 export default function StatItem({ icon: Icon, label, value }: Props) {
   return (

@@ -1,7 +1,8 @@
 import type { RawTeamInfo } from "./raw/team";
+import type { ImageUploadSlot } from "./image";
 import { ensureHttpsUrl } from "@/utils/url";
 
-export type TeamInfo = {
+export interface TeamInfo {
   id: string;
 
   name: string;
@@ -12,10 +13,10 @@ export type TeamInfo = {
 
   createdAt: number;
   updatedAt: number;
-};
+}
 
 export function toTeamInfo(raw?: RawTeamInfo) {
-  if (!raw) return undefined;
+  if (!raw) {return;}
 
   return {
     id: raw.id,
@@ -28,16 +29,16 @@ export function toTeamInfo(raw?: RawTeamInfo) {
   } as TeamInfo;
 }
 
-export type CreateTeamArgs = { name: string; description: string };
-export type CreateTeamResult = { id: string };
+export interface CreateTeamArgs { name: string; description: string }
+export interface CreateTeamResult { id: string }
 
-export type UpdateTeamArgs = {
+export interface UpdateTeamArgs {
   id: string;
   name?: string;
   description?: string;
-};
+}
 
-export type AllocTeamAvatarResult = import("./image").ImageUploadSlot | null;
+export type AllocTeamAvatarResult = ImageUploadSlot | null;
 
 export function teamAvatarUrl(team: TeamInfo) {
   if (team.avatarThumbnailUrl) {

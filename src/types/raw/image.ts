@@ -1,12 +1,12 @@
 import type { ImageUploadSlot } from "../image";
 
-export type RawImageUploadSlot = {
+export interface RawImageUploadSlot {
   put_url: string;
   image_version: number;
   headers: Record<string, string>;
-};
+}
 
-export type RawAllocImageResult = { slot: RawImageUploadSlot | null };
+export interface RawAllocImageResult { slot: RawImageUploadSlot | null }
 
 export function unwrapRawImageUploadSlot(raw: RawImageUploadSlot): ImageUploadSlot {
   return {

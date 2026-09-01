@@ -3,12 +3,12 @@ import clsx from "clsx";
 import AppDialog from "@/components/ui/AppDialog";
 import type { TeamConfig } from "@/features/AppSidebar/types/types";
 
-type Props = {
+interface Props {
   teams: TeamConfig[];
   activeTeamId: string;
   onSelect: (team: TeamConfig) => void;
   onClose: () => void;
-};
+}
 
 export default function TeamSwitchModal({
   teams,
@@ -30,7 +30,7 @@ export default function TeamSwitchModal({
             <button
               key={team.id}
               type="button"
-              onClick={() => onSelect(team)}
+              onClick={() => { onSelect(team); }}
               className={clsx(
                 "flex w-full items-center gap-3 rounded-lg px-3 py-2.5",
                 "border transition-all duration-200",

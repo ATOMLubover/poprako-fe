@@ -1,6 +1,6 @@
 import type { TermbaseInfo } from "../termbase";
 
-export type RawTermbaseInfo = {
+export interface RawTermbaseInfo {
   id: string;
 
   team_id?: string | null;
@@ -13,7 +13,7 @@ export type RawTermbaseInfo = {
   creator_id: string;
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawTermbaseInfo(raw: RawTermbaseInfo): TermbaseInfo {
   return {

@@ -5,11 +5,11 @@ import IconInputRow from "@/components/ui/IconInputRow";
 import type { Result } from "@/types/utils/result";
 import type { CreateWorksetArgs } from "../../types/workset";
 
-type Props = {
+interface Props {
   teamId: string;
   onCreateWorkset: (args: CreateWorksetArgs) => Promise<Result<string>>;
   onClose: () => void;
-};
+}
 
 export default function WorksetCreatorModal({
   teamId,
@@ -21,9 +21,9 @@ export default function WorksetCreatorModal({
 
   const isValid = formData.name.trim().length > 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {return;}
     setIsSubmitting(true);
     const result = await onCreateWorkset({
       teamId,
@@ -31,7 +31,7 @@ export default function WorksetCreatorModal({
       description: formData.description.trim() || undefined,
     });
     setIsSubmitting(false);
-    if (result.success) onClose();
+    if (result.success) {onClose();}
   };
 
   return (
@@ -61,13 +61,13 @@ export default function WorksetCreatorModal({
           <h3 className="text-lg font-bold text-slate-800">新建作品集</h3>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+        <form onSubmit={(event) => { void handleSubmit(event); }} className="px-5 pb-5 pt-3">
           <div className="space-y-2.5">
             <IconInputRow
               icon={<Type size={14} />}
               placeholder="名称"
               value={formData.name}
-              onChange={(v) => setFormData({ ...formData, name: v })}
+              onChange={(v) => { setFormData({ ...formData, name: v }); }}
             />
 
             {/* 描述 textarea — 与 IconInputRow 风格对齐 */}
@@ -89,7 +89,7 @@ export default function WorksetCreatorModal({
                 )}
                 value={formData.description}
                 onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                  { setFormData({ ...formData, description: e.target.value }); }
                 }
               />
             </div>

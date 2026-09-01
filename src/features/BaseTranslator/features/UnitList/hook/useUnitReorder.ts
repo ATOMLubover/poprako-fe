@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-boolean-name, unicorn/prefer-simple-condition-first, unicorn/no-unnecessary-global-this, unicorn/no-array-callback-reference -- drag lifecycle. */
 import {
   useCallback,
   useEffect,
@@ -12,20 +13,20 @@ import {
   unitId,
   type UnitInfo,
 } from "@/types/unit";
-import { exceedsDragThreshold } from "./dragThreshold";
+import { isBeyondDragThreshold } from "./dragThreshold";
 
 const AUTO_SCROLL_EDGE = 32;
 const MAX_AUTO_SCROLL_SPEED = 12;
 
-type Args = {
+interface Args {
   units: UnitInfo[];
   listRef: RefObject<HTMLDivElement | null>;
   enabled: boolean;
   onActivateUnit?: (unitId: string) => void;
   onReorderUnit?: (unitId: string, targetIndex: number) => void;
-};
+}
 
-type DragSession = {
+interface DragSession {
   pointerId: number;
   unitId: string;
   startX: number;
@@ -35,7 +36,7 @@ type DragSession = {
   didDrag: boolean;
   previewOrder: string[];
   captureTarget: HTMLDivElement;
-};
+}
 
 function sameOrder(lhs: string[], rhs: string[]) {
   return lhs.length === rhs.length && lhs.every((id, index) => id === rhs[index]);
@@ -64,14 +65,14 @@ export function useUnitReorder({
   onReorderUnitRef.current = onReorderUnit;
 
   const stopAutoScroll = useCallback(() => {
-    if (autoScrollFrameRef.current === null) return;
+    if (autoScrollFrameRef.current === null) {return;}
     cancelAnimationFrame(autoScrollFrameRef.current);
     autoScrollFrameRef.current = null;
   }, []);
 
   const finishDrag = useCallback((commit: boolean, activate: boolean) => {
     const session = dragRef.current;
-    if (!session) return;
+    if (!session) {return;}
 
     dragRef.current = null;
     stopAutoScroll();
@@ -86,7 +87,7 @@ export function useUnitReorder({
       onActivateUnitRef.current?.(session.unitId);
       return;
     }
-    if (!commit || !session.didDrag) return;
+    if (!commit || !session.didDrag) {return;}
 
     const targetIndex = session.previewOrder.indexOf(session.unitId);
     if (targetIndex !== session.sourceIndex) {
@@ -101,11 +102,9 @@ export function useUnitReorder({
   const updatePreviewOrder = useCallback((clientY: number) => {
     const session = dragRef.current;
     const list = listRef.current;
-    if (!session?.didDrag || !list) return;
+    if (!session?.didDrag || !list) {return;}
 
-    const rows = Array.from(
-      list.querySelectorAll<HTMLElement>("[data-unit-id]"),
-    );
+    const rows = [...list.querySelectorAll<HTMLElement>("[data-unit-id]")];
     const rowsById = new Map(
       rows.map((row) => [row.dataset.unitId, row]),
     );
@@ -116,15 +115,15 @@ export function useUnitReorder({
 
     for (const id of remainingIds) {
       const row = rowsById.get(id);
-      if (!row) continue;
+      if (!row) {continue;}
       const rect = row.getBoundingClientRect();
-      if (clientY < rect.top + rect.height / 2) break;
+      if (clientY < rect.top + rect.height / 2) {break;}
       targetIndex += 1;
     }
 
     const nextOrder = [...remainingIds];
     nextOrder.splice(targetIndex, 0, session.unitId);
-    if (sameOrder(nextOrder, session.previewOrder)) return;
+    if (sameOrder(nextOrder, session.previewOrder)) {return;}
 
     session.previewOrder = nextOrder;
     setPreviewOrder(nextOrder);
@@ -134,7 +133,7 @@ export function useUnitReorder({
     autoScrollFrameRef.current = null;
     const session = dragRef.current;
     const list = listRef.current;
-    if (!session?.didDrag || !list) return;
+    if (!session?.didDrag || !list) {return;}
 
     const rect = list.getBoundingClientRect();
     const topStrength = Math.min(
@@ -148,30 +147,30 @@ export function useUnitReorder({
         / AUTO_SCROLL_EDGE),
     );
     const speed = (bottomStrength - topStrength) * MAX_AUTO_SCROLL_SPEED;
-    if (speed === 0) return;
+    if (speed === 0) {return;}
 
     const previousScrollTop = list.scrollTop;
     list.scrollTop += speed;
-    if (list.scrollTop === previousScrollTop) return;
+    if (list.scrollTop === previousScrollTop) {return;}
 
     updatePreviewOrder(session.lastClientY);
     autoScrollFrameRef.current = requestAnimationFrame(scrollFrame);
   }, [listRef, updatePreviewOrder]);
 
   const scheduleAutoScroll = useCallback(() => {
-    if (autoScrollFrameRef.current !== null) return;
+    if (autoScrollFrameRef.current !== null) {return;}
     autoScrollFrameRef.current = requestAnimationFrame(runAutoScroll);
   }, [runAutoScroll]);
 
   const handlePointerMove = useCallback((event: PointerEvent) => {
     const session = dragRef.current;
-    if (!session || event.pointerId !== session.pointerId) return;
+    if (event.pointerId !== session?.pointerId) {return;}
 
     session.lastClientY = event.clientY;
     if (!session.didDrag) {
       const deltaX = event.clientX - session.startX;
       const deltaY = event.clientY - session.startY;
-      if (!exceedsDragThreshold(event.pointerType, deltaX, deltaY)) return;
+      if (!isBeyondDragThreshold(event.pointerType, deltaX, deltaY)) {return;}
 
       session.didDrag = true;
       setDraggingUnitId(session.unitId);
@@ -185,41 +184,41 @@ export function useUnitReorder({
 
   const handlePointerUp = useCallback((event: PointerEvent) => {
     const session = dragRef.current;
-    if (!session || event.pointerId !== session.pointerId) return;
+    if (event.pointerId !== session?.pointerId) {return;}
     finishDrag(session.didDrag, !session.didDrag);
   }, [finishDrag]);
 
   const handlePointerCancel = useCallback((event: PointerEvent) => {
-    if (dragRef.current?.pointerId === event.pointerId) cancelDrag();
+    if (dragRef.current?.pointerId === event.pointerId) {cancelDrag();}
   }, [cancelDrag]);
 
   const handleLostPointerCapture = useCallback((event: PointerEvent) => {
-    if (dragRef.current?.pointerId === event.pointerId) cancelDrag();
+    if (dragRef.current?.pointerId === event.pointerId) {cancelDrag();}
   }, [cancelDrag]);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key !== "Escape" || !dragRef.current) return;
+    if (event.key !== "Escape" || !dragRef.current) {return;}
     event.preventDefault();
     cancelDrag();
   }, [cancelDrag]);
 
   useEffect(() => {
-    window.addEventListener("pointermove", handlePointerMove, { passive: false });
-    window.addEventListener("pointerup", handlePointerUp);
-    window.addEventListener("pointercancel", handlePointerCancel);
-    window.addEventListener("lostpointercapture", handleLostPointerCapture, true);
-    window.addEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("pointermove", handlePointerMove, { passive: false });
+    globalThis.addEventListener("pointerup", handlePointerUp);
+    globalThis.addEventListener("pointercancel", handlePointerCancel);
+    globalThis.addEventListener("lostpointercapture", handleLostPointerCapture, {capture: true});
+    globalThis.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
-      window.removeEventListener("pointercancel", handlePointerCancel);
-      window.removeEventListener(
+      globalThis.removeEventListener("pointermove", handlePointerMove);
+      globalThis.removeEventListener("pointerup", handlePointerUp);
+      globalThis.removeEventListener("pointercancel", handlePointerCancel);
+      globalThis.removeEventListener(
         "lostpointercapture",
         handleLostPointerCapture,
         true,
       );
-      window.removeEventListener("keydown", handleKeyDown);
+      globalThis.removeEventListener("keydown", handleKeyDown);
     };
   }, [
     handleKeyDown,
@@ -229,13 +228,13 @@ export function useUnitReorder({
     handlePointerUp,
   ]);
 
-  const externalOrder = units.map(unitId).join("\u0000");
+  const externalOrder = units.map(unitId).join("\u{0}");
   const previousExternalOrderRef = useRef(externalOrder);
 
   useEffect(() => {
-    const orderChanged = previousExternalOrderRef.current !== externalOrder;
+    const isOrderChanged = previousExternalOrderRef.current !== externalOrder;
     previousExternalOrderRef.current = externalOrder;
-    if (!orderChanged || !dragRef.current) return;
+    if (!isOrderChanged || !dragRef.current) {return;}
 
     cancelDrag();
   }, [cancelDrag, externalOrder]);
@@ -253,15 +252,15 @@ export function useUnitReorder({
     event: ReactPointerEvent<HTMLButtonElement>,
     targetUnitId: string,
   ) => {
-    if (!enabledRef.current || !event.isPrimary) return;
-    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (!enabledRef.current || !event.isPrimary) {return;}
+    if (event.pointerType === "mouse" && event.button !== 0) {return;}
 
     const order = unitsRef.current.map(unitId);
     const sourceIndex = order.indexOf(targetUnitId);
     const list = listRef.current;
-    if (sourceIndex < 0 || !list) return;
+    if (sourceIndex === -1 || !list) {return;}
 
-    if (dragRef.current) cancelDrag();
+    if (dragRef.current) {cancelDrag();}
     event.stopPropagation();
     list.setPointerCapture(event.pointerId);
     dragRef.current = {
@@ -278,7 +277,7 @@ export function useUnitReorder({
   }, [cancelDrag, listRef]);
 
   const orderedUnits = useMemo(() => {
-    if (!previewOrder) return units;
+    if (!previewOrder) {return units;}
 
     const unitsById = new Map(units.map((unit) => [unitId(unit), unit]));
     const reorderedUnits = previewOrder.flatMap((id) => {

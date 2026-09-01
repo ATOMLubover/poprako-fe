@@ -24,17 +24,17 @@ export async function listTerms(
     `/termbases/${args.termbaseId}/terms`,
     rawArgs,
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: result.data.map(unwrapRawTermInfo),
+    data: result.data.map((item) => unwrapRawTermInfo(item)),
   };
 }
 
 export async function getTerm(id: string): Promise<Result<TermInfo>> {
   const result = await api.get<RawTermInfo>(`/terms/${id}`);
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
@@ -54,7 +54,7 @@ export async function createTerm(args: CreateTermArgs): Promise<Result<string>> 
     "/terms",
     rawArgs,
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return { success: true, data: result.data.id };
 }
@@ -62,7 +62,7 @@ export async function createTerm(args: CreateTermArgs): Promise<Result<string>> 
 export async function updateTerm(
   id: string,
   args: UpdateTermArgs,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   const rawArgs: RawUpdateTermArgs = {
     id,
     source: args.source,
@@ -70,9 +70,9 @@ export async function updateTerm(
     comment: args.comment,
   };
 
-  return api.put<void, RawUpdateTermArgs>(`/terms/${id}`, rawArgs);
+  return api.put<undefined, RawUpdateTermArgs>(`/terms/${id}`, rawArgs);
 }
 
-export async function deleteTerm(id: string): Promise<Result<void>> {
-  return api.delete<void>(`/terms/${id}`);
+export async function deleteTerm(id: string): Promise<Result<undefined>> {
+  return api.delete<undefined>(`/terms/${id}`);
 }

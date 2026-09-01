@@ -1,9 +1,9 @@
 import type { ChapterInfo, ComicInfo } from "@/types";
 
-export type ComicTranslationListItem = {
+export interface ComicTranslationListItem {
   comicInfo: ComicInfo;
   chapter?: ChapterInfo;
-};
+}
 
 export type TripleFilter = "pending" | "ongoing" | "completed" | "unset";
 

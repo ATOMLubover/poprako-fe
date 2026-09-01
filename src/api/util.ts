@@ -3,11 +3,16 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useAppStore } from "@/store/app";
 import type { Result, ResultFailure } from "@/types/utils/result";
 
-type FormatResponse<T> = {
+/*
+ * API diagnostics are intentionally logged for network and protocol failures.
+ */
+/* eslint-disable no-console */
+
+interface FormatResponse<T> {
   code: number;
   message?: string;
   data?: T;
-};
+}
 
 const BASE_URL = appConfig.apiBaseUrl;
 
@@ -17,7 +22,9 @@ export class ApiRequestError extends Error {
   constructor(failure: ResultFailure) {
     super(failure.error);
     this.name = "ApiRequestError";
-    this.httpStatus = failure.httpStatus;
+    if (failure.httpStatus !== undefined) {
+      this.httpStatus = failure.httpStatus;
+    }
   }
 }
 
@@ -37,11 +44,13 @@ export function resolveHttpErrorMessage(
   statusText: string,
   httpStatus: number,
 ): string {
-  if (typeof message === "string" && message.trim().length > 0) return message;
+  if (typeof message === "string" && message.trim().length > 0) {
+    return message;
+  }
   if (httpStatus === 422) {
     console.error("[API] HTTP 422 响应缺少有效 message", { message });
   }
-  return statusText || `HTTP ${httpStatus}`;
+  return statusText || `HTTP ${String(httpStatus)}`;
 }
 
 export function toApiRequestError(failure: ResultFailure): ApiRequestError {
@@ -49,19 +58,23 @@ export function toApiRequestError(failure: ResultFailure): ApiRequestError {
 }
 
 export function isReportedValidationError(error: unknown): boolean {
-  if (error instanceof ApiRequestError) return error.httpStatus === 422;
-  if (typeof error !== "object" || error === null) return false;
+  if (error instanceof ApiRequestError) {
+    return error.httpStatus === 422;
+  }
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
   return "httpStatus" in error && error.httpStatus === 422;
 }
 
-type ErrorNotifier = (message: string, type: "error") => void;
+type ErrorNotifier = (message: string, type: "error") => unknown;
 
 export function showLocalApiFailure(
   failure: ResultFailure,
   showToast: ErrorNotifier,
   fallback = failure.error,
 ): void {
-  if (failure.httpStatus === 422) return;
+  if (failure.httpStatus === 422) {return;}
   showToast(fallback, "error");
 }
 
@@ -69,40 +82,44 @@ export function showLocalCaughtError(
   error: unknown,
   showToast: ErrorNotifier,
   fallback: string,
-  preserveErrorMessage = false,
+  shouldPreserveErrorMessage = false,
 ): void {
-  if (isReportedValidationError(error)) return;
-  const message = preserveErrorMessage && error instanceof Error
+  if (isReportedValidationError(error)) {
+    return;
+  }
+  const message = shouldPreserveErrorMessage && error instanceof Error
     ? error.message
     : fallback;
   showToast(message, "error");
 }
 
-type QueryParams = Record<
-  string,
-  | string
+type QueryParams = Record<string,
+  string
   | number
   | boolean
   | undefined
   | null
-  | (string | number | boolean | undefined | null)[]
->;
+  | (string | number | boolean | undefined | null)[]>;
 
 function buildQuery(
   url: string,
   params?: QueryParams,
 ): string {
-  if (!params || Object.keys(params).length === 0) return url;
+  if (!params || Object.keys(params).length === 0) {
+    return url;
+  }
 
   const usp = new URLSearchParams();
 
-  for (const key of Object.keys(params)) {
-    const val = params[key as keyof typeof params];
-    if (val === undefined || val === null) continue;
+  for (const [key, val] of Object.entries(params)) {
+    if (val === undefined || val === null) {
+      continue;
+    }
     if (Array.isArray(val)) {
       for (const v of val) {
-        if (v === undefined || v === null) continue;
-        usp.append(key, String(v));
+        if (v !== undefined && v !== null) {
+          usp.append(key, String(v));
+        }
       }
     } else {
       usp.append(key, String(val));
@@ -111,18 +128,24 @@ function buildQuery(
 
   const qs = usp.toString();
 
-  if (!qs) return url;
+  if (!qs) {return url;}
 
   return url.includes("?") ? `${url}&${qs}` : `${url}?${qs}`;
 }
 function stripNulls(obj: unknown): unknown {
-  if (obj === null || obj === undefined) return obj;
-  if (Array.isArray(obj)) return obj.map(stripNulls);
-  if (typeof obj !== "object") return obj;
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map((value) => stripNulls(value));
+  }
+  if (typeof obj !== "object") {
+    return obj;
+  }
 
   const result: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(obj as Record<string, unknown>)) {
-    if (val === null || val === undefined) continue;
+    if (val === null || val === undefined) {continue;}
     result[key] = stripNulls(val);
   }
   return result;
@@ -131,13 +154,13 @@ function stripNulls(obj: unknown): unknown {
 async function request<T>(
   url: string,
   options: RequestInit = {},
-  needAuth: boolean = true,
+  requiresAuth = true,
 ): Promise<Result<T>> {
-  const headers = new Headers(options.headers || {});
+  const headers = new Headers(options.headers ?? {});
   headers.set("Content-Type", "application/json");
 
   // 自动携带 Auth 头
-  if (needAuth) {
+  if (requiresAuth) {
     const token = useAppStore.getState().getAccessToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
@@ -159,13 +182,13 @@ async function request<T>(
     if (response.status === 204) {
       if (response.ok) {
         console.debug(
-          `[API] ${method} ${url} → 204 (${(performance.now() - startTime).toFixed(0)}ms)`,
+          `[API] ${method} ${url} → ${String(response.status)} (${(performance.now() - startTime).toFixed(0)}ms)`,
         );
         return { success: true, data: undefined as T };
       }
 
       console.error(
-        `[API] ${method} ${url} → HTTP ${response.status}`,
+        `[API] ${method} ${url} → HTTP ${String(response.status)}`,
         {
           statusText: response.statusText,
           durationMs: Math.round(performance.now() - startTime),
@@ -173,7 +196,7 @@ async function request<T>(
       );
       return {
         success: false,
-        error: response.statusText || `HTTP ${response.status}`,
+        error: response.statusText || `HTTP ${String(response.status)}`,
         httpStatus: response.status,
       };
     }
@@ -185,23 +208,26 @@ async function request<T>(
     try {
       body = (await response.json()) as FormatResponse<T>;
     } catch {
-      const rawText = await clonedResponse
-        .text()
-        .catch(() => "(无法读取响应体)");
+      let rawText = "(无法读取响应体)";
+      try {
+        rawText = await clonedResponse.text();
+      } catch {
+        // Keep the fallback text when the cloned response cannot be read.
+      }
       console.error(
-        `[API] ${method} ${url} → HTTP ${response.status}, JSON 解析失败`,
+        `[API] ${method} ${url} → HTTP ${String(response.status)}, JSON 解析失败`,
         {
           rawBody: rawText.slice(0, 500),
           durationMs: Math.round(performance.now() - startTime),
         },
       );
-      const error = response.statusText || `HTTP ${response.status}`;
+      const error = response.statusText || `HTTP ${String(response.status)}`;
       return createHttpFailure(error, response.status);
     }
 
     if (!response.ok) {
       console.error(
-        `[API] ${method} ${url} → HTTP ${response.status}`,
+        `[API] ${method} ${url} → HTTP ${String(response.status)}`,
         {
           body,
           durationMs: Math.round(performance.now() - startTime),
@@ -217,7 +243,7 @@ async function request<T>(
 
     if (body.code !== 0) {
       console.error(
-        `[API] ${method} ${url} → code=${body.code}`,
+        `[API] ${method} ${url} → code=${String(body.code)}`,
         {
           body,
           durationMs: Math.round(performance.now() - startTime),
@@ -225,21 +251,21 @@ async function request<T>(
       );
       return {
         success: false,
-        error: body.message ?? `API code ${body.code}`,
+        error: body.message ?? `API code ${String(body.code)}`,
       };
     }
 
     console.debug(
-      `[API] ${method} ${url} → ${response.status} (${(performance.now() - startTime).toFixed(0)}ms)`,
+      `[API] ${method} ${url} → ${String(response.status)} (${(performance.now() - startTime).toFixed(0)}ms)`,
     );
     return { success: true, data: body.data as T };
-  } catch (err) {
+  } catch (error) {
     console.error(
       `[API] ${method} ${url} → 网络异常`,
-      err instanceof Error ? err : { message: String(err) },
+      error instanceof Error ? error : { message: String(error) },
       { durationMs: Math.round(performance.now() - startTime) },
     );
-    const message = err instanceof Error ? err.message : "未知错误";
+    const message = error instanceof Error ? error.message : "未知错误";
     return {
       success: false,
       error: message,
@@ -256,88 +282,97 @@ function buildQueryUrl(
 
 function resolveQueryAndAuth(
   queryParamsOrNeedAuth?: QueryParams | boolean,
-  needAuth = true,
-): { queryParams?: QueryParams; needAuth: boolean } {
+  requiresAuth = true,
+): { queryParams?: QueryParams; requiresAuth: boolean } {
   if (typeof queryParamsOrNeedAuth === "boolean") {
-    return { needAuth: queryParamsOrNeedAuth };
+    return { requiresAuth: queryParamsOrNeedAuth };
   }
 
-  return { queryParams: queryParamsOrNeedAuth, needAuth };
+    return queryParamsOrNeedAuth === undefined
+      ? { requiresAuth }
+      : { queryParams: queryParamsOrNeedAuth, requiresAuth };
 }
 
 export const api = {
   get: <T>(
     url: string,
     queryParams?: QueryParams,
-    needAuth = true,
-  ) => request<T>(buildQueryUrl(url, queryParams), { method: "GET" }, needAuth),
+    requiresAuth = true,
+  ) => request<T>(buildQueryUrl(url, queryParams), { method: "GET" }, requiresAuth),
 
+  // B is retained to preserve the public API's explicit request-body typing.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   post: <T, B>(
     url: string,
     body: B,
     queryParamsOrNeedAuth?: QueryParams | boolean,
-    needAuth = true,
+    requiresAuth = true,
   ) => {
-    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, requiresAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
       { method: "POST", body: JSON.stringify(stripNulls(body)) },
-      options.needAuth,
+      options.requiresAuth,
     );
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   put: <T, B>(
     url: string,
     body: B,
     queryParamsOrNeedAuth?: QueryParams | boolean,
-    needAuth = true,
+    requiresAuth = true,
   ) => {
-    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, requiresAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
       { method: "PUT", body: JSON.stringify(stripNulls(body)) },
-      options.needAuth,
+      options.requiresAuth,
     );
   },
 
   delete: <T>(
     url: string,
     queryParamsOrNeedAuth?: QueryParams | boolean,
-    needAuth = true,
+    requiresAuth = true,
   ) => {
-    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, requiresAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
       { method: "DELETE" },
-      options.needAuth,
+      options.requiresAuth,
     );
   },
 
+  // B is retained to preserve the public API's explicit request-body typing.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   deleteWithBody: <T, B>(
     url: string,
     body: B,
     queryParamsOrNeedAuth?: QueryParams | boolean,
-    needAuth = true,
+    requiresAuth = true,
   ) => {
-    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, requiresAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
       { method: "DELETE", body: JSON.stringify(stripNulls(body)) },
-      options.needAuth,
+      options.requiresAuth,
     );
   },
 
+  // B is retained to preserve the public API's explicit request-body typing.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   patch: <T, B>(
     url: string,
     body: B,
     queryParamsOrNeedAuth?: QueryParams | boolean,
-    needAuth = true,
+    requiresAuth = true,
   ) => {
-    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, needAuth);
+    const options = resolveQueryAndAuth(queryParamsOrNeedAuth, requiresAuth);
     return request<T>(
       buildQueryUrl(url, options.queryParams),
       { method: "PATCH", body: JSON.stringify(stripNulls(body)) },
-      options.needAuth,
+      options.requiresAuth,
     );
   },
 };

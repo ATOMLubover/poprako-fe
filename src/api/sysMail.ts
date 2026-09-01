@@ -1,3 +1,4 @@
+
 import { api } from "./util";
 import type { Result } from "@/types/utils/result";
 import type { SysMailInfo } from "@/types/sysMail";
@@ -7,8 +8,8 @@ import {
 } from "@/types/raw/sysMail";
 
 export async function listSysMails(
-  offset: number = 0,
-  limit: number = 10,
+  offset = 0,
+  limit = 10,
   isRead?: boolean,
 ): Promise<Result<SysMailInfo[]>> {
   const result = await api.get<RawSysMailVal[] | null>("/system-mails", {
@@ -17,23 +18,23 @@ export async function listSysMails(
     limit,
   });
 
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: (result.data ?? []).map(unwrapRawSysMailVal),
+    data: result.data?.map((item) => unwrapRawSysMailVal(item)) ?? [],
   };
 }
 
 export async function markSysMailRead(
   sysMailId: string,
-): Promise<Result<void>> {
-  const result = await api.post<void, object>(
+): Promise<Result<undefined>> {
+  const result = await api.post<undefined, object>(
     "/system-mails/mark-read",
     { ids: [sysMailId] },
   );
 
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return { success: true, data: undefined };
 }

@@ -1,6 +1,6 @@
 import { diffArrays } from "diff";
 
-export type UnitTextDiffPart = {
+export interface UnitTextDiffPart {
   kind:
     | "unchanged"
     | "deleted"
@@ -8,32 +8,35 @@ export type UnitTextDiffPart = {
     | "replacement-removed"
     | "replacement-added";
   text: string;
-};
+}
 
-type RawDiffPart = {
+interface RawDiffPart {
   kind: "unchanged" | "removed" | "added";
   text: string;
-};
+}
 
 const wordSegmenter = typeof Intl.Segmenter === "function"
   ? new Intl.Segmenter("zh", { granularity: "word" })
   : undefined;
 
 function tokenizeText(text: string): string[] {
-  if (!wordSegmenter) return Array.from(text);
+  if (!wordSegmenter) {
+    return [...text]; // eslint-disable-line @typescript-eslint/no-misused-spread
+  }
   return Array.from(wordSegmenter.segment(text), ({ segment }) => segment);
 }
 
 function mergeAdjacentParts(parts: UnitTextDiffPart[]): UnitTextDiffPart[] {
-  return parts.reduce<UnitTextDiffPart[]>((merged, part) => {
+  const merged: UnitTextDiffPart[] = [];
+  for (const part of parts) {
     const previous = merged.at(-1);
     if (previous?.kind === part.kind) {
       previous.text += part.text;
-      return merged;
+      continue;
     }
     merged.push({ ...part });
-    return merged;
-  }, []);
+  }
+  return merged;
 }
 
 function orderReplacementParts(parts: RawDiffPart[]): UnitTextDiffPart[] {
@@ -90,9 +93,9 @@ export function buildUnitTextDiff(
   const parts = changes.map<RawDiffPart>((change) => ({
     kind: change.removed
       ? "removed"
-      : change.added
+      : (change.added
         ? "added"
-        : "unchanged",
+        : "unchanged"),
     text: change.value.join(""),
   }));
 

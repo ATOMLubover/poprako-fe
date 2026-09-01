@@ -197,12 +197,12 @@ function makePaginationRecords(
   startMinute: number,
 ): ChapterWorkflowRecord[] {
   return Array.from({ length: count }, (_, index) => makeRecord(
-    `${prefix}_${index + 1}`,
+    `${prefix}_${String(index + 1)}`,
     {
       kind: "chapter_subtitle_updated",
       data: {
-        previousSubtitle: index === 0 ? "" : `${prefix} ${index}`,
-        nextSubtitle: `${prefix} ${index + 1}`,
+        previousSubtitle: index === 0 ? "" : `${prefix} ${String(index)}`,
+        nextSubtitle: `${prefix} ${String(index + 1)}`,
       },
     },
     { createdAt: NOW - (startMinute + index) * 60_000 },
@@ -245,14 +245,14 @@ export const AllEvents: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const items = await canvas.findAllByRole("listitem");
-    expect(items).toHaveLength(10);
+    await expect(items).toHaveLength(10);
     for (const item of items) {
-      expect(item.querySelectorAll("p")).toHaveLength(1);
+      await expect(item.querySelectorAll("p")).toHaveLength(1);
     }
-    expect(canvas.getByText("创建了章节")).toBeInTheDocument();
-    expect(canvas.getByText("翻校数据导出")).toBeInTheDocument();
-    expect(canvas.getByText("翻校数据导入")).toBeInTheDocument();
-    expect(canvasElement.querySelectorAll("[data-workflow-variable]").length)
+    await expect(canvas.getByText("创建了章节")).toBeInTheDocument();
+    await expect(canvas.getByText("翻校数据导出")).toBeInTheDocument();
+    await expect(canvas.getByText("翻校数据导入")).toBeInTheDocument();
+    await expect(canvasElement.querySelectorAll("[data-workflow-variable]").length)
       .toBeGreaterThan(10);
   },
 };
@@ -264,14 +264,14 @@ export const FormattingEdges: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(await canvas.findByText("系统")).toBeInTheDocument();
-    expect(canvas.getByText("user_w…cdef")).toBeInTheDocument();
-    expect(canvas.getByText("2025年12月03日 21:07")).toBeInTheDocument();
-    expect(canvas.getByText(LONG_SUBTITLE, { exact: false }))
+    await expect(await canvas.findByText("系统")).toBeInTheDocument();
+    await expect(canvas.getByText("user_w…cdef")).toBeInTheDocument();
+    await expect(canvas.getByText("2025年12月03日 21:07")).toBeInTheDocument();
+    await expect(canvas.getByText(LONG_SUBTITLE, { exact: false }))
       .toBeInTheDocument();
-    expect(canvas.getByText("嵌字")).toBeInTheDocument();
-    expect(canvas.getByText("已开始")).toBeInTheDocument();
-    expect(canvas.getByText("手动推进")).toBeInTheDocument();
+    await expect(canvas.getByText("嵌字")).toBeInTheDocument();
+    await expect(canvas.getByText("已开始")).toBeInTheDocument();
+    await expect(canvas.getByText("手动推进")).toBeInTheDocument();
   },
 };
 
@@ -287,7 +287,7 @@ export const InitialLoading: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(await canvas.findByRole("status", {
+    await expect(await canvas.findByRole("status", {
       name: "正在加载活动记录",
     })).toBeInTheDocument();
   },
@@ -305,8 +305,8 @@ export const InitialError: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(await canvas.findByText("活动记录加载失败")).toBeInTheDocument();
-    expect(canvas.queryByRole("button")).not.toBeInTheDocument();
+    await expect(await canvas.findByText("活动记录加载失败")).toBeInTheDocument();
+    await expect(canvas.queryByRole("button")).not.toBeInTheDocument();
   },
 };
 
@@ -317,8 +317,8 @@ export const RefreshErrorWithRecords: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(await canvas.findByText("最新记录刷新失败")).toBeInTheDocument();
-    expect(canvas.queryByRole("button")).not.toBeInTheDocument();
+    await expect(await canvas.findByText("最新记录刷新失败")).toBeInTheDocument();
+    await expect(canvas.queryByRole("button")).not.toBeInTheDocument();
   },
 };
 
@@ -333,7 +333,7 @@ export const LoadingMore: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(await canvas.findByRole("status", {
+    await expect(await canvas.findByRole("status", {
       name: "正在加载更早记录",
     })).toBeInTheDocument();
   },
@@ -350,8 +350,8 @@ export const LoadMoreError: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(await canvas.findByText("更早记录加载失败")).toBeInTheDocument();
-    expect(canvas.queryByRole("button")).not.toBeInTheDocument();
+    await expect(await canvas.findByText("更早记录加载失败")).toBeInTheDocument();
+    await expect(canvas.queryByRole("button")).not.toBeInTheDocument();
   },
 };
 
@@ -365,16 +365,16 @@ function InteractivePaginationDemo() {
 
   useEffect(() => () => {
     if (timeoutRef.current !== null) {
-      window.clearTimeout(timeoutRef.current);
+      clearTimeout(timeoutRef.current);
     }
   }, []);
 
   const handleLoadMore = () => {
     paginationLoadMore();
-    if (loadingRef.current) return;
+    if (loadingRef.current) {return;}
     loadingRef.current = true;
     setState((current) => ({ ...current, isLoadingMore: true }));
-    timeoutRef.current = window.setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setState((current) => ({
         ...current,
         records: [...current.records, ...SECOND_PAGE],
@@ -403,17 +403,18 @@ export const InteractivePagination: Story = {
     const canvas = within(canvasElement);
     const list = await canvas.findByRole("list");
     const scrollContainer = list.closest(".overflow-y-auto");
-    expect(scrollContainer).not.toBeNull();
-    scrollContainer!.scrollTop = scrollContainer!.scrollHeight;
-    scrollContainer!.dispatchEvent(new Event("scroll"));
+    await expect(scrollContainer).not.toBeNull();
+    if (!scrollContainer) {return;}
+    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    scrollContainer.dispatchEvent(new Event("scroll"));
 
-    expect(await canvas.findByRole("status", {
+    await expect(await canvas.findByRole("status", {
       name: "正在加载更早记录",
     })).toBeInTheDocument();
-    await waitFor(() => {
-      expect(canvas.getByText(/修改为“更早记录 1”/)).toBeInTheDocument();
+    await waitFor(async () => {
+      await expect(canvas.getByText(/修改为“更早记录 1”/)).toBeInTheDocument();
     });
-    expect(paginationLoadMore).toHaveBeenCalledOnce();
+    await expect(paginationLoadMore).toHaveBeenCalledOnce();
   },
 };
 

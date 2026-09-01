@@ -4,7 +4,7 @@ import type { ComicDetailModalProps } from "../types";
 
 export const WORKFLOW_RECORD_PAGE_SIZE = 20;
 
-export type WorkflowRecordState = {
+export interface WorkflowRecordState {
   records: ChapterWorkflowRecord[];
   hasMore: boolean;
   loadedOnce: boolean;
@@ -12,13 +12,13 @@ export type WorkflowRecordState = {
   isLoadingMore: boolean;
   error: string | null;
   loadMoreError: string | null;
-};
+}
 
-type Args = {
+interface Args {
   chapterId: string | null;
   enabled: boolean;
   onLoadWorkflowRecords: ComicDetailModalProps["onLoadWorkflowRecords"];
-};
+}
 
 const EMPTY_STATE: WorkflowRecordState = {
   records: [],
@@ -103,10 +103,10 @@ export function useComicDetailWorkflowRecords({
         limit: WORKFLOW_RECORD_PAGE_SIZE + 1,
       });
 
-      if (requestVersionsRef.current.get(chapterId) !== requestVersion) return;
+      if (requestVersionsRef.current.get(chapterId) !== requestVersion) {return;}
 
       if (!result.success) {
-        console.error("[ComicDetailModal] 加载 workflow records 失败:", result.error);
+        console.error("[ComicDetailModal] 加载 workflow records 失败:", result.error); // eslint-disable-line no-console
         updateChapterState(chapterId, (state) => ({
           ...state,
           loadedOnce: true,
@@ -117,7 +117,7 @@ export function useComicDetailWorkflowRecords({
       }
 
       const head = result.data.slice(0, WORKFLOW_RECORD_PAGE_SIZE);
-      const responseHasMore = result.data.length > WORKFLOW_RECORD_PAGE_SIZE;
+      const isResponseHasMore = result.data.length > WORKFLOW_RECORD_PAGE_SIZE;
       updateChapterState(chapterId, (state) => ({
         ...state,
         records: state.loadedOnce
@@ -125,14 +125,14 @@ export function useComicDetailWorkflowRecords({
           : head,
         hasMore: state.loadedOnce && state.records.length > 0
           ? state.hasMore
-          : responseHasMore,
+          : isResponseHasMore,
         loadedOnce: true,
         isLoading: false,
         error: null,
       }));
     } catch (error) {
-      if (requestVersionsRef.current.get(chapterId) !== requestVersion) return;
-      console.error("[ComicDetailModal] 加载 workflow records 异常:", error);
+      if (requestVersionsRef.current.get(chapterId) !== requestVersion) {return;}
+      console.error("[ComicDetailModal] 加载 workflow records 异常:", error); // eslint-disable-line no-console
       updateChapterState(chapterId, (state) => ({
         ...state,
         loadedOnce: true,
@@ -155,7 +155,7 @@ export function useComicDetailWorkflowRecords({
     }
 
     const snapshot = cacheRef.current[chapterId] ?? EMPTY_STATE;
-    if (!snapshot.loadedOnce || !snapshot.hasMore || snapshot.isLoading) return;
+    if (!snapshot.loadedOnce || !snapshot.hasMore || snapshot.isLoading) {return;}
 
     loadingMoreRef.current.add(chapterId);
     const requestVersion = requestVersionsRef.current.get(chapterId) ?? 0;
@@ -172,10 +172,10 @@ export function useComicDetailWorkflowRecords({
         limit: WORKFLOW_RECORD_PAGE_SIZE + 1,
       });
 
-      if (requestVersionsRef.current.get(chapterId) !== requestVersion) return;
+      if (requestVersionsRef.current.get(chapterId) !== requestVersion) {return;}
 
       if (!result.success) {
-        console.error("[ComicDetailModal] 加载更早 records 失败:", result.error);
+        console.error("[ComicDetailModal] 加载更早 records 失败:", result.error); // eslint-disable-line no-console
         updateChapterState(chapterId, (state) => ({
           ...state,
           isLoadingMore: false,
@@ -198,8 +198,8 @@ export function useComicDetailWorkflowRecords({
         };
       });
     } catch (error) {
-      if (requestVersionsRef.current.get(chapterId) !== requestVersion) return;
-      console.error("[ComicDetailModal] 加载更早 records 异常:", error);
+      if (requestVersionsRef.current.get(chapterId) !== requestVersion) {return;}
+      console.error("[ComicDetailModal] 加载更早 records 异常:", error); // eslint-disable-line no-console
       updateChapterState(chapterId, (state) => ({
         ...state,
         isLoadingMore: false,
@@ -211,7 +211,7 @@ export function useComicDetailWorkflowRecords({
   }, [chapterId, enabled, onLoadWorkflowRecords, updateChapterState]);
 
   useEffect(() => {
-    if (enabled && chapterId) void refreshLatest();
+    if (enabled && chapterId) {void refreshLatest();}
   }, [chapterId, enabled, refreshLatest]);
 
   return {

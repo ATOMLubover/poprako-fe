@@ -6,7 +6,7 @@ import type { Result } from "@/types/utils/result";
 import ChapterCreatorModal from "./ChapterCreatorModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
-type Props = {
+interface Props {
   comicInfo: ComicInfo;
   chapters: ChapterInfo[];
   selectedChapter?: ChapterInfo;
@@ -20,7 +20,7 @@ type Props = {
   ) => Promise<Result<string>>;
   onDelete?: (id: string) => void;
   onLongPress?: (chapter: ChapterInfo) => void;
-};
+}
 
 export default function ChapterOption({
   comicInfo,
@@ -39,25 +39,27 @@ export default function ChapterOption({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<HTMLDivElement>(null);
-  const longPressTimer = useRef<number | null>(null);
-  const longPressChapter = useRef<ChapterInfo | null>(null);
-  const longPressHandled = useRef(false);
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressChapterRef = useRef<ChapterInfo | null>(null);
+  const longPressHandledRef = useRef(false);
 
   const clearLongPress = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
+    if (!longPressTimerRef.current) {
+      return;
     }
+
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
   }, []);
 
   const handleChapterPointerDown = useCallback(
     (ch: ChapterInfo) => (e: React.PointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      longPressHandled.current = false;
-      longPressChapter.current = ch;
-      longPressTimer.current = window.setTimeout(() => {
-        longPressHandled.current = true;
+      longPressHandledRef.current = false;
+      longPressChapterRef.current = ch;
+      longPressTimerRef.current = setTimeout(() => {
+        longPressHandledRef.current = true;
         onLongPress?.(ch);
       }, 500);
     },
@@ -69,8 +71,8 @@ export default function ChapterOption({
       e.preventDefault();
       e.stopPropagation();
       clearLongPress();
-      if (!longPressHandled.current) {
-        const ch = longPressChapter.current;
+      if (!longPressHandledRef.current) {
+        const ch = longPressChapterRef.current;
         if (ch) {
           onSelect(ch.id);
           setIsOpen(false);
@@ -103,31 +105,32 @@ export default function ChapterOption({
         setIsOpen(false);
       }
     };
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    if (isOpen) {document.addEventListener("mousedown", handleClickOutside);}
+    return () => { document.removeEventListener("mousedown", handleClickOutside); };
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen || !hasMore || !observerRef.current || isLoading) return;
+    if (!isOpen || !hasMore || isLoading || !observerRef.current) {return;}
     const ob = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         onLoadMore();
       }
     });
     ob.observe(observerRef.current);
-    return () => ob.disconnect();
+    return () => { ob.disconnect(); };
   }, [isOpen, hasMore, isLoading, onLoadMore]);
 
   // Clean up long press timer on unmount
   useEffect(() => {
-    return () => clearLongPress();
+    return () => { clearLongPress(); };
   }, [clearLongPress]);
 
   return (
     <div className="relative" ref={dropdownRef}>
       {selectedChapter ? (
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          type="button"
+          onClick={() => { setIsOpen(!isOpen); }}
           className={clsx(
             "flex items-center gap-2 px-2 py-0.5",
             "border rounded-sm bg-white/50 transition-colors",
@@ -156,7 +159,8 @@ export default function ChapterOption({
         </button>
       ) : (
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          type="button"
+          onClick={() => { setIsOpen(!isOpen); }}
           className={clsx(
             "flex items-center gap-2 px-2 py-0.5 text-[10px] text-slate-400",
             "border border-slate-100 rounded-sm bg-white/50 transition-colors",
@@ -184,6 +188,7 @@ export default function ChapterOption({
             <div className="pb-1 shrink-0">
               {onCreateChapter && (
                 <button
+                  type="button"
                   onClick={() => {
                     setIsOpen(false);
                     setShowCreator(true);
@@ -208,11 +213,19 @@ export default function ChapterOption({
               >
                 {onLongPress ? (
                   <div
+                    role="button"
+                    tabIndex={0}
                     onPointerDown={handleChapterPointerDown(ch)}
                     onPointerUp={handleChapterPointerUp()}
                     onPointerCancel={handleChapterPointerCancel()}
                     onPointerLeave={handleChapterPointerCancel()}
                     onContextMenu={handleChapterContextMenu()}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter" && event.key !== " ") {return;}
+                      event.preventDefault();
+                      onSelect(ch.id);
+                      setIsOpen(false);
+                    }}
                     className={clsx(
                       "flex-1 flex items-center gap-2 text-left",
                       "px-2 py-1.5 rounded-sm transition-colors pr-6",
@@ -232,6 +245,7 @@ export default function ChapterOption({
                   </div>
                 ) : (
                   <button
+                    type="button"
                     onClick={() => {
                       onSelect(ch.id);
                       setIsOpen(false);
@@ -254,6 +268,7 @@ export default function ChapterOption({
                 )}
                 {onDelete && (
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setPendingDeleteId(ch.id);
@@ -285,7 +300,7 @@ export default function ChapterOption({
         <ChapterCreatorModal
           comicInfo={comicInfo}
           onCreateChapter={onCreateChapter}
-          onClose={() => setShowCreator(false)}
+          onClose={() => { setShowCreator(false); }}
         />
       )}
       {pendingDeleteId && (
@@ -296,7 +311,7 @@ export default function ChapterOption({
             onDelete?.(pendingDeleteId);
             setPendingDeleteId(null);
           }}
-          onCancel={() => setPendingDeleteId(null)}
+          onCancel={() => { setPendingDeleteId(null); }}
         />
       )}
     </div>

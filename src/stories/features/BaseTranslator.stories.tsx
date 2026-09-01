@@ -287,8 +287,8 @@ const mockUnits = ([
   },
 ] satisfies UnitInfo[]).map((unit): UnitInfo => ({
   ...unit,
-  ...(unitTranslatedText(unit) ? { translatorId: TRANSLATOR_ID } : {}),
-  ...(unitProofreadText(unit) ? { proofreaderId: PROOFREADER_ID } : {}),
+  ...(unitTranslatedText(unit) && { translatorId: TRANSLATOR_ID }),
+  ...(unitProofreadText(unit) && { proofreaderId: PROOFREADER_ID }),
 }));
 
 const mockUsers = new Map<string, UserInfo>([
@@ -394,14 +394,17 @@ export default meta;
 type Story = StoryObj<typeof BaseTranslator>;
 type BaseTranslatorProps = ComponentProps<typeof BaseTranslator>;
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function mockSaveUnits(pageId: string, diff: UnitDiff) {
-  console.log("[mock] onSaveUnits", pageId, diff);
+  console.log("[mock] onSaveUnits", pageId, diff); // eslint-disable-line no-console
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function mockCompleteStage(stage: "translate" | "proofread") {
-  console.log("[mock] onCompleteStage", stage);
+  console.log("[mock] onCompleteStage", stage); // eslint-disable-line no-console
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
 async function mockResolveUser(userId: string) {
   const user = mockUsers.get(userId);
   return user
@@ -410,6 +413,7 @@ async function mockResolveUser(userId: string) {
 }
 
 const mockTerminology: TerminologyDataSource = {
+  // eslint-disable-next-line @typescript-eslint/require-await
   listTermbases: async () => ({
     success: true,
     data: [
@@ -425,6 +429,7 @@ const mockTerminology: TerminologyDataSource = {
       },
     ],
   }),
+  // eslint-disable-next-line @typescript-eslint/require-await
   listTerms: async () => ({
     success: true,
     data: [
@@ -439,11 +444,17 @@ const mockTerminology: TerminologyDataSource = {
       },
     ],
   }),
+  // eslint-disable-next-line @typescript-eslint/require-await
   createTermbase: async () => ({ success: true, data: "termbase-new" }),
+  // eslint-disable-next-line @typescript-eslint/require-await
   updateTermbase: async () => ({ success: true, data: undefined }),
+  // eslint-disable-next-line @typescript-eslint/require-await
   deleteTermbase: async () => ({ success: true, data: undefined }),
+  // eslint-disable-next-line @typescript-eslint/require-await
   createTerm: async () => ({ success: true, data: "term-new" }),
+  // eslint-disable-next-line @typescript-eslint/require-await
   updateTerm: async () => ({ success: true, data: undefined }),
+  // eslint-disable-next-line @typescript-eslint/require-await
   deleteTerm: async () => ({ success: true, data: undefined }),
 };
 
@@ -451,10 +462,11 @@ function createUnitSearchTransform(
   unitsByPage: Map<string, UnitInfo[]>,
 ): UnitSearchTransformDataSource {
   return {
+    // eslint-disable-next-line @typescript-eslint/require-await
     search: async ({ part, phrase }) => {
       return {
         success: true,
-        data: [...unitsByPage.entries()].flatMap(([pageId, units]) =>
+        data: [...unitsByPage].flatMap(([pageId, units]) =>
           units.flatMap((unit) => {
             const text = part === "translatedText"
               ? unitTranslatedText(unit)
@@ -464,26 +476,28 @@ function createUnitSearchTransform(
         ),
       };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     transform: async ({ part, origin, target, unitIds }) => {
       const selectedIds = new Set(unitIds);
       for (const [pageId, units] of unitsByPage) {
         unitsByPage.set(pageId, units.map((unit) => {
-          if (!selectedIds.has(unit.id)) return unit;
+          if (!selectedIds.has(unit.id)) {return unit;}
 
           if (part === "translatedText") {
             return {
               ...unit,
-              translatedText: unitTranslatedText(unit)?.replaceAll(origin, target),
+              translatedText: unitTranslatedText(unit)?.replaceAll(origin, () => target),
             };
           }
           return {
             ...unit,
-            proofreadText: unitProofreadText(unit)?.replaceAll(origin, target),
+            proofreadText: unitProofreadText(unit)?.replaceAll(origin, () => target),
           };
         }));
       }
       return { success: true, data: undefined };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     reloadPage: async (pageId) => ({
       success: true,
       data: unitsByPage.get(pageId) ?? [],
@@ -514,15 +528,26 @@ function createStoryArgs({
     project: mockProject,
     canTranslate,
     canProofread,
+    // eslint-disable-next-line @typescript-eslint/require-await
     onLoadUnits: async (pageId: string) => unitsByPage.get(pageId) ?? [],
-    onLoadPageImage: async (_pageId: string, _quality: PageImageQuality) =>
-      DEMO_IMAGE,
+    // eslint-disable-next-line @typescript-eslint/require-await
+    onLoadPageImage: async (pageId: string, quality: PageImageQuality) => {
+      void pageId;
+      void quality;
+      return DEMO_IMAGE;
+    },
     onSaveUnits: mockSaveUnits,
     onResolveUser: mockResolveUser,
     onCompleteStage: mockCompleteStage,
+    // eslint-disable-next-line @typescript-eslint/require-await
+    onListEditedPageIds: async () => ["page-2", "page-3"],
+    currentUserId: "mock-user",
+    terminology: mockTerminology,
     unitSearchTransform: createUnitSearchTransform(unitsByPage),
+    startPageId: "page-1",
+    startMode: "auto",
     onExit: () => {
-      console.log("[mock] onExit");
+      console.log("[mock] onExit"); // eslint-disable-line no-console
     },
   };
 }
@@ -544,17 +569,17 @@ export const TranslatorOnly: Story = {
     await userEvent.click(canvas.getByRole("button", {
       name: "切换到只读模式",
     }));
-    expect(await canvas.findAllByRole("textbox", {
+    await expect(await canvas.findAllByRole("textbox", {
       name: "翻译与校对差异",
     })).toHaveLength(mockUnits.length);
 
     await userEvent.click(canvas.getByRole("button", {
       name: "切换到翻译模式",
     }));
-    expect(canvas.queryByRole("textbox", {
+    await expect(canvas.queryByRole("textbox", {
       name: "翻译与校对差异",
     })).toBeNull();
-    expect(canvas.getByRole("button", {
+    await expect(canvas.getByRole("button", {
       name: "切换到只读模式",
     })).toBeVisible();
   },
@@ -571,15 +596,15 @@ export const SearchAndTransform: Story = {
 
     await userEvent.click(canvas.getByRole("button", { name: "工具菜单" }));
     await userEvent.click(page.getByTitle("搜索与替换"));
-    expect(page.getByRole("dialog", { name: "搜索与替换" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "搜索与替换" })).toBeVisible();
 
     await userEvent.type(page.getByRole("textbox", { name: "查找短语" }), "这");
     await userEvent.click(page.getByRole("button", { name: "搜索" }));
-    expect(await page.findByText("3 个匹配 Unit")).toBeVisible();
+    await expect(await page.findByText("3 个匹配 Unit")).toBeVisible();
 
     await userEvent.type(page.getByRole("textbox", { name: "替换短语" }), "那");
     await userEvent.click(page.getByRole("button", { name: "替换" }));
-    expect(await page.findByText("没有找到匹配内容")).toBeVisible();
+    await expect(await page.findByText("没有找到匹配内容")).toBeVisible();
   },
 };
 
@@ -611,19 +636,12 @@ export const ReadOnlyWithoutTerminology: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    expect(canvas.queryByTestId("terminology-lookup")).toBeNull();
-    expect(await canvas.findAllByRole("textbox", {
+    await expect(canvas.queryByTestId("terminology-lookup")).toBeNull();
+    await expect(await canvas.findAllByRole("textbox", {
       name: "翻译与校对差异",
     })).toHaveLength(mockUnits.length);
-
-    await userEvent.click(canvas.getByRole("button", {
-      name: "切换到标准 Unit 视图",
-    }));
-    expect(canvas.queryByRole("textbox", {
-      name: "翻译与校对差异",
-    })).toBeNull();
-    expect(canvas.getByRole("button", {
-      name: "切换到 Diff Unit 视图",
+    await expect(canvas.getByRole("button", {
+      name: "前进到下一个修改",
     })).toBeVisible();
   },
 };

@@ -7,7 +7,7 @@ export function dragThreshold(pointerType: string) {
     : POINTER_DRAG_THRESHOLD;
 }
 
-export function exceedsDragThreshold(
+export function isBeyondDragThreshold(
   pointerType: string,
   deltaX: number,
   deltaY: number,

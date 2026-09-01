@@ -1,3 +1,6 @@
+/* eslint-disable no-console, eqeqeq, unicorn/no-non-function-verb-prefix, unicorn/no-unnecessary-global-this, unicorn/prefer-minimal-ternary -- translator lifecycle and diagnostics. */
+/* eslint-disable @typescript-eslint/use-unknown-in-catch-callback-variable, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-floating-promises, @typescript-eslint/no-misused-promises -- UI callbacks bridge async lifecycle APIs. */
+/* eslint-disable @eslint-react/use-state, @eslint-react/exhaustive-deps -- translator engine lifecycle. */
 import { useState, useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 import { showLocalCaughtError, toApiRequestError } from "@/api/util";
@@ -6,6 +9,7 @@ import {
   Command,
   CaseSensitive,
   Check,
+  CircleArrowRight,
   Loader2,
   ReplaceAll,
 } from "lucide-react";
@@ -46,10 +50,6 @@ import { useRelocationPreference } from
 import { useToastStore } from "@/components/ui/NotificationToast";
 import { useSpecialChars } from "@/hook/useSpecialChars";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
-import {
-  DEFAULT_READ_ONLY_UNIT_VIEW,
-  type ReadOnlyUnitView,
-} from "@/features/BaseTranslator/types/readOnlyUnitView";
 import type { SpecialCharInsertRequest } from "@/features/BaseTranslator/features/UnitList/components/business/UnitList";
 import type { UnitDiff } from "../../types/type";
 import type { TerminologyDataSource } from "../../types/terminology";
@@ -63,6 +63,7 @@ import {
   resolveInitialPageIndex,
   usePageImagePreloader,
 } from "../../hook/usePageImagePreloader";
+import { findNextEditedPageIndex } from "../../editedPageNavigation";
 import {
   availableTranslatorModes,
   initialTranslatorMode,
@@ -70,7 +71,7 @@ import {
   type TranslatorCompletionStage,
 } from "../../types/access";
 
-type Props = {
+interface Props {
   project: Project;
   // 懒加载的 units 获取器，BaseTranslator 只负责在需要时调用它来获取 units 列表
   onLoadUnits: (pageId: string) => Promise<UnitInfo[]>;
@@ -85,31 +86,27 @@ type Props = {
     quality: PageImageQuality,
   ) => Promise<string>;
   onResolveUser: UnitUserResolver;
-  onCompleteStage?: (stage: TranslatorCompletionStage) => Promise<void>;
+  onCompleteStage: (stage: TranslatorCompletionStage) => Promise<void>;
+  onListEditedPageIds: () => Promise<string[]>;
   onExit: () => void;
-  currentUserId?: string;
+  currentUserId: string;
   canTranslate: boolean;
   canProofread: boolean;
-  terminology?: TerminologyDataSource;
-  unitSearchTransform?: UnitSearchTransformDataSource;
-  // 初始页码索引，默认为 0
-  startPageIndex?: number;
-  // 初始页 ID，优先级高于 startPageIndex
-  startPageId?: string;
-  startMode?: TranslatorMode;
-};
+  terminology: TerminologyDataSource;
+  unitSearchTransform: UnitSearchTransformDataSource;
+  startPageId: string;
+  startMode: TranslatorMode | "auto";
+}
 
-type TranslatorViewState = {
+interface TranslatorViewState {
   entryMode: TranslatorMode;
   view: TranslatorMode;
-  readOnlyUnitView: ReadOnlyUnitView;
-};
+}
 
 function initialViewState(entryMode: TranslatorMode): TranslatorViewState {
   return {
     entryMode,
     view: entryMode,
-    readOnlyUnitView: DEFAULT_READ_ONLY_UNIT_VIEW,
   };
 }
 
@@ -120,21 +117,17 @@ export default function BaseTranslator({
   onLoadPageImage,
   onResolveUser,
   onCompleteStage,
+  onListEditedPageIds,
   onExit,
   currentUserId,
   canTranslate,
   canProofread,
   terminology,
   unitSearchTransform,
-  startPageIndex,
   startPageId,
   startMode,
 }: Props) {
-  const initialPageIndex = resolveInitialPageIndex(
-    project.pages,
-    startPageId,
-    startPageIndex,
-  );
+  const initialPageIndex = resolveInitialPageIndex(project.pages, startPageId);
   const [pageIndex, setPageIndex] = useState(initialPageIndex);
   const [unitBuf, setUnitBuf] = useState<UnitInfo[]>([]);
   const [focusedUnitId, setFocusedUnitId] = useState<string | undefined>(
@@ -145,7 +138,10 @@ export default function BaseTranslator({
     [canProofread, canTranslate],
   );
   const mode = useMemo(
-    () => initialTranslatorMode(availableModes, startMode),
+    () => initialTranslatorMode(
+      availableModes,
+      startMode === "auto" ? undefined : startMode,
+    ),
     [availableModes, startMode],
   );
   const [storedViewState, setViewState] = useState<TranslatorViewState>(() =>
@@ -157,16 +153,16 @@ export default function BaseTranslator({
   if (storedViewState !== viewState) {
     setViewState(viewState);
   }
-  const { view, readOnlyUnitView } = viewState;
+  const { view } = viewState;
   const [proofreadPreviewVisibility, setProofreadPreviewVisibility] =
     useState<ProofreadPreviewVisibility>("visible");
 
-  const readOnly = view === "readOnly";
+  const isReadOnly = view === "readOnly";
   const canSwitchView = mode !== "readOnly" && availableModes.length > 1;
   const nextView = availableModes[
     (availableModes.indexOf(view) + 1) % availableModes.length
   ];
-  const canEditView = !readOnly && (
+  const canEditView = !isReadOnly && (
     view === "translate" ? canTranslate : canProofread
   );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -189,11 +185,13 @@ export default function BaseTranslator({
   const [isCompletingStage, setIsCompletingStage] = useState(false);
   const [hasCompletedStage, setHasCompletedStage] = useState(false);
   const [isCompleteConfirmOpen, setIsCompleteConfirmOpen] = useState(false);
+  const [isLoadingEditedPages, setIsLoadingEditedPages] = useState(false);
 
   const canvasRef = useRef<CanvasHandle>(null);
   const lastSpecialCharRef = useRef<string | null>(null);
   const relocationSuppressedUnitIdRef = useRef<string | null>(null);
   const pendingCenteredUnitIdRef = useRef<string | null>(null);
+  const editedPageIdsRef = useRef<string[] | undefined>(undefined);
 
   const showToast = useToastStore((s) => s.showToast);
   const { allChars, favoriteChars } = useSpecialChars();
@@ -210,7 +208,7 @@ export default function BaseTranslator({
 
   const activeShortcuts = (() => {
     let shortcuts = configurableShortcuts;
-    if (readOnly) {
+    if (isReadOnly) {
       shortcuts = shortcuts.filter((s) =>
         [
           "nextMarker", "prevMarker", "pageUp", "pageDown",
@@ -277,16 +275,16 @@ export default function BaseTranslator({
   }
 
   async function handleToggleImageQuality() {
-    const nextIsHighResolution = !isHighResolution;
+    const isNextIsHighResolution = !isHighResolution;
     const page = project.pages[pageIndex];
 
-    setIsHighResolution(nextIsHighResolution);
+    setIsHighResolution(isNextIsHighResolution);
     setIsLoadingPage(true);
     setImageUrl(null);
     try {
       const nextImageUrl = await onLoadPageImage(
         page.id,
-        nextIsHighResolution ? "original" : "optimized",
+        isNextIsHighResolution ? "original" : "optimized",
       );
       setImageUrl(nextImageUrl);
     } finally {
@@ -297,7 +295,6 @@ export default function BaseTranslator({
   async function handleCompleteStage() {
     if (
       !completionStage ||
-      !onCompleteStage ||
       saving ||
       isCompletingStage ||
       hasCompletedStage
@@ -326,9 +323,42 @@ export default function BaseTranslator({
     }
   }
 
+  async function handleNavigateToNextEditedPage() {
+    if (isLoadingEditedPages || isLoadingPage) {return;}
+
+    setIsLoadingEditedPages(true);
+    try {
+      const editedPageIds = editedPageIdsRef.current
+        ?? await onListEditedPageIds();
+      editedPageIdsRef.current = editedPageIds;
+
+      const nextPageIndex = findNextEditedPageIndex(
+        project.pages,
+        pageIndex,
+        editedPageIds,
+      );
+      if (nextPageIndex < 0) {
+        showToast(
+          editedPageIds.length === 0
+            ? "当前章节没有修改页面"
+            : "后面没有修改页面了",
+          "info",
+        );
+        return;
+      }
+
+      await handleNavigate(nextPageIndex);
+    } catch (error) {
+      console.error("[BaseTranslator] 加载修改页面失败", error);
+      showLocalCaughtError(error, showToast, "获取修改页面失败，请重试");
+    } finally {
+      setIsLoadingEditedPages(false);
+    }
+  }
+
   function handleQuickSpecialChar() {
     const char = lastSpecialCharRef.current ?? allChars[0]?.text;
-    if (!char || !focusedUnitId) return;
+    if (!char || !focusedUnitId) {return;}
 
     setSpecialCharInsertRequest((prev) => ({
       id: (prev?.id ?? 0) + 1,
@@ -340,7 +370,7 @@ export default function BaseTranslator({
   function handleQuickSpecialCharAt(index: number) {
     return () => {
       const char = favoriteChars[index];
-      if (!char || !focusedUnitId) return;
+      if (!char || !focusedUnitId) {return;}
 
       setSpecialCharInsertRequest((prev) => ({
         id: (prev?.id ?? 0) + 1,
@@ -437,10 +467,10 @@ export default function BaseTranslator({
 
   function handlePageImageLoad() {
     const targetUnitId = pendingCenteredUnitIdRef.current;
-    if (!targetUnitId) return;
+    if (!targetUnitId) {return;}
 
     const unit = unitBufRef.current.find((item) => unitId(item) === targetUnitId);
-    if (!unit) return;
+    if (!unit) {return;}
 
     pendingCenteredUnitIdRef.current = null;
     const position = unitPosition(unit);
@@ -449,10 +479,8 @@ export default function BaseTranslator({
 
   async function handleRefreshCurrentPage() {
     const currentPageId = project.pages[pageIndex].id;
-    if (!unitSearchTransform) return;
-
     const result = await unitSearchTransform.reloadPage(currentPageId);
-    if (!result.success) throw toApiRequestError(result);
+    if (!result.success) {throw toApiRequestError(result);}
     setLoadedUnits(result.data, setUnitBuf);
   }
 
@@ -461,7 +489,7 @@ export default function BaseTranslator({
     targetUnitId?: string,
   ) {
     const targetIndex = project.pages.findIndex((page) => page.id === pageId);
-    if (targetIndex < 0) {
+    if (targetIndex === -1) {
       console.error("[BaseTranslator] 搜索结果页面不存在", { pageId });
       showToast("目标页面已不存在，请重新进入翻译器", "error");
       return;
@@ -495,39 +523,26 @@ export default function BaseTranslator({
 
   // Relocation: when focused unit changes and relocation is on, center canvas on it
   useEffect(() => {
-    if (!isRelocationEnabled || !focusedUnitId) return;
-    if (relocationSuppressedUnitIdRef.current === focusedUnitId) return;
+    if (!isRelocationEnabled || !focusedUnitId) {return;}
+    if (relocationSuppressedUnitIdRef.current === focusedUnitId) {return;}
 
     const unit = unitBufRef.current.find((item) => unitId(item) === focusedUnitId);
-    if (!unit) return;
+    if (!unit) {return;}
     const position = unitPosition(unit);
 
     canvasRef.current?.centerOn(position.xCoord, position.yCoord);
   }, [focusedUnitId, isRelocationEnabled, unitBufRef]);
 
   function handleSwitchView() {
-    if (!canSwitchView) return;
+    if (!canSwitchView) {return;}
     setViewState((current) => {
       const currentIndex = availableModes.indexOf(current.view);
       const next = availableModes[(currentIndex + 1) % availableModes.length];
       return {
         entryMode: mode,
         view: next,
-        readOnlyUnitView: next === "readOnly"
-          ? DEFAULT_READ_ONLY_UNIT_VIEW
-          : current.readOnlyUnitView,
       };
     });
-  }
-
-  function handleSwitchReadOnlyUnitView() {
-    if (!readOnly) return;
-    setViewState((current) => ({
-      ...current,
-      readOnlyUnitView: current.readOnlyUnitView === "diff"
-        ? "standard"
-        : "diff",
-    }));
   }
 
   useShortcutActions(
@@ -540,19 +555,19 @@ export default function BaseTranslator({
         );
       },
       nextMarker: () => {
-        if (unitBuf.length === 0) return;
+        if (unitBuf.length === 0) {return;}
         const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const next = cur >= unitBuf.length - 1 ? 0 : cur + 1;
         handleFocusUnit(unitId(unitBuf[next]));
       },
       prevMarker: () => {
-        if (unitBuf.length === 0) return;
+        if (unitBuf.length === 0) {return;}
         const cur = unitBuf.findIndex((unit) => unitId(unit) === focusedUnitId);
         const prev = cur <= 0 ? unitBuf.length - 1 : cur - 1;
         handleFocusUnit(unitId(unitBuf[prev]));
       },
       pageUp: () => {
-        if (pageIndex > 0) handleNavigate(pageIndex - 1);
+        if (pageIndex > 0) {handleNavigate(pageIndex - 1);}
       },
       pageDown: () => {
         if (pageIndex < project.pages.length - 1) {
@@ -580,26 +595,26 @@ export default function BaseTranslator({
         setFocusedUnitId(undefined);
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
+    return () => { globalThis.removeEventListener("keydown", handleKeyDown); };
   }, [isShortcutPanelOpen, isSpecialCharPanelOpen, isUnitSearchTransformOpen]);
 
-  const toolboxOptions = readOnly ? [] : [
+  const toolboxOptions = isReadOnly ? [] : [
     {
       icon: <Command size={20} />,
       title: "快捷键说明",
-      onClick: () => setIsShortcutPanelOpen(true),
+      onClick: () => { setIsShortcutPanelOpen(true); },
     },
     {
       icon: <CaseSensitive size={20} />,
       title: "特殊符号面板",
-      onClick: () => setIsSpecialCharPanelOpen(true),
+      onClick: () => { setIsSpecialCharPanelOpen(true); },
     },
-    ...(unitSearchTransform ? [{
+    {
       icon: <ReplaceAll size={20} />,
       title: "搜索与替换",
-      onClick: () => setIsUnitSearchTransformOpen(true),
-    }] : []),
+      onClick: () => { setIsUnitSearchTransformOpen(true); },
+    },
   ];
 
   const unitSearchPart: UnitTextPart = view === "translate"
@@ -627,18 +642,18 @@ export default function BaseTranslator({
         onDeleteUnit={canEditView ? handleDeleteUnit : undefined}
         onToggleBubble={
           canEditView ? (targetId) =>
-            handleModifyUnit(targetId, { isBubble: !unitIsBubble(unitBufRef.current.find(u => unitId(u) === targetId)!) })
+            { handleModifyUnit(targetId, { isBubble: !unitIsBubble(unitBufRef.current.find(u => unitId(u) === targetId)!) }); }
             : undefined
         }
         onImageLoad={handlePageImageLoad}
         enableReadOnly={!canEditView}
         proofreadPreviewVisibility={proofreadPreviewVisibility}
       />
-      {!readOnly && terminology && (
+      {!isReadOnly && (
         <TerminologyLookupBar dataSource={terminology} />
       )}
       <div className="absolute top-2 left-2 flex items-center gap-2">
-        {!readOnly && (
+        {!isReadOnly && (
           <ToolboxDropdown options={toolboxOptions} direction="down" />
         )}
         <button
@@ -655,14 +670,14 @@ export default function BaseTranslator({
           <SquareArrowRight size={20} />
         </button>
       </div>
-      {!readOnly && completionStage && onCompleteStage && (
+      {!isReadOnly && completionStage && (
         <div className="absolute bottom-2 right-2">
           <button
             type="button"
             title={completionStage === "proofread" ? "完成校对" : "完成翻译"}
             aria-label={completionStage === "proofread" ? "完成校对" : "完成翻译"}
             disabled={saving || isCompletingStage || hasCompletedStage}
-            onClick={() => setIsCompleteConfirmOpen(true)}
+            onClick={() => { setIsCompleteConfirmOpen(true); }}
             className={clsx(
               "flex size-8 items-center justify-center rounded-md border",
               "border-gray-200 bg-white/85 text-gray-700 shadow-sm",
@@ -674,6 +689,29 @@ export default function BaseTranslator({
               <Loader2 size={18} className="animate-spin" />
             ) : (
               <Check size={20} strokeWidth={2.5} />
+            )}
+          </button>
+        </div>
+      )}
+      {isReadOnly && (
+        <div className="absolute bottom-2 right-2">
+          <button
+            type="button"
+            title="前进到下一个修改"
+            aria-label="前进到下一个修改"
+            disabled={isLoadingEditedPages || isLoadingPage || saving}
+            onClick={() => void handleNavigateToNextEditedPage()}
+            className={clsx(
+              "flex size-8 items-center justify-center rounded-md border",
+              "border-gray-200 bg-white/85 text-gray-700 shadow-sm",
+              "transition-colors hover:border-stone-300 hover:bg-white",
+              "hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-60",
+            )}
+          >
+            {isLoadingEditedPages ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <CircleArrowRight size={20} strokeWidth={2.25} />
             )}
           </button>
         </div>
@@ -704,20 +742,18 @@ export default function BaseTranslator({
             view={view}
             nextView={nextView}
             canSwitchView={canSwitchView}
-            readOnlyUnitView={readOnlyUnitView}
             isRelocationEnabled={isRelocationEnabled}
             isUnitCreationEnabled={isUnitCreationEnabled}
             proofreadPreviewVisibility={proofreadPreviewVisibility}
             isHighResolution={isHighResolution}
             isLoadingPage={isLoadingPage}
             onSwitchView={handleSwitchView}
-            onSwitchReadOnlyUnitView={handleSwitchReadOnlyUnitView}
             onRelocationClick={toggleRelocation}
-            onUnitCreationClick={() => setIsUnitCreationEnabled((v) => !v)}
+            onUnitCreationClick={() => { setIsUnitCreationEnabled((v) => !v); }}
             onToggleProofreadPreviewClick={() =>
-              setProofreadPreviewVisibility((v) =>
+              { setProofreadPreviewVisibility((v) =>
                 v === "visible" ? "dimmed" : "visible",
-              )
+              ); }
             }
             onToggleImageQualityClick={handleToggleImageQuality}
             onSaveClick={handleSave}
@@ -735,7 +771,6 @@ export default function BaseTranslator({
           units={unitBuf}
           focusedUnitId={focusedUnitId}
           mode={view}
-          readOnlyUnitView={readOnlyUnitView}
           onFocusUnit={handleFocusUnit}
           onModifyUnit={canEditView ? handleModifyUnit : undefined}
           onReorderUnit={canEditView ? handleReorderUnit : undefined}
@@ -757,13 +792,13 @@ export default function BaseTranslator({
           fixedShortcuts={fixedShortcuts}
           configurableShortcuts={configurableShortcuts}
           onUpdateConfigurableShortcuts={updateConfigurableShortcuts}
-          onClose={() => setIsShortcutPanelOpen(false)}
+          onClose={() => { setIsShortcutPanelOpen(false); }}
         />
       )}
       {isSpecialCharPanelOpen && (
-        <SpecialCharPanel onClose={() => setIsSpecialCharPanelOpen(false)} />
+        <SpecialCharPanel onClose={() => { setIsSpecialCharPanelOpen(false); }} />
       )}
-      {isUnitSearchTransformOpen && unitSearchTransform && (
+      {isUnitSearchTransformOpen && (
         <UnitSearchTransformDialog
           pages={project.pages}
           part={unitSearchPart}
@@ -772,7 +807,7 @@ export default function BaseTranslator({
           onBeforeSearch={() => flushIfDirty(false)}
           onRefreshCurrentPage={handleRefreshCurrentPage}
           onNavigate={handleSearchResultNavigate}
-          onClose={() => setIsUnitSearchTransformOpen(false)}
+          onClose={() => { setIsUnitSearchTransformOpen(false); }}
         />
       )}
       {pendingAction && (
@@ -796,7 +831,7 @@ export default function BaseTranslator({
             doDeleteUnit(deleteConfirmUnitId);
             setDeleteConfirmUnitId(undefined);
           }}
-          onCancel={() => setDeleteConfirmUnitId(undefined)}
+          onCancel={() => { setDeleteConfirmUnitId(undefined); }}
         />
       )}
       {isCompleteConfirmOpen && completionStage && (
@@ -815,7 +850,7 @@ export default function BaseTranslator({
           loading={isCompletingStage}
           onConfirm={handleCompleteStage}
           onCancel={() => {
-            if (!isCompletingStage) setIsCompleteConfirmOpen(false);
+            if (!isCompletingStage) {setIsCompleteConfirmOpen(false);}
           }}
         />
       )}

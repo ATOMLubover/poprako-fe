@@ -1,3 +1,5 @@
+/* eslint-disable no-console -- dialog reports recoverable API failures for diagnostics. */
+/* eslint-disable jsx-a11y/no-static-element-interactions -- tree interaction. */
 import { useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronRight, Loader2 } from "lucide-react";
@@ -25,7 +27,7 @@ import {
   unitSearchText,
 } from "../../searchTransform";
 
-type Props = {
+interface Props {
   pages: Page[];
   part: UnitTextPart;
   currentPageId: string;
@@ -34,7 +36,7 @@ type Props = {
   onRefreshCurrentPage: () => Promise<void>;
   onNavigate: (pageId: string, unitId?: string) => Promise<void>;
   onClose: () => void;
-};
+}
 
 type SearchState =
   | { status: "idle" }
@@ -57,8 +59,10 @@ export default function UnitSearchTransformDialog({
   const [searchState, setSearchState] = useState<SearchState>({
     status: "idle",
   });
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [expandedPageIds, setExpandedPageIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [expandedPageIds, setExpandedPageIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [isTransforming, setIsTransforming] = useState(false);
   const requestIdRef = useRef(0);
   const showToast = useToastStore((state) => state.showToast);
@@ -71,8 +75,8 @@ export default function UnitSearchTransformDialog({
     () => groupUnitSearchMatches(matches, pages),
     [matches, pages],
   );
-  const transformEnabled = matches.length > 0;
-  const canTransform = transformEnabled && targetValue.length > 0
+  const isTransformEnabled = matches.length > 0;
+  const canTransform = isTransformEnabled && targetValue.length > 0
     && selectedIds.size > 0 && !isTransforming;
 
   function resetSearchSnapshot() {
@@ -89,18 +93,20 @@ export default function UnitSearchTransformDialog({
     setExpandedPageIds(new Set());
   }
 
-  async function runSearch(saveBeforeSearch: boolean) {
+  // The boolean selects whether the save phase precedes a search operation.
+  // eslint-disable-next-line unicorn/consistent-boolean-name
+  async function search(shouldSaveBeforeSearch: boolean) {
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     setSearchState({ status: "loading" });
     setSelectedIds(new Set());
     setExpandedPageIds(new Set());
 
-    if (saveBeforeSearch) {
+    if (shouldSaveBeforeSearch) {
       try {
         await onBeforeSearch();
       } catch (error) {
-        if (requestIdRef.current !== requestId) return false;
+        if (requestIdRef.current !== requestId) {return false;}
         console.error("[UnitSearchTransformDialog] 搜索前保存失败", error);
         setSearchState({
           status: "error",
@@ -113,7 +119,7 @@ export default function UnitSearchTransformDialog({
     try {
       const normalizedPhrase = normalizeSearchPhrase(searchValue);
       const result = await dataSource.search({ part, phrase: normalizedPhrase });
-      if (requestIdRef.current !== requestId) return false;
+      if (requestIdRef.current !== requestId) {return false;}
 
       if (!result.success) {
         setSearchState({ status: "error", message: result.error });
@@ -123,7 +129,7 @@ export default function UnitSearchTransformDialog({
       commitSearchResult(result.data, normalizedPhrase);
       return true;
     } catch (error) {
-      if (requestIdRef.current !== requestId) return false;
+      if (requestIdRef.current !== requestId) {return false;}
       console.error("[UnitSearchTransformDialog] 搜索失败", error);
       setSearchState({
         status: "error",
@@ -134,7 +140,7 @@ export default function UnitSearchTransformDialog({
   }
 
   async function handleTransform() {
-    if (!canTransform || searchState.status !== "ready") return;
+    if (!canTransform || searchState.status !== "ready") {return;}
 
     const selectedMatches = searchState.matches.filter((match) =>
       selectedIds.has(unitId(match.unit)),
@@ -154,18 +160,18 @@ export default function UnitSearchTransformDialog({
         return;
       }
 
-      const affectsCurrentPage = selectedMatches.some(
+      const isAffectsCurrentPage = selectedMatches.some(
         (match) => match.pageId === currentPageId,
       );
       const refreshResult = await Promise.allSettled([
-        runSearch(false),
-        affectsCurrentPage ? onRefreshCurrentPage() : Promise.resolve(),
+        search(false),
+        isAffectsCurrentPage ? onRefreshCurrentPage() : Promise.resolve(),
       ]);
-      const searchRefreshed = refreshResult[0].status === "fulfilled"
+      const isSearchRefreshed = refreshResult[0].status === "fulfilled"
         && refreshResult[0].value;
-      const pageRefreshed = refreshResult[1].status === "fulfilled";
+      const isPageRefreshed = refreshResult[1].status === "fulfilled";
 
-      if (!searchRefreshed || !pageRefreshed) {
+      if (!isSearchRefreshed || !isPageRefreshed) {
         requestIdRef.current += 1;
         setSearchState({
           status: "error",
@@ -187,7 +193,7 @@ export default function UnitSearchTransformDialog({
   }
 
   async function handleNavigate(pageId: string, targetUnitId?: string) {
-    if (isTransforming) return;
+    if (isTransforming) {return;}
     requestIdRef.current += 1;
     onClose();
     await onNavigate(pageId, targetUnitId);
@@ -217,7 +223,7 @@ export default function UnitSearchTransformDialog({
         </div>
       );
     }
-    if (searchState.status !== "ready") return null;
+    if (searchState.status !== "ready") {return null;}
 
     return (
       <div role="tree" aria-label="搜索结果" className="divide-y divide-slate-100">
@@ -226,11 +232,12 @@ export default function UnitSearchTransformDialog({
           const selectedCount = pageIds.filter((id) => selectedIds.has(id)).length;
           const selectionState: SelectionState = selectedCount === 0
             ? "unchecked"
-            : selectedCount === pageIds.length ? "checked" : "mixed";
-          const expanded = expandedPageIds.has(group.page.id);
+            : (selectedCount === pageIds.length ? "checked" : "mixed");
+          const isExpanded = expandedPageIds.has(group.page.id);
 
           return (
-            <div key={group.page.id} role="treeitem" aria-expanded={expanded}>
+            <div key={group.page.id} role="treeitem" aria-expanded={isExpanded}
+              aria-selected={false} tabIndex={0}>
               <div
                 onDoubleClick={() => void handleNavigate(group.page.id)}
                 className={clsx(
@@ -239,7 +246,7 @@ export default function UnitSearchTransformDialog({
                 )}
               >
                 <CircleSelector
-                  label={`选择第 ${group.page.index + 1} 页全部匹配项`}
+                  label={`选择第 ${String(group.page.index + 1)} 页全部匹配项`}
                   state={selectionState}
                   onClick={() => {
                     const missingCount = pageIds.filter(
@@ -267,18 +274,18 @@ export default function UnitSearchTransformDialog({
                 </span>
                 <button
                   type="button"
-                  aria-label={expanded ? "折叠页面" : "展开页面"}
-                  aria-expanded={expanded}
+                  aria-label={isExpanded ? "折叠页面" : "展开页面"}
+                  aria-expanded={isExpanded}
                   onClick={(event) => {
                     event.stopPropagation();
                     setExpandedPageIds((current) => {
                       const nextIds = new Set(current);
-                      if (expanded) nextIds.delete(group.page.id);
-                      else nextIds.add(group.page.id);
+                      if (isExpanded) {nextIds.delete(group.page.id);}
+                      else {nextIds.add(group.page.id);}
                       return nextIds;
                     });
                   }}
-                  onDoubleClick={(event) => event.stopPropagation()}
+                  onDoubleClick={(event) => { event.stopPropagation(); }}
                   className="flex size-6 items-center justify-center text-slate-300"
                 >
                   <ChevronRight
@@ -286,19 +293,19 @@ export default function UnitSearchTransformDialog({
                     className={clsx(
                       "transition-transform duration-200 ease-out",
                       "motion-reduce:transition-none",
-                      expanded && "rotate-90",
+                      isExpanded && "rotate-90",
                     )}
                   />
                 </button>
               </div>
               <div
                 role="group"
-                aria-hidden={!expanded}
-                inert={!expanded}
+                aria-hidden={!isExpanded}
+                inert={!isExpanded}
                 className={clsx(
                   "grid bg-slate-50/50 transition-[grid-template-rows,border-color]",
                   "duration-200 ease-out motion-reduce:transition-none",
-                  expanded
+                  isExpanded
                     ? "grid-rows-[1fr] border-t border-slate-100"
                     : "grid-rows-[0fr] border-t border-transparent",
                 )}
@@ -307,19 +314,19 @@ export default function UnitSearchTransformDialog({
                   className={clsx(
                     "min-h-0 overflow-hidden transition-opacity duration-150",
                     "motion-reduce:transition-none",
-                    expanded ? "opacity-100 delay-75" : "opacity-0",
+                    isExpanded ? "opacity-100 delay-75" : "opacity-0",
                   )}
                 >
                   {group.matches.map((match) => {
                     const matchUnitId = unitId(match.unit);
-                    const checked = selectedIds.has(matchUnitId);
-                    const disabled = !checked
+                    const isChecked = selectedIds.has(matchUnitId);
+                    const isDisabled = !isChecked
                       && selectedIds.size >= MAX_SELECTED_UNIT_COUNT;
 
                     return (
                       <div
                         key={matchUnitId}
-                        role="treeitem"
+                        role="treeitem" aria-selected={isChecked} tabIndex={0}
                         onDoubleClick={() =>
                           void handleNavigate(group.page.id, matchUnitId)}
                         className={clsx(
@@ -329,8 +336,8 @@ export default function UnitSearchTransformDialog({
                       >
                         <CircleSelector
                           label="选择该 Unit"
-                          state={checked ? "checked" : "unchecked"}
-                          disabled={disabled}
+                          state={isChecked ? "checked" : "unchecked"}
+                          disabled={isDisabled}
                           onClick={() => {
                             setSelectedIds(toggleUnitSelection(selectedIds, matchUnitId));
                           }}
@@ -362,7 +369,7 @@ export default function UnitSearchTransformDialog({
       footer={(
         <div className="grid grid-cols-2 gap-2">
           <AppDialogAction
-            onClick={() => void runSearch(true)}
+            onClick={() => void search(true)}
             disabled={searchState.status === "loading" || isTransforming}
           >
             {searchState.status === "loading" ? "搜索中" : "搜索"}
@@ -402,8 +409,8 @@ export default function UnitSearchTransformDialog({
         </span>
         <input
           value={targetValue}
-          disabled={!transformEnabled || isTransforming}
-          onChange={(event) => setTargetValue(event.target.value)}
+          disabled={!isTransformEnabled || isTransforming}
+          onChange={(event) => { setTargetValue(event.target.value); }}
           aria-label="替换短语"
           className={clsx(
             "h-8 w-full rounded-md border border-slate-200 bg-white px-2.5",

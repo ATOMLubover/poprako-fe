@@ -11,10 +11,10 @@ import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { useRefreshLoginState } from "@/hooks/useRefreshLoginState";
 import type { UserInfo } from "@/types/user";
 
-type Props = {
+interface Props {
   user: UserInfo;
   onClose: () => void;
-};
+}
 
 const ACCEPTED_EXTENSIONS = new Set([
   "jpg",
@@ -37,10 +37,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
   const [showExitWarning, setShowExitWarning] = useState(false);
 
   const resolvedAvatarUrl =
-    localAvatarUrl ??
-    (user.avatarThumbnailUrl || user.avatarUrl
-      ? user.avatarThumbnailUrl || user.avatarUrl
-      : "");
+    localAvatarUrl ?? user.avatarThumbnailUrl ?? user.avatarUrl;
 
   useEffect(() => {
     return () => {
@@ -51,15 +48,15 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
   }, [localAvatarUrl]);
 
   useEffect(() => {
-    if (!isUploading) return;
+    if (!isUploading) {return;}
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-      event.returnValue = "";
+      event.returnValue = ""; // eslint-disable-line @typescript-eslint/no-deprecated
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    return () => { window.removeEventListener("beforeunload", handleBeforeUnload); };
   }, [isUploading]);
 
   const handleRequestClose = () => {
@@ -71,15 +68,15 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
   };
 
   const handleSelectFile = () => {
-    if (isUploading) return;
+    if (isUploading) {return;}
     fileInputRef.current?.click();
   };
 
   const handleAvatarFile = async (file?: File) => {
-    if (!file || isUploading) return;
+    if (!file || isUploading) {return;}
 
     const fileNameParts = file.name.split(".");
-    const extension = (fileNameParts[fileNameParts.length - 1] || "").toLowerCase();
+    const extension = (fileNameParts.at(-1) ?? "").toLowerCase();
 
     if (!extension || !ACCEPTED_EXTENSIONS.has(extension) || !file.type.startsWith("image/")) {
       showToast("请上传有效的图片文件", "error");
@@ -111,7 +108,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
         slot.putUrl,
         file,
         slot.headers,
-        (percent) => setUploadProgress(percent),
+        (percent) => { setUploadProgress(percent); },
       );
       if (!uploadRes.success) {
         showLocalApiFailure(uploadRes, showToast);
@@ -128,7 +125,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
       }
 
       setLocalAvatarUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
+        if (prev) {URL.revokeObjectURL(prev);}
         return URL.createObjectURL(file);
       });
 
@@ -138,9 +135,9 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
       }
 
       showToast("头像上传成功", "success");
-    } catch (err) {
-      console.error("[UserAvatarUploadModal] 上传头像异常:", err);
-      showLocalCaughtError(err, showToast, "头像上传失败", true);
+    } catch (error) {
+      console.error("[UserAvatarUploadModal] 上传头像异常:", error); // eslint-disable-line no-console
+      showLocalCaughtError(error, showToast, "头像上传失败", true);
     } finally {
       setIsUploading(false);
       setUploadProgress(null);
@@ -224,7 +221,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="text-[11px] font-bold text-white/95">
                   {uploadProgress !== null && uploadProgress < 100
-                    ? `${uploadProgress}%`
+                    ? `${String(uploadProgress)}%`
                     : "..."}
                 </span>
               </div>
@@ -245,7 +242,7 @@ export default function UserAvatarUploadModal({ user, onClose }: Props) {
             setShowExitWarning(false);
             onClose();
           }}
-          onCancel={() => setShowExitWarning(false)}
+          onCancel={() => { setShowExitWarning(false); }}
         />
       )}
     </>

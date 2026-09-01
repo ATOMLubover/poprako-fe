@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   src: string;
   alt?: string;
   className?: string;
   placeholderClassName?: string;
-};
+}
 
 export default function LazyImage({
   src,
@@ -20,7 +20,7 @@ export default function LazyImage({
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el) {return;}
     const observer = new IntersectionObserver(
       ([entry]) => {
         const isVisible = entry.isIntersecting;
@@ -35,7 +35,7 @@ export default function LazyImage({
       },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, []);
 
   return (
@@ -53,7 +53,7 @@ export default function LazyImage({
           src={src}
           alt={alt}
           decoding="async"
-          onLoad={() => setLoaded(true)}
+          onLoad={() => { setLoaded(true); }}
           className={clsx(
             "w-full h-full object-cover transition-opacity duration-300",
             loaded ? "opacity-100" : "opacity-0",

@@ -5,7 +5,7 @@ export function assignmentRolesForStage(
   assignment: AssignmentInfo | undefined,
   role: Role,
 ): Role[] {
-  if (!assignment) return [];
+  if (!assignment) {return [];}
   if (role !== "typesetter") {
     return hasRole(assignment, role) ? [role] : [];
   }

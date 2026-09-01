@@ -9,7 +9,7 @@ import type { ComicDetailModalProps } from "../types";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
-type Args = {
+interface Args {
   selectedChapterId: string | null;
   isSelectedChapterAvailable: boolean;
   currentUserId?: string | null;
@@ -22,7 +22,7 @@ type Args = {
   onJoinChapterRole?: ComicDetailModalProps["onJoinChapterRole"];
   onWorkflowRecordsChanged?: () => void;
   showToast: ShowToast;
-};
+}
 
 export function useComicDetailAssignments({
   selectedChapterId,
@@ -49,54 +49,55 @@ export function useComicDetailAssignments({
 
   useEffect(() => {
     if (!selectedChapterId || !isSelectedChapterAvailable) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
       setAssignments([]);
-      setIsAssignmentsLoading(false);
+      setIsAssignmentsLoading(false); // eslint-disable-line @eslint-react/set-state-in-effect
       return;
     }
 
-    let cancelled = false;
-    setAssignments([]);
-    setIsAssignmentsLoading(true);
-    onLoadAssignments(selectedChapterId)
-      .then((res) => {
-        if (cancelled) return;
+    let isCancelled = false;
+    setAssignments([]); // eslint-disable-line @eslint-react/set-state-in-effect
+    setIsAssignmentsLoading(true); // eslint-disable-line @eslint-react/set-state-in-effect
+    const loadAssignments = async () => {
+      try {
+        const res = await onLoadAssignments(selectedChapterId);
+        if (isCancelled) {return;}
         if (!res.success) {
-          console.error("[ComicDetailModal] 加载分工失败:", res);
+          console.error("[ComicDetailModal] 加载分工失败:", res); // eslint-disable-line no-console
           showLocalApiFailure(res, showToast, "加载分工失败");
           return;
         }
         setAssignments(res.data);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.error("[ComicDetailModal] 加载分工异常:", err);
-        showLocalCaughtError(err, showToast, "加载分工失败");
-      })
-      .finally(() => {
-        if (!cancelled) setIsAssignmentsLoading(false);
-      });
+      } catch (error) {
+        if (isCancelled) {return;}
+        console.error("[ComicDetailModal] 加载分工异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "加载分工失败");
+      } finally {
+        if (!isCancelled) {setIsAssignmentsLoading(false);}
+      }
+    };
+    void loadAssignments();
 
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, [isSelectedChapterAvailable, onLoadAssignments, selectedChapterId, showToast]);
 
   const reloadAssignments = useCallback(async () => {
-    if (!selectedChapterId) return null;
+    if (!selectedChapterId) {return null;}
     setIsAssignmentsLoading(true);
     try {
       const refreshed = await onLoadAssignments(selectedChapterId);
       if (!refreshed.success) {
-        console.error("[ComicDetailModal] 刷新分工失败:", refreshed);
+        console.error("[ComicDetailModal] 刷新分工失败:", refreshed); // eslint-disable-line no-console
         showLocalApiFailure(refreshed, showToast);
         return null;
       }
       setAssignments(refreshed.data);
       return refreshed.data;
-    } catch (err) {
-      console.error("[ComicDetailModal] 刷新分工异常:", err);
-      showLocalCaughtError(err, showToast, "刷新分工失败");
+    } catch (error) {
+      console.error("[ComicDetailModal] 刷新分工异常:", error); // eslint-disable-line no-console
+      showLocalCaughtError(error, showToast, "刷新分工失败");
       return null;
     } finally {
       setIsAssignmentsLoading(false);
@@ -105,13 +106,13 @@ export function useComicDetailAssignments({
 
   useEffect(() => {
     if (activeMember && hasRole(activeMember, "admin")) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // eslint-disable-next-line @eslint-react/set-state-in-effect, react-hooks/set-state-in-effect
       setCanCreateChapter(true);
       return;
     }
 
     if (!pinnedChapterId || !currentUserId) {
-      setCanCreateChapter(false);
+      setCanCreateChapter(false); // eslint-disable-line @eslint-react/set-state-in-effect
       return;
     }
 
@@ -120,19 +121,20 @@ export function useComicDetailAssignments({
       const pinnedAssignment = pinnedChapterAssignments.find(
         (assignment) => assignment.userId === currentUserId,
       );
-      setCanCreateChapter(
-        !!pinnedAssignment && hasRole(pinnedAssignment, "reviewer"),
+      setCanCreateChapter( // eslint-disable-line @eslint-react/set-state-in-effect
+        Boolean(pinnedAssignment) && hasRole(pinnedAssignment, "reviewer"),
       );
       return;
     }
 
-    let cancelled = false;
+    let isCancelled = false;
 
-    onLoadAssignments(pinnedChapterId)
-      .then((res) => {
+    const loadPinnedAssignments = async () => {
+      try {
+        const res = await onLoadAssignments(pinnedChapterId);
         if (!res.success) {
-          console.error("[ComicDetailModal] 加载 pinned 章节分工失败:", res);
-          if (!cancelled) {
+          console.error("[ComicDetailModal] 加载 pinned 章节分工失败:", res); // eslint-disable-line no-console
+          if (!isCancelled) {
             setCanCreateChapter(false);
           }
           return;
@@ -142,21 +144,22 @@ export function useComicDetailAssignments({
           (assignment) => assignment.userId === currentUserId,
         );
 
-        if (!cancelled) {
+        if (!isCancelled) {
           setCanCreateChapter(
-            !!pinnedAssignment && hasRole(pinnedAssignment, "reviewer"),
+            Boolean(pinnedAssignment) && hasRole(pinnedAssignment, "reviewer"),
           );
         }
-      })
-      .catch((err) => {
-        console.error("[ComicDetailModal] 加载 pinned 章节分工异常:", err);
-        if (!cancelled) {
+      } catch (error) {
+        console.error("[ComicDetailModal] 加载 pinned 章节分工异常:", error); // eslint-disable-line no-console
+        if (!isCancelled) {
           setCanCreateChapter(false);
         }
-      });
+      }
+    };
+    void loadPinnedAssignments();
 
     return () => {
-      cancelled = true;
+      isCancelled = true;
     };
   }, [
     activeMember,
@@ -172,13 +175,13 @@ export function useComicDetailAssignments({
   );
 
   const canTranslateOrProofread =
-    !!currentAssignment &&
+    Boolean(currentAssignment) &&
     (hasRole(currentAssignment, "translator") ||
       hasRole(currentAssignment, "proofreader"));
   const canReadOnly = activeMember !== null && !canTranslateOrProofread;
   const canManageChapterAssignments =
-    !!currentAssignment && hasRole(currentAssignment, "admin");
-  const canUploadRawPages = !!currentAssignment && hasRole(currentAssignment, "rawProvider");
+    Boolean(currentAssignment) && hasRole(currentAssignment, "admin");
+  const canUploadRawPages = Boolean(currentAssignment) && hasRole(currentAssignment, "rawProvider");
   const isTeamAdmin = activeMember !== null && hasRole(activeMember, "admin");
 
   const removeRoles = useCallback(
@@ -187,26 +190,26 @@ export function useComicDetailAssignments({
         return false;
       }
 
-      let changed = false;
+      let isChanged = false;
       try {
         for (const role of roles) {
           const result = await onRemoveAssignment(selectedChapterId, userId, role);
           if (!result.success) {
-            console.error("[ComicDetailModal] 移除角色失败:", result);
+            console.error("[ComicDetailModal] 移除角色失败:", result); // eslint-disable-line no-console
             showLocalApiFailure(result, showToast);
-            if (changed) await reloadAssignments();
+            if (isChanged) {await reloadAssignments();}
             return false;
           }
-          changed = true;
+          isChanged = true;
         }
 
         await reloadAssignments();
         onWorkflowRecordsChanged?.();
         return true;
-      } catch (err) {
-        console.error("[ComicDetailModal] 移除角色异常:", err);
-        showLocalCaughtError(err, showToast, "移除角色失败");
-        if (changed) await reloadAssignments();
+      } catch (error) {
+        console.error("[ComicDetailModal] 移除角色异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "移除角色失败");
+        if (isChanged) {await reloadAssignments();}
         return false;
       }
     },
@@ -229,7 +232,7 @@ export function useComicDetailAssignments({
 
   const handleOpenMemberSelector = useCallback(
     (role: Role) => {
-      if (!selectedChapterId) return;
+      if (!selectedChapterId) {return;}
       setMemberSelectorRole(role);
     },
     [selectedChapterId],
@@ -237,7 +240,7 @@ export function useComicDetailAssignments({
 
   const handleAddAssignment = useCallback(
     async (userId: string) => {
-      if (!selectedChapterId || !memberSelectorRole || !onAddAssignment) return;
+      if (!selectedChapterId || !memberSelectorRole || !onAddAssignment) {return;}
       setIsAddingAssignment(true);
       const result = await onAddAssignment(selectedChapterId, userId, memberSelectorRole);
       setIsAddingAssignment(false);
@@ -263,7 +266,7 @@ export function useComicDetailAssignments({
 
   const isRoleAlreadyJoined = useCallback(
     (role: Role) => {
-      if (!currentAssignment) return false;
+      if (!currentAssignment) {return false;}
       if (role === "typesetter") {
         return (
           hasRole(currentAssignment, "typesetter") ||
@@ -297,13 +300,13 @@ export function useComicDetailAssignments({
 
   const handleJoinRole = useCallback(
     async (role: Role) => {
-      if (!selectedChapterId || !onJoinChapterRole || joiningRoles[role]) return;
+      if (!selectedChapterId || !onJoinChapterRole || joiningRoles[role] === true) {return;}
 
       setJoiningRoles((prev) => ({ ...prev, [role]: true }));
       try {
         const result = await onJoinChapterRole(selectedChapterId, role);
         if (!result.success) {
-          console.error("[ComicDetailModal] 加入章节分工失败:", result);
+          console.error("[ComicDetailModal] 加入章节分工失败:", result); // eslint-disable-line no-console
           showLocalApiFailure(result, showToast);
           return;
         }
@@ -311,9 +314,9 @@ export function useComicDetailAssignments({
         await reloadAssignments();
         onWorkflowRecordsChanged?.();
         showToast("加入分工成功", "success");
-      } catch (err) {
-        console.error("[ComicDetailModal] 加入章节分工异常:", err);
-        showLocalCaughtError(err, showToast, "加入分工失败", true);
+      } catch (error) {
+        console.error("[ComicDetailModal] 加入章节分工异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "加入分工失败", true);
       } finally {
         setJoiningRoles((prev) => ({ ...prev, [role]: false }));
       }
@@ -330,7 +333,7 @@ export function useComicDetailAssignments({
 
   const handleLeaveRole = useCallback(
     async (role: Role) => {
-      if (!selectedChapterId || !currentUserId || !onRemoveAssignment || leavingRoles[role]) {
+      if (!selectedChapterId || !currentUserId || !onRemoveAssignment || leavingRoles[role] === true) {
         return;
       }
 
@@ -342,11 +345,11 @@ export function useComicDetailAssignments({
           return;
         }
 
-        const removed = await removeRoles(currentUserId, removableRoles);
-        if (removed) showToast("退出分工成功", "success");
-      } catch (err) {
-        console.error("[ComicDetailModal] 退出章节分工异常:", err);
-        showLocalCaughtError(err, showToast, "退出分工失败", true);
+        const isRemoved = await removeRoles(currentUserId, removableRoles);
+        if (isRemoved) {showToast("退出分工成功", "success");}
+      } catch (error) {
+        console.error("[ComicDetailModal] 退出章节分工异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "退出分工失败", true);
       } finally {
         setLeavingRoles((prev) => ({ ...prev, [role]: false }));
       }

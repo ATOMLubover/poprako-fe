@@ -56,7 +56,7 @@ export default function MemberGlance() {
 
   const handleLoadInvitations = useCallback(
     async (offset: number, limit: number): Promise<Result<InvitationInfo[]>> => {
-      if (!activeTeamId) return { success: true, data: [] };
+      if (!activeTeamId) {return { success: true, data: [] };}
       return listInvitations({
         teamId: activeTeamId,
         offset,
@@ -101,7 +101,7 @@ export default function MemberGlance() {
         onChangeFuzzyName={setFuzzyName}
         activeRole={activeRole}
         onChangeRole={setActiveRole}
-        onCreateMember={() => setIsInvitorOpen(true)}
+        onCreateMember={() => { setIsInvitorOpen(true); }}
         onLoadMembers={handleLoadMembers}
         onMemberClick={isAdmin ? setSelectedMember : undefined}
       />
@@ -109,7 +109,7 @@ export default function MemberGlance() {
       {isInvitorOpen && activeTeamId && (
         <MemberInvitorModal
           teamId={activeTeamId}
-          onClose={() => setIsInvitorOpen(false)}
+          onClose={() => { setIsInvitorOpen(false); }}
           onLoadInvitations={handleLoadInvitations}
           onCreateInvitation={handleCreateInvitation}
           onDeleteInvitation={handleDeleteInvitation}
@@ -119,7 +119,7 @@ export default function MemberGlance() {
       {selectedMember !== null && (
         <MemberDetailModal
           member={selectedMember}
-          onClose={() => setSelectedMember(null)}
+          onClose={() => { setSelectedMember(null); }}
           onUpdateRole={handleUpdateRole}
         />
       )}

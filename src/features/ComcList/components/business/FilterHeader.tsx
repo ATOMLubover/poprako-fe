@@ -6,7 +6,7 @@ import HoverSelect from "@/components/ui/HoverSelect";
 import type { Option } from "@/components/ui/HoverSelect";
 import type { BinaryFilter, TripleFilter } from "../../types/types";
 
-type Props = {
+interface Props {
   activeFuzzyTitle?: string;
   // 只有用户按下 enter 后才触发
   onChangeFuzzyTitle: (title: string) => void;
@@ -28,7 +28,7 @@ type Props = {
   onCreateComic?: () => void;
   // 切换侧边栏展开/收起
   onToggleSidebar?: () => void;
-};
+}
 
 function makeTripleOptions(prefix: string): Option[] {
   return [
@@ -70,25 +70,27 @@ export default function FilterHeader({
   const [inputValue, setInputValue] = useState(activeFuzzyTitle ?? "");
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
     setInputValue(activeFuzzyTitle ?? "");
   }, [activeFuzzyTitle]);
-
-  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Enter") return;
-    onChangeFuzzyTitle(inputValue.trim());
-  };
 
   return (
     <div className="flex w-full flex-col gap-2">
       {/* 第一行：搜索框 + 创建按钮 */}
       <div className="flex h-10 w-full flex-row items-center gap-2">
-        <div className="min-w-0 flex-1" onKeyDown={handleInputKeyDown}>
+        <div
+          className="min-w-0 flex-1"
+          role="group"
+          tabIndex={-1}
+        >
           <IconInputRow
             icon={<Search />}
             placeholder="标题 / 作者 / 序号..."
             value={inputValue}
-            onChange={(v) => setInputValue(v)}
+            onChange={(v) => {
+              setInputValue(v);
+              onChangeFuzzyTitle(v.trim());
+            }}
           />
         </div>
 

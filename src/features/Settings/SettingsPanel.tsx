@@ -28,20 +28,19 @@ export default function SettingsPanel() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
 
   const teamConfigs = useMemo<TeamConfig[]>(() => {
-    if (!loginState?.memberInfos) return [];
-    return loginState.memberInfos
-      .filter((m) => m.team)
-      .map((m) => {
-        const team = m.team!;
+    if (!loginState?.memberInfos) {return [];}
+    return loginState.memberInfos.flatMap((m) => {
+        const team = m.team;
+        if (!team) {return [];}
         const short = team.name[0].toUpperCase();
-        return {
+        return [{
           id: team.id,
           name: team.name,
           short,
           desc: team.description,
           avatarUrl: team.avatarUrl,
           avatarThumbnailUrl: team.avatarThumbnailUrl,
-        };
+        }];
       });
   }, [loginState]);
 
@@ -54,19 +53,19 @@ export default function SettingsPanel() {
     try {
       await logoutUser();
     } catch (error) {
-      console.error("Logout error", error);
+      console.error("Logout error", error); // eslint-disable-line no-console
       showLocalCaughtError(error, showToast, "Failed to logout", true);
     } finally {
       cancelAllPageUploads();
       setAccessToken(null);
       setLoginState(null);
-      navigate("/login");
+      void navigate("/login");
     }
   };
 
   const handleExportLogs = () => {
     const count = downloadConsoleLogs();
-    showToast(`已导出 ${count} 条当前会话日志`, "success");
+    showToast(`已导出 ${String(count)} 条当前会话日志`, "success");
   };
 
   return (
@@ -78,7 +77,10 @@ export default function SettingsPanel() {
           "bg-white/80 ring-1 shadow-sm ring-black/5",
           "hover:bg-green-50/80 hover:ring-green-200 hover:text-green-700",
         )}
-        onClick={() => setIsTeamModalOpen(true)}
+        onClick={() => { setIsTeamModalOpen(true); }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => { if (event.key === "Enter") { setIsTeamModalOpen(true); } }}
       >
         <span className="text-lg font-medium">切换汉化组</span>
         <Globe2 className="h-5 w-5" />
@@ -92,7 +94,7 @@ export default function SettingsPanel() {
           "bg-white/80 ring-1 shadow-sm ring-black/5",
           "hover:bg-amber-50/80 hover:ring-amber-200 hover:text-amber-700",
         )}
-        onClick={() => setIsPasswordDialogOpen(true)}
+        onClick={() => { setIsPasswordDialogOpen(true); }}
       >
         <span className="text-lg font-medium">重置密码</span>
         <KeyRound className="h-5 w-5" />
@@ -105,7 +107,10 @@ export default function SettingsPanel() {
           "bg-white/80 ring-1 shadow-sm ring-black/5",
           "hover:bg-slate-50/80 hover:ring-slate-200 hover:text-slate-700",
         )}
-        onClick={() => setIsAvatarModalOpen(true)}
+        onClick={() => { setIsAvatarModalOpen(true); }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => { if (event.key === "Enter") { setIsAvatarModalOpen(true); } }}
       >
         <span className="text-lg font-medium">上传头像</span>
         <Upload className="h-5 w-5" />
@@ -132,7 +137,10 @@ export default function SettingsPanel() {
           "bg-white/80 ring-1 shadow-sm ring-black/5",
           "hover:bg-red-50/80 hover:ring-red-200 hover:text-red-500",
         )}
-        onClick={handleLogout}
+        onClick={() => { void handleLogout(); }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => { if (event.key === "Enter") { void handleLogout(); } }}
       >
         <span className="text-lg font-medium">退出登录</span>
         <LogOut className="h-5 w-5" />
@@ -146,21 +154,21 @@ export default function SettingsPanel() {
             setSelectedTeamId(team.id);
             setIsTeamModalOpen(false);
           }}
-          onClose={() => setIsTeamModalOpen(false)}
+          onClose={() => { setIsTeamModalOpen(false); }}
         />
       )}
 
       {isAvatarModalOpen && currentUser && (
         <UserAvatarUploadModal
           user={currentUser}
-          onClose={() => setIsAvatarModalOpen(false)}
+          onClose={() => { setIsAvatarModalOpen(false); }}
         />
       )}
 
       {isPasswordDialogOpen && currentUser && (
         <PasswordResetDialog
           userId={currentUser.id}
-          onClose={() => setIsPasswordDialogOpen(false)}
+          onClose={() => { setIsPasswordDialogOpen(false); }}
         />
       )}
     </div>

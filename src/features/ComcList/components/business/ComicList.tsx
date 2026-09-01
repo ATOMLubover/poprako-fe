@@ -16,7 +16,7 @@ import ComicTranslationList from "./ComicTranslationList";
 import WorksetSidebar from "./WorksetSidebar";
 import ComicProgressList from "@/features/ComicProgressList";
 
-type Props = {
+interface Props {
   initialMode?: ViewMode;
   refreshKey?: number;
   worksets: WorksetInfo[];
@@ -49,7 +49,7 @@ type Props = {
   onChangeTypesetStatus: (s: TripleFilter) => void;
   onChangeReviewStatus: (s: BinaryFilter) => void;
   onChangePublishStatus: (s: BinaryFilter) => void;
-};
+}
 
 export default function ComicList({
   initialMode = "translator",
@@ -93,7 +93,7 @@ export default function ComicList({
       limit: number,
     ): Promise<Result<ComicTranslationListItem[]>> => {
       const result = await onLoadComics(offset, limit, "translator");
-      if (!result.success) return result;
+      if (!result.success) {return result;}
 
       return {
         success: true,
@@ -114,7 +114,7 @@ export default function ComicList({
   return (
     <ComicListLayout
       isSidebarOpen={isSidebarOpen}
-      onCloseSidebar={() => setIsSidebarOpen(false)}
+      onCloseSidebar={() => { setIsSidebarOpen(false); }}
       header={
         <FilterHeader
           activeFuzzyTitle={activeFuzzyTitle}
@@ -152,7 +152,7 @@ export default function ComicList({
             <div className="flex rounded-lg bg-stone-100/80 p-0.5">
               <button
                 type="button"
-                onClick={() => setActiveMode("translator")}
+                onClick={() => { setActiveMode("translator"); }}
                 title="翻译模式"
                 className={clsx(
                   "rounded-md px-3 py-1.5",
@@ -167,7 +167,7 @@ export default function ComicList({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveMode("reviewer")}
+                onClick={() => { setActiveMode("reviewer"); }}
                 title="监修模式"
                 className={clsx(
                   "rounded-md px-3 py-1.5",
@@ -185,20 +185,20 @@ export default function ComicList({
 
           {activeMode === "translator" && (
             <ComicTranslationList
-              key={`translator-${refreshKey}`}
+              key={`translator-${String(refreshKey)}`}
               onLoadComics={loadComicCards}
               onComicClick={(comicInfo) => {
-                if (window.innerWidth < 768) setIsSidebarOpen(false);
+                if (window.innerWidth < 768) {setIsSidebarOpen(false);}
                 onComicClick?.(comicInfo);
               }}
             />
           )}
           {activeMode === "reviewer" && (
             <ComicProgressList
-              key={`reviewer-${refreshKey}`}
+              key={`reviewer-${String(refreshKey)}`}
               onLoadComics={loadComicProgress}
               onComicClick={(comicInfo) => {
-                if (window.innerWidth < 768) setIsSidebarOpen(false);
+                if (window.innerWidth < 768) {setIsSidebarOpen(false);}
                 onComicClick?.(comicInfo);
               }}
             />
@@ -209,7 +209,7 @@ export default function ComicList({
         <WorksetSidebar
           activeWorksetId={activeWorksetId}
           worksets={worksets}
-          onClose={() => setIsSidebarOpen(false)}
+          onClose={() => { setIsSidebarOpen(false); }}
           onCreateWorkset={onCreateWorkset}
           onDeleteWorkset={onDeleteWorkset}
           onChangeWorkset={onChangeWorkset}

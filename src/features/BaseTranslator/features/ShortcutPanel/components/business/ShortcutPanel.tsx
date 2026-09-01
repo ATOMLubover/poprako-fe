@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+/* eslint-disable @eslint-react/web-api-no-leaked-event-listener -- cleanup is paired below. */
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import clsx from "clsx";
@@ -10,12 +11,12 @@ import {
 } from "../../types/types";
 import { useToastStore } from "@/components/ui/NotificationToast";
 
-type Props = {
+interface Props {
   fixedShortcuts: FixedShortcut[];
   configurableShortcuts: ConfigurableShortcut[];
   onUpdateConfigurableShortcuts: (next: ConfigurableShortcut[]) => void;
   onClose: () => void;
-};
+}
 
 export default function ShortcutPanel({
   fixedShortcuts,
@@ -24,28 +25,28 @@ export default function ShortcutPanel({
   onClose,
 }: Props) {
   const [recordingIndex, setRecordingIndex] = useState<number | null>(null);
-  const recordedKeys = useRef(new Set<string>());
+  const recordedKeysRef = useRef(new Set<string>());
   const showToast = useToastStore((s) => s.showToast);
 
   useEffect(() => {
-    if (recordingIndex === null) return;
+    if (recordingIndex === null) {return;}
 
     const handleKeyDown = (e: KeyboardEvent) => {
       e.preventDefault();
       e.stopPropagation();
       const key = e.code.startsWith("Digit") ? e.code.slice(-1) : e.key;
-      recordedKeys.current.add(key);
+      recordedKeysRef.current.add(key);
     };
 
     const handleKeyUp = () => {
-      const keysArray = Array.from(recordedKeys.current);
+      const keysArray = [...recordedKeysRef.current];
       if (keysArray.length > 0) {
-        const conflict = hasConflict(
+        const isConflict = hasConflict(
           configurableShortcuts,
-          recordingIndex!,
+          recordingIndex,
           keysArray,
         );
-        if (conflict) {
+        if (isConflict) {
           showToast("快捷键冲突，已保留原有设置", "error");
         } else {
           const updated = configurableShortcuts.map((s, i) =>
@@ -54,15 +55,15 @@ export default function ShortcutPanel({
           onUpdateConfigurableShortcuts(updated);
         }
         setRecordingIndex(null);
-        recordedKeys.current.clear();
+        recordedKeysRef.current.clear();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
+    addEventListener("keydown", handleKeyDown);
+    addEventListener("keyup", handleKeyUp);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
+      removeEventListener("keydown", handleKeyDown);
+      removeEventListener("keyup", handleKeyUp);
     };
   }, [
     recordingIndex,
@@ -73,13 +74,13 @@ export default function ShortcutPanel({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && recordingIndex === null) {
+      if (recordingIndex === null && e.key === "Escape") {
         onClose();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
+    addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose, recordingIndex]);
 
@@ -91,6 +92,9 @@ export default function ShortcutPanel({
         "bg-white/60 backdrop-blur-sm",
       )}
       onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => { if (event.key === "Enter") {onClose();} }}
     >
       <div
         className={clsx(
@@ -98,7 +102,10 @@ export default function ShortcutPanel({
           "border border-(--color-border-green-200) shadow-(--shadow-sm)",
           "animate-in zoom-in-95 duration-200",
         )}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => { event.stopPropagation(); }}
       >
         <div
           className="h-1 w-full opacity-20"
@@ -111,7 +118,7 @@ export default function ShortcutPanel({
           )}
         >
           <span className="text-base font-bold text-slate-800">快捷键设置</span>
-          <button
+          <button type="button"
             className={clsx(
               "flex size-7 items-center justify-center rounded-md text-slate-300",
               "transition-colors hover:bg-slate-50 hover:text-slate-500",
@@ -130,9 +137,9 @@ export default function ShortcutPanel({
               "border-b border-dashed border-border",
             )}
           >
-            {fixedShortcuts.map((item, index) => (
+            {fixedShortcuts.map((item) => (
               <div
-                key={index}
+                key={item.label}
                 className={clsx("grid grid-cols-2", "items-center text-xs")}
               >
                 <span className="text-muted-foreground text-xs">
@@ -152,14 +159,21 @@ export default function ShortcutPanel({
           >
             {configurableShortcuts.map((s, index) => (
               <div
-                key={index}
+                key={s.action}
                 className={clsx("grid grid-cols-2 items-center")}
               >
                 <span className={clsx("text-muted-foreground text-xs")}>
                   {s.label}
                 </span>
                 <div
-                  onClick={() => setRecordingIndex(index)}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => { setRecordingIndex(index); }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      setRecordingIndex(index);
+                    }
+                  }}
                   className={clsx(
                     "h-7 px-2",
                     "flex items-center rounded-md border",

@@ -1,28 +1,24 @@
+/* eslint-disable @typescript-eslint/no-misused-promises, @eslint-react/dom-no-missing-button-type -- toolbar callbacks. */
 import {
   CheckCheck,
   CircleSlash,
   Eye,
   FileType,
-  GitCompareArrows,
   Image,
   Loader2,
   Lock,
   MapPin,
-  Rows3,
   Save,
 } from "lucide-react";
 import clsx from "clsx";
 import type { TranslatorMode } from "@/types/translatorMode";
 import type { ProofreadPreviewVisibility } from "@/features/BaseTranslator/types/preview";
-import type { ReadOnlyUnitView } from
-  "@/features/BaseTranslator/types/readOnlyUnitView";
 
-type Props = {
+interface Props {
   currMode: TranslatorMode;
   view: TranslatorMode;
   nextView: TranslatorMode;
   canSwitchView: boolean;
-  readOnlyUnitView: ReadOnlyUnitView;
   isRelocationEnabled: boolean;
   isUnitCreationEnabled: boolean;
   proofreadPreviewVisibility: ProofreadPreviewVisibility;
@@ -30,13 +26,12 @@ type Props = {
   isLoadingPage: boolean;
   saving: boolean;
   onSwitchView: () => void;
-  onSwitchReadOnlyUnitView: () => void;
   onRelocationClick: () => void;
   onUnitCreationClick: () => void;
   onToggleProofreadPreviewClick: () => void;
   onToggleImageQualityClick: () => Promise<void>;
   onSaveClick: () => Promise<void>;
-};
+}
 
 const modeIcon: Record<TranslatorMode, React.ReactNode> = {
   translate: <FileType size={18} />,
@@ -55,7 +50,6 @@ export default function StatusOptionBar({
   view,
   nextView,
   canSwitchView,
-  readOnlyUnitView,
   isRelocationEnabled,
   isUnitCreationEnabled,
   proofreadPreviewVisibility,
@@ -63,7 +57,6 @@ export default function StatusOptionBar({
   isLoadingPage,
   saving,
   onSwitchView,
-  onSwitchReadOnlyUnitView,
   onRelocationClick,
   onUnitCreationClick,
   onToggleProofreadPreviewClick,
@@ -87,28 +80,6 @@ export default function StatusOptionBar({
           {modeIcon[view]}
         </button>
       )}
-      {currMode === "readOnly" && (
-        <button
-          type="button"
-          title={
-            readOnlyUnitView === "diff"
-              ? "当前：Diff 视图，点击切换到标准视图"
-              : "当前：标准视图，点击切换到 Diff 视图"
-          }
-          aria-label={
-            readOnlyUnitView === "diff"
-              ? "切换到标准 Unit 视图"
-              : "切换到 Diff Unit 视图"
-          }
-          aria-pressed={readOnlyUnitView === "diff"}
-          onClick={onSwitchReadOnlyUnitView}
-          className={clsx(btnBase, "bg-green-50 hover:bg-green-100")}
-        >
-          {readOnlyUnitView === "diff"
-            ? <GitCompareArrows size={18} />
-            : <Rows3 size={18} />}
-        </button>
-      )}
       <button
         title="切换重定位模式"
         onClick={onRelocationClick}
@@ -129,9 +100,9 @@ export default function StatusOptionBar({
             className={clsx(
               btnBase,
               "hidden [@media(any-pointer:coarse)]:flex",
-              !isUnitCreationEnabled
-                ? "bg-green-50 hover:bg-green-100"
-                : "bg-white hover:bg-stone-100",
+              isUnitCreationEnabled
+                ? "bg-white hover:bg-stone-100"
+                : "bg-green-50 hover:bg-green-100",
             )}
           >
             <CircleSlash size={18} />

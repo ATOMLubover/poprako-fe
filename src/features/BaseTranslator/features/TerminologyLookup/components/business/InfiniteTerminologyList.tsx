@@ -1,9 +1,10 @@
+/* eslint-disable unicorn/prefer-simple-condition-first -- infinite list load guard. */
 import { useEffect, useRef, type ReactNode } from "react";
 import { BookOpenText, RefreshCcw } from "lucide-react";
 import clsx from "clsx";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 
-type Props = {
+interface Props {
   children: ReactNode;
   itemCount: number;
   hasMore: boolean;
@@ -15,7 +16,7 @@ type Props = {
   ariaLabel: string;
   onLoadMore: () => void;
   onRetry: () => void;
-};
+}
 
 export default function InfiniteTerminologyList({
   children,
@@ -37,32 +38,32 @@ export default function InfiniteTerminologyList({
   useEffect(() => {
     const sentinel = sentinelRef.current;
     const scrollContainer = scrollRef.current;
-    if (!sentinel || !scrollContainer) return;
+    if (!sentinel || !scrollContainer) {return;}
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && hasMore) onLoadMore();
+        if (entries[0]?.isIntersecting && hasMore) {onLoadMore();}
       },
       { root: scrollContainer, rootMargin: "72px 0px" },
     );
     observer.observe(sentinel);
 
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); };
   }, [hasMore, onLoadMore]);
 
   useEffect(() => {
     const isLoading = isInitialLoading || isLoadingMore;
     const wasLoading = previousLoadingRef.current;
     previousLoadingRef.current = isLoading;
-    if (!wasLoading || isLoading || !hasMore) return;
+    if (!wasLoading || isLoading || !hasMore) {return;}
 
     const scrollContainer = scrollRef.current;
     const sentinel = sentinelRef.current;
-    if (!scrollContainer || !sentinel) return;
+    if (!scrollContainer || !sentinel) {return;}
 
     const containerRect = scrollContainer.getBoundingClientRect();
     const sentinelRect = sentinel.getBoundingClientRect();
-    if (sentinelRect.top < containerRect.bottom + 72) onLoadMore();
+    if (sentinelRect.top < containerRect.bottom + 72) {onLoadMore();}
   }, [hasMore, isInitialLoading, isLoadingMore, onLoadMore]);
 
   if (isInitialLoading) {

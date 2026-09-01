@@ -5,16 +5,16 @@ import IconInputRow from "@/components/ui/IconInputRow";
 import type { WorksetInfo } from "@/types/workset";
 import type { Result } from "@/types/utils/result";
 
-type UpdateWorksetArgs = {
+interface UpdateWorksetArgs {
   name: string;
   description?: string;
-};
+}
 
-type Props = {
+interface Props {
   workset: WorksetInfo;
   onUpdate: (args: UpdateWorksetArgs) => Promise<Result<void>>;
   onClose: () => void;
-};
+}
 
 export default function WorksetModifierModal({
   workset,
@@ -22,23 +22,23 @@ export default function WorksetModifierModal({
   onClose,
 }: Props) {
   const [formData, setFormData] = useState({
-    name: workset.name ?? "",
-    description: workset.description ?? "",
+    name: workset.name,
+    description: workset.description,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isValid = formData.name.trim().length > 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {return;}
     setIsSubmitting(true);
     const result = await onUpdate({
       name: formData.name.trim(),
       description: formData.description.trim() || undefined,
     });
     setIsSubmitting(false);
-    if (result.success) onClose();
+    if (result.success) {onClose();}
   };
 
   return (
@@ -70,13 +70,13 @@ export default function WorksetModifierModal({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-5 pb-5 pt-3">
+        <form onSubmit={(event) => { void handleSubmit(event); }} className="px-5 pb-5 pt-3">
           <div className="space-y-2.5">
             <IconInputRow
               icon={<Type size={14} />}
               placeholder="名称"
               value={formData.name}
-              onChange={(v) => setFormData({ ...formData, name: v })}
+              onChange={(v) => { setFormData({ ...formData, name: v }); }}
             />
 
             <div
@@ -97,7 +97,7 @@ export default function WorksetModifierModal({
                 )}
                 value={formData.description}
                 onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                  { setFormData({ ...formData, description: e.target.value }); }
                 }
               />
             </div>

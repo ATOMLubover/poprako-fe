@@ -9,22 +9,22 @@ const ONLINE_USERS_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const EMPTY_ONLINE_USER_IDS: ReadonlySet<string> = new Set();
 const EMPTY_ONLINE_USERS: readonly UserInfo[] = [];
 
-type OnlineUsersState = {
+interface OnlineUsersState {
   teamId: string;
   userIds: ReadonlySet<string>;
-};
+}
 
-type OnlineUserInfosState = {
+interface OnlineUserInfosState {
   teamId: string;
   userIdSignature: string;
   users: readonly UserInfo[];
-};
+}
 
 async function renewOnlineLease(teamId: string): Promise<void> {
   const result = await markSelfOnline(teamId);
 
   if (!result.success) {
-    console.error("[TeamOnline] 刷新在线状态失败:", result.error);
+    console.error("[TeamOnline] 刷新在线状态失败:", result.error); // eslint-disable-line no-console
   }
 }
 
@@ -32,22 +32,22 @@ export function useTeamOnlineLease(): void {
   const { activeTeamId } = useActiveTeam();
 
   useEffect(() => {
-    if (!activeTeamId) return;
+    if (!activeTeamId) {return;}
 
     const renew = () => {
       void renewOnlineLease(activeTeamId);
     };
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") renew();
+      if (document.visibilityState === "visible") {renew();}
     };
 
     renew();
 
-    const intervalId = window.setInterval(renew, LEASE_RENEW_INTERVAL_MS);
+    const intervalId = setInterval(renew, LEASE_RENEW_INTERVAL_MS);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.clearInterval(intervalId);
+      clearInterval(intervalId);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [activeTeamId]);
@@ -57,17 +57,17 @@ export function useOnlineUserIds(teamId: string | null): ReadonlySet<string> {
   const [state, setState] = useState<OnlineUsersState | null>(null);
 
   useEffect(() => {
-    let isCurrent = true;
+    if (!teamId) {return;}
 
-    if (!teamId) return;
+    let isCurrent = true;
 
     const refresh = async () => {
       const result = await listOnlineUserIds(teamId);
 
-      if (!isCurrent) return;
+      if (!isCurrent) {return;}
 
       if (!result.success) {
-        console.error("[TeamOnline] 获取在线成员失败:", result.error);
+        console.error("[TeamOnline] 获取在线成员失败:", result.error); // eslint-disable-line no-console
         return;
       }
 
@@ -76,14 +76,14 @@ export function useOnlineUserIds(teamId: string | null): ReadonlySet<string> {
 
     void refresh();
 
-    const intervalId = window.setInterval(
+    const intervalId = setInterval(
       () => void refresh(),
       ONLINE_USERS_REFRESH_INTERVAL_MS,
     );
 
     return () => {
       isCurrent = false;
-      window.clearInterval(intervalId);
+      clearInterval(intervalId);
     };
   }, [teamId]);
 
@@ -94,24 +94,24 @@ export function useOnlineUsers(
   teamId: string | null,
   onlineUserIds: ReadonlySet<string>,
 ): readonly UserInfo[] {
-  const userIdSignature = Array.from(onlineUserIds).join("\0");
+  const userIdSignature = [...onlineUserIds].join("\0");
   const [state, setState] = useState<OnlineUserInfosState | null>(null);
 
   useEffect(() => {
-    let isCurrent = true;
+    if (!teamId || !userIdSignature) {return;}
 
-    if (!teamId || !userIdSignature) return;
+    let isCurrent = true;
 
     const load = async () => {
       const results = await Promise.all(
         userIdSignature.split("\0").map((userId) => getUser(userId)),
       );
 
-      if (!isCurrent) return;
+      if (!isCurrent) {return;}
 
       const users = results.flatMap((result) => {
-        if (result.success) return [result.data];
-        console.error("[TeamOnline] 获取在线用户资料失败:", result.error);
+        if (result.success) {return [result.data];}
+        console.error("[TeamOnline] 获取在线用户资料失败:", result.error); // eslint-disable-line no-console
         return [];
       });
 

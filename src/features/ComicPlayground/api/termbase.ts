@@ -27,17 +27,17 @@ export async function listComicTermbases(
     `/comics/${args.comicId}/termbases`,
     rawArgs,
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
-    data: result.data.map(unwrapRawTermbaseInfo),
+    data: result.data.map((item) => unwrapRawTermbaseInfo(item)),
   };
 }
 
 export async function getTermbase(id: string): Promise<Result<TermbaseInfo>> {
   const result = await api.get<RawTermbaseInfo>(`/termbases/${id}`);
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return {
     success: true,
@@ -58,7 +58,7 @@ export async function createComicTermbase(
     "/termbases",
     rawArgs,
   );
-  if (!result.success) return result;
+  if (!result.success) {return result;}
 
   return { success: true, data: result.data.id };
 }
@@ -66,16 +66,16 @@ export async function createComicTermbase(
 export async function updateTermbase(
   id: string,
   args: UpdateTermbaseArgs,
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   const rawArgs: RawUpdateTermbaseArgs = {
     id,
     name: args.name,
     description: args.description,
   };
 
-  return api.put<void, RawUpdateTermbaseArgs>(`/termbases/${id}`, rawArgs);
+  return api.put<undefined, RawUpdateTermbaseArgs>(`/termbases/${id}`, rawArgs);
 }
 
-export async function deleteTermbase(id: string): Promise<Result<void>> {
-  return api.delete<void>(`/termbases/${id}`);
+export async function deleteTermbase(id: string): Promise<Result<undefined>> {
+  return api.delete<undefined>(`/termbases/${id}`);
 }

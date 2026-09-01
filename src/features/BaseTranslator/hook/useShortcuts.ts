@@ -93,7 +93,7 @@ const defaultConfigurableShortcuts: ConfigurableShortcut[] = [
 ];
 
 function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
-  if (!Array.isArray(raw)) return null;
+  if (!Array.isArray(raw)) {return null;}
 
   const byAction = new Map(
     defaultConfigurableShortcuts.map((s) => [s.action, s]),
@@ -105,34 +105,38 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
 
   const migrated: ConfigurableShortcut[] = [];
   const migratedActions = new Set<ConfigurableShortcut["action"]>();
-  let hadStale = false;
+  let isHadStale = false;
 
   for (const item of raw) {
     if (!item || typeof item !== "object" || !("keys" in item)) {
       return null;
     }
 
-    const keys = item.keys;
-    if (!Array.isArray(keys) || !keys.every((key) => typeof key === "string")) {
+    const record = item as Record<string, unknown>;
+    const rawKeys = record.keys;
+    if (!Array.isArray(rawKeys) || rawKeys.some((key) => typeof key !== "string")) {
       return null;
     }
+    const keys: string[] = rawKeys.filter(
+      (key): key is string => typeof key === "string",
+    );
 
     const action =
-      "action" in item && typeof item.action === "string"
-        ? item.action
+      typeof record.action === "string"
+        ? record.action
         : undefined;
     const fallbackByAction = action ? byAction.get(action) : undefined;
     const fallbackByLabel =
-      "label" in item && typeof item.label === "string"
-        ? byLabel.get(item.label)
+      typeof record.label === "string"
+        ? byLabel.get(record.label)
         : undefined;
 
     const fallback = fallbackByAction ?? fallbackByLabel;
     if (!fallback) {
-      hadStale = true;
+      isHadStale = true;
       continue;
     }
-    if (migratedActions.has(fallback.action)) continue;
+    if (migratedActions.has(fallback.action)) {continue;}
 
     migrated.push({
       action: fallback.action,
@@ -153,13 +157,15 @@ function migrateStored(raw: unknown): ConfigurableShortcut[] | null {
     defaultConfigurableShortcuts.map((s, idx) => [s.action, idx]),
   );
 
+  // Keep the migrated array mutable because it is newly allocated above.
+  // eslint-disable-next-line unicorn/no-array-sort
   const sorted = migrated.sort(
     (a, b) =>
       (orderByAction.get(a.action) ?? Number.MAX_SAFE_INTEGER) -
       (orderByAction.get(b.action) ?? Number.MAX_SAFE_INTEGER),
   );
 
-  if (hadStale) {
+  if (isHadStale) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted));
   }
 
@@ -171,7 +177,7 @@ export function useShortcuts() {
     ConfigurableShortcut[]
   >(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return defaultConfigurableShortcuts;
+    if (!stored) {return defaultConfigurableShortcuts;}
 
     try {
       const parsed = JSON.parse(stored) as unknown;

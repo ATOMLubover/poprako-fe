@@ -2,6 +2,7 @@ import type { ChangeEvent } from "react";
 import type {
   ChapterInfo,
   ComicInfo,
+  AllocatedPage,
   PageInfo,
   UploadProgressCallbacks,
 } from "@/types";
@@ -20,11 +21,11 @@ import type {
 import type { ChapterWorkflowRecord } from "@/types/chapterWorkflowRecord";
 import type { UserInfo } from "@/types/user";
 
-export type ExportProgressState = {
+export interface ExportProgressState {
   title: string;
   description: string;
   progress: number;
-};
+}
 
 export const DEFAULT_EXPORT_PROGRESS: ExportProgressState = {
   title: "正在准备下载",
@@ -43,7 +44,7 @@ export const ROLE_TITLE_LABEL: Record<Role, string> = {
   admin: "管理员",
 };
 
-export type ComicDetailModalProps = {
+export interface ComicDetailModalProps {
   comicInfo: ComicInfo;
   pinnedChapter: ChapterInfo | null;
   pinnedChapterAssignments?: AssignmentInfo[];
@@ -89,7 +90,7 @@ export type ComicDetailModalProps = {
   onNavigateToTranslator?: (
     chapterId: string,
     pageId: string,
-    readOnly?: boolean,
+    isReadOnly?: boolean,
   ) => void;
   currentUserId?: string | null;
   onAddPages?: (
@@ -103,7 +104,7 @@ export type ComicDetailModalProps = {
     imageHash: string;
     newByteLen: number;
     extension: string;
-  }) => Promise<Result<import("@/types").AllocatedPage>>;
+  }) => Promise<Result<AllocatedPage>>;
   onJoinChapterRole?: (chapterId: string, role: Role) => Promise<Result<void>>;
   onImportChapter?: (args: {
     chapterId: string;
@@ -124,11 +125,11 @@ export type ComicDetailModalProps = {
   onUpdateChapter?: (chapterId: string, subtitle?: string) => Promise<Result<void>>;
   onResolveActiveMember: () => MemberInfo | null | Promise<MemberInfo | null>;
   onClose: () => void;
-};
+}
 
-export type CoverUploadState = {
+export interface CoverUploadState {
   isUploadingCover: boolean;
   coverUploadProgress: number | null;
   localCoverUrl: string | null;
   handleCoverFileChange: (event: ChangeEvent<HTMLInputElement>) => void;
-};
+}

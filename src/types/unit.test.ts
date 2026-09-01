@@ -22,8 +22,8 @@ function makeUnits(): UnitInfo[] {
 }
 
 function expectOrder(units: UnitInfo[], ids: string[]) {
-  expect(units.map(unitId)).toEqual(ids);
-  expect(units.map(unitIndex)).toEqual(ids.map((_, index) => index));
+  expect(units.map((unit) => unitId(unit))).toEqual(ids);
+  expect(units.map((unit) => unitIndex(unit))).toEqual(ids.map((_, index) => index));
 }
 
 describe("moveUnitToIndex", () => {

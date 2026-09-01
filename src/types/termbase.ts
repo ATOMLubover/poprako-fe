@@ -1,4 +1,4 @@
-export type TermbaseInfo = {
+export interface TermbaseInfo {
   id: string;
 
   teamId?: string;
@@ -11,4 +11,4 @@ export type TermbaseInfo = {
   creatorId: string;
   createdAt: number;
   updatedAt: number;
-};
+}

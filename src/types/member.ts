@@ -1,7 +1,7 @@
 import type { TeamInfo } from "./team";
 import type { UserInfo } from "./user";
 
-export type MemberInfo = {
+export interface MemberInfo {
   id: string;
 
   userId: string;
@@ -22,4 +22,4 @@ export type MemberInfo = {
   roles: number;
   createdAt: number;
   updatedAt: number;
-};
+}

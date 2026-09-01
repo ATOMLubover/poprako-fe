@@ -1,8 +1,8 @@
 export function ensureHttpsUrl(url?: string | null): string {
-  if (!url) return "";
+  if (!url) {return "";}
 
   const trimmed = url.trim();
-  if (!trimmed) return "";
+  if (!trimmed) {return "";}
 
   if (
     trimmed.startsWith("http://") ||

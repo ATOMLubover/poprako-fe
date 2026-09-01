@@ -59,7 +59,7 @@ export default function AppSidebar() {
   const activeNavId = pathNavMap[location.pathname] ?? "workspace";
 
   const handleNavSelect = (id: NavId) => {
-    navigate(navPathMap[id]);
+    void navigate(navPathMap[id]);
   };
 
   const handleTeamSelect = (team: TeamConfig) => {
@@ -71,7 +71,7 @@ export default function AppSidebar() {
     async (id: string, args: { name: string; description?: string }) => {
       const result2 = await updateTeam({ id, ...args });
       if (!result2.success) {
-        console.error("[AppSidebar] 更新汉化组信息失败:", result2.error);
+        console.error("[AppSidebar] 更新汉化组信息失败:", result2.error); // eslint-disable-line no-console
         return result2;
       }
       await refreshTeams();
@@ -81,13 +81,13 @@ export default function AppSidebar() {
   );
   const handleMouseLeave = () => {
     setIsHovered(false);
-    if (isAvatarUploading) return;
+    if (isAvatarUploading) {return;}
     setIsSelectingTeam(false);
   };
 
   useEffect(() => {
     if (!isAvatarUploading && !isHovered && isSelectingTeam) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // eslint-disable-next-line react-hooks/set-state-in-effect, @eslint-react/set-state-in-effect
       setIsSelectingTeam(false);
     }
   }, [isAvatarUploading, isHovered, isSelectingTeam]);
@@ -95,7 +95,7 @@ export default function AppSidebar() {
   return (
     <AppSidebarLayout
       isExpanded={isExpanded}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => { setIsHovered(true); }}
       onMouseLeave={handleMouseLeave}
       header={<TitleHeader />}
       teamOption={
@@ -118,7 +118,7 @@ export default function AppSidebar() {
               icon={item.icon}
               label={item.label}
               isActive={activeNavId === item.id}
-              onClick={() => handleNavSelect(item.id)}
+              onClick={() => { handleNavSelect(item.id); }}
               hasBadge={item.id === "system-mail" && hasUnread}
             />
           ))}
@@ -128,7 +128,7 @@ export default function AppSidebar() {
         <SettingsFooter
           config={footerNavConfig}
           isActive={activeNavId === "settings"}
-          onClick={() => handleNavSelect("settings")}
+          onClick={() => { handleNavSelect("settings"); }}
         />
       }
     />

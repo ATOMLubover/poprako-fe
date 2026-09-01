@@ -1,6 +1,6 @@
 import type { TermInfo } from "../term";
 
-export type RawTermInfo = {
+export interface RawTermInfo {
   id: string;
   termbase_id: string;
 
@@ -11,7 +11,7 @@ export type RawTermInfo = {
   creator_id: string;
   created_at: number;
   updated_at: number;
-};
+}
 
 export function unwrapRawTermInfo(raw: RawTermInfo): TermInfo {
   return {

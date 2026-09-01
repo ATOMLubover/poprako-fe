@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   children: ReactNode;
-};
+}
 
 export default function WorkspaceLayout({ children }: Props) {
   return (

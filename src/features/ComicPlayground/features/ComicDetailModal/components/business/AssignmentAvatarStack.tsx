@@ -1,13 +1,13 @@
 import clsx from "clsx";
 import type { AssignmentInfo } from "@/types/assignment";
 
-type Props = {
+interface Props {
   assignments: AssignmentInfo[];
   isLoading?: boolean;
   showEmpty?: boolean;
   canRemove?: boolean;
   onRequestRemove?: (assignment: AssignmentInfo) => void;
-};
+}
 
 const MAX_VISIBLE_AVATARS = 4;
 
@@ -16,7 +16,7 @@ function memberName(assignment: AssignmentInfo): string {
 }
 
 function avatarUrl(assignment: AssignmentInfo): string | undefined {
-  return assignment.user?.avatarThumbnailUrl || assignment.user?.avatarUrl || undefined;
+  return assignment.user?.avatarThumbnailUrl ?? assignment.user?.avatarUrl;
 }
 
 function AvatarContent({ assignment }: { assignment: AssignmentInfo }) {
@@ -26,7 +26,7 @@ function AvatarContent({ assignment }: { assignment: AssignmentInfo }) {
   return url ? (
     <img src={url} alt="" className="h-full w-full object-cover" />
   ) : (
-    <span aria-hidden="true">{Array.from(name)[0] ?? "?"}</span>
+    <span aria-hidden="true">{name.slice(0, 1) || "?"}</span>
   );
 }
 
@@ -48,11 +48,11 @@ function AvatarTooltip({ name }: { name: string }) {
   );
 }
 
-type MemberAvatarProps = {
+interface MemberAvatarProps {
   assignment: AssignmentInfo;
   canRemove: boolean;
   onRequestRemove?: (assignment: AssignmentInfo) => void;
-};
+}
 
 function MemberAvatar({
   assignment,
@@ -78,7 +78,7 @@ function MemberAvatar({
           event.stopPropagation();
           onRequestRemove?.(assignment);
         }}
-        onKeyDown={(event) => event.stopPropagation()}
+        onKeyDown={(event) => { event.stopPropagation(); }}
         className={className}
       >
         <span
@@ -98,9 +98,6 @@ function MemberAvatar({
     <span
       role="img"
       aria-label={name}
-      tabIndex={0}
-      onClick={(event) => event.stopPropagation()}
-      onKeyDown={(event) => event.stopPropagation()}
       className={className}
     >
       <span
@@ -116,11 +113,11 @@ function MemberAvatar({
   );
 }
 
-type OverflowMembersProps = {
+interface OverflowMembersProps {
   assignments: AssignmentInfo[];
   canRemove: boolean;
   onRequestRemove?: (assignment: AssignmentInfo) => void;
-};
+}
 
 function OverflowMembers({
   assignments,
@@ -131,10 +128,10 @@ function OverflowMembers({
     <div className="group/more relative -ml-1.5 shrink-0 first:ml-0">
       <button
         type="button"
-        aria-label={`另有 ${assignments.length} 位成员`}
+        aria-label={`另有 ${String(assignments.length)} 位成员`}
         aria-haspopup="true"
-        onClick={(event) => event.stopPropagation()}
-        onKeyDown={(event) => event.stopPropagation()}
+        onClick={(event) => { event.stopPropagation(); }}
+        onKeyDown={(event) => { event.stopPropagation(); }}
         className={clsx(
           "flex h-8 w-8 items-center justify-center rounded-full",
           "border-2 border-stone-50 bg-stone-100",
@@ -180,12 +177,11 @@ function OverflowMembers({
               <button
                 key={assignment.userId}
                 type="button"
-                role="listitem"
                 onClick={(event) => {
                   event.stopPropagation();
                   onRequestRemove?.(assignment);
                 }}
-                onKeyDown={(event) => event.stopPropagation()}
+                onKeyDown={(event) => { event.stopPropagation(); }}
                 className={clsx(
                   "block w-full rounded-sm px-2 py-1 text-left text-xs",
                   "whitespace-normal break-words",
@@ -223,6 +219,7 @@ export default function AssignmentAvatarStack({
     );
   }
 
+  // eslint-disable-next-line unicorn/no-array-sort
   const sorted = [...assignments].sort((left, right) =>
     memberName(left).localeCompare(memberName(right), "zh-CN", {
       numeric: true,

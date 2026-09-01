@@ -5,16 +5,16 @@ const STORAGE_KEY = "translator:relocation-enabled";
 type RelocationStorage = Pick<Storage, "getItem" | "setItem">;
 
 function getStorage(): RelocationStorage | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") {return null;}
 
   try {
-    return window.localStorage;
+    return localStorage;
   } catch {
     return null;
   }
 }
 
-export function loadRelocationPreference(
+export function isRelocationPreferenceEnabled(
   storage: RelocationStorage | null = getStorage(),
 ): boolean {
   try {
@@ -37,15 +37,15 @@ export function saveRelocationPreference(
 
 export function useRelocationPreference() {
   const [isRelocationEnabled, setIsRelocationEnabled] = useState(
-    loadRelocationPreference,
+    isRelocationPreferenceEnabled,
   );
   const enabledRef = useRef(isRelocationEnabled);
 
   function toggleRelocation() {
-    const next = !enabledRef.current;
-    enabledRef.current = next;
-    setIsRelocationEnabled(next);
-    saveRelocationPreference(next);
+    const isNext = !enabledRef.current;
+    enabledRef.current = isNext;
+    setIsRelocationEnabled(isNext);
+    saveRelocationPreference(isNext);
   }
 
   return { isRelocationEnabled, toggleRelocation };

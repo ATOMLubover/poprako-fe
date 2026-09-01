@@ -13,8 +13,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Personal Collection",
     description: "个人收藏",
     comicCount: 124,
-    createdAt: now - 86400000 * 30,
-    updatedAt: now - 86400000,
+    createdAt: now - 86_400_000 * 30,
+    updatedAt: now - 86_400_000,
   },
   {
     id: "ws-2",
@@ -23,8 +23,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Team Shared",
     description: "团队共享",
     comicCount: 45,
-    createdAt: now - 86400000 * 20,
-    updatedAt: now - 86400000 * 2,
+    createdAt: now - 86_400_000 * 20,
+    updatedAt: now - 86_400_000 * 2,
   },
   {
     id: "ws-3",
@@ -33,8 +33,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Archive 2024",
     description: "2024年归档",
     comicCount: 890,
-    createdAt: now - 86400000 * 10,
-    updatedAt: now - 86400000 * 3,
+    createdAt: now - 86_400_000 * 10,
+    updatedAt: now - 86_400_000 * 3,
   },
   {
     id: "ws-4",
@@ -43,8 +43,8 @@ const mockWorksets: WorksetInfo[] = [
     name: "Public Library",
     description: "公共库",
     comicCount: 12,
-    createdAt: now - 86400000 * 5,
-    updatedAt: now - 3600000,
+    createdAt: now - 86_400_000 * 5,
+    updatedAt: now - 3_600_000,
   },
 ];
 
@@ -68,18 +68,17 @@ function InteractiveWorksetSidebar() {
     setWorksets((prev) => prev.filter((ws) => ws.id !== worksetId));
     if (activeId === worksetId && worksets.length > 1) {
       const next = worksets.find((ws) => ws.id !== worksetId);
-      if (next) setActiveId(next.id);
+      if (next) {setActiveId(next.id);}
     }
-    console.log("delete workset:", worksetId);
   };
 
   const handleCreate = () => {
-    const id = `ws-${Date.now()}`;
+    const id = `ws-${String(Date.now())}`;
     const newWs: WorksetInfo = {
       id,
       teamId: "team-1",
       index: worksets.length,
-      name: `新工作区 ${worksets.length + 1}`,
+      name: `新工作区 ${String(worksets.length + 1)}`,
       description: "",
       comicCount: 0,
       createdAt: Date.now(),
@@ -87,7 +86,6 @@ function InteractiveWorksetSidebar() {
     };
     setWorksets((prev) => [newWs, ...prev]);
     setActiveId(id);
-    console.log("create workset");
   };
 
   return (
@@ -95,12 +93,11 @@ function InteractiveWorksetSidebar() {
       <WorksetSidebar
         activeWorksetId={activeId}
         worksets={worksets}
-        onClose={() => console.log("close sidebar")}
+        onClose={() => { return; }}
         onCreateWorkset={handleCreate}
         onDeleteWorkset={handleDelete}
         onChangeWorkset={(id) => {
           setActiveId(id);
-          console.log("change workset:", id);
         }}
       />
     </div>
@@ -119,10 +116,10 @@ export const Empty: Story = {
       <WorksetSidebar
         activeWorksetId=""
         worksets={[]}
-        onClose={() => console.log("close")}
-        onCreateWorkset={() => console.log("create")}
-        onDeleteWorkset={() => console.log("delete")}
-        onChangeWorkset={() => console.log("change")}
+        onClose={() => { return; }}
+        onCreateWorkset={() => { return; }}
+        onDeleteWorkset={() => { return; }}
+        onChangeWorkset={() => { return; }}
       />
     </div>
   ),
@@ -135,10 +132,10 @@ export const SingleWorkset: Story = {
       <WorksetSidebar
         activeWorksetId="ws-1"
         worksets={[mockWorksets[0]]}
-        onClose={() => console.log("close")}
-        onCreateWorkset={() => console.log("create")}
-        onDeleteWorkset={() => console.log("delete")}
-        onChangeWorkset={() => console.log("change")}
+        onClose={() => { return; }}
+        onCreateWorkset={() => { return; }}
+        onDeleteWorkset={() => { return; }}
+        onChangeWorkset={() => { return; }}
       />
     </div>
   ),

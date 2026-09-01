@@ -1,9 +1,9 @@
 import type { TranslatorMode } from "@/types/translatorMode";
 
-type TranslatorCapabilities = {
+interface TranslatorCapabilities {
   canTranslate: boolean;
   canProofread: boolean;
-};
+}
 
 export type TranslatorCompletionStage = "translate" | "proofread";
 
@@ -11,8 +11,8 @@ export function translatorCompletionStage({
   canTranslate,
   canProofread,
 }: TranslatorCapabilities): TranslatorCompletionStage | undefined {
-  if (canProofread) return "proofread";
-  if (canTranslate) return "translate";
+  if (canProofread) {return "proofread";}
+  if (canTranslate) {return "translate";}
   return undefined;
 }
 
@@ -20,18 +20,21 @@ export function availableTranslatorModes({
   canTranslate,
   canProofread,
 }: TranslatorCapabilities): TranslatorMode[] {
-  // 校对优先：翻校进入校对模式，并可切换到翻译模式。
-  if (canTranslate && canProofread) return ["proofread", "translate"];
-  if (canProofread) return ["proofread"];
-  if (canTranslate) return ["translate", "readOnly"];
-  return ["readOnly"];
+  const modes: TranslatorMode[] = [];
+
+  // 顺序同时定义默认模式优先级：校对 > 翻译 > 只读。
+  if (canProofread) {modes.push("proofread");}
+  if (canTranslate) {modes.push("translate");}
+  modes.push("readOnly");
+
+  return modes;
 }
 
 export function initialTranslatorMode(
   availableModes: TranslatorMode[],
   requestedMode?: TranslatorMode,
 ): TranslatorMode {
-  if (requestedMode === "readOnly") return "readOnly";
+  if (requestedMode === "readOnly") {return "readOnly";}
 
   return availableModes[0];
 }

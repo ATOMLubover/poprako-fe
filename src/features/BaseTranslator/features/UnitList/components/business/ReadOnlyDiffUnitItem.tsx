@@ -11,7 +11,7 @@ import type { UserInfo } from "@/types/user";
 import { buildUnitTextDiff } from "../../textDiff";
 import BaseUnitItem from "./BaseUnitItem";
 
-type Props = {
+interface Props {
   unit: UnitInfo;
   isFocused: boolean;
   onSelect?: (unitId: string) => void;
@@ -19,7 +19,7 @@ type Props = {
   dataUnitId?: string;
   translator?: UserInfo;
   proofreader?: UserInfo;
-};
+}
 
 export default function ReadOnlyDiffUnitItem({
   unit,
@@ -83,7 +83,7 @@ export default function ReadOnlyDiffUnitItem({
             <span className="text-gray-300">无翻译内容</span>
           )}
           {parts.map((part, index) => {
-            const key = `${index}-${part.kind}-${part.text}`;
+            const key = `${String(index)}-${part.kind}-${part.text}`;
             if (
               part.kind === "deleted"
               || part.kind === "replacement-removed"

@@ -1,3 +1,5 @@
+/* eslint-disable no-console -- preload failures are diagnostic and non-fatal. */
+/* eslint-disable unicorn/consistent-class-member-order -- public lifecycle methods read top-down. */
 import { useEffect, useState } from "react";
 import type { Page, PageImageQuality } from "@/types/page";
 
@@ -8,57 +10,57 @@ type ResolvePageImage = (
   quality: PageImageQuality,
 ) => Promise<string>;
 
-type PreloadJob = {
+interface PreloadJob {
   pageId: string;
   quality: PageImageQuality;
-};
+}
 
-type PreloaderConfig = {
+interface PreloaderConfig {
   pageIds: string[];
   centerIndex: number;
   quality: PageImageQuality;
-};
+}
 
-type PreloaderDeps = {
+interface PreloaderDeps {
   resolvePageImage: ResolvePageImage;
   loadImage?: (url: string) => Promise<void>;
   concurrency?: number;
   onError?: (job: PreloadJob, error: unknown) => void;
-};
+}
 
-type Args = {
+interface Args {
   pages: Page[];
   currentPageIndex: number;
   quality: PageImageQuality;
   onLoadPageImage: ResolvePageImage;
-};
+}
 
 export function centerOutPageIndexes(
   pageCount: number,
   centerIndex: number,
 ): number[] {
-  if (pageCount <= 0 || centerIndex < 0 || centerIndex >= pageCount) return [];
+  if (pageCount <= 0 || centerIndex < 0 || centerIndex >= pageCount) {return [];}
 
   const indexes = [centerIndex];
   for (let distance = 1; indexes.length < pageCount; distance++) {
     const nextIndex = centerIndex + distance;
     const previousIndex = centerIndex - distance;
 
-    if (nextIndex < pageCount) indexes.push(nextIndex);
-    if (previousIndex >= 0) indexes.push(previousIndex);
+    if (nextIndex < pageCount) {indexes.push(nextIndex);}
+    if (previousIndex >= 0) {indexes.push(previousIndex);}
   }
 
   return indexes;
 }
 
 export function resolveInitialPageIndex(
-  pages: Array<Pick<Page, "id">>,
+  pages: Pick<Page, "id">[],
   startPageId?: string,
   startPageIndex?: number,
 ): number {
   if (startPageId) {
     const pageIndex = pages.findIndex((page) => page.id === startPageId);
-    if (pageIndex >= 0) return pageIndex;
+    if (pageIndex !== -1) {return pageIndex;}
   }
 
   if (
@@ -76,8 +78,10 @@ export function loadBrowserImage(url: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const image = new Image();
 
-    image.onload = () => resolve();
-    image.onerror = () => reject(new Error(`Failed to preload image: ${url}`));
+    image.addEventListener('load', () => { resolve(); });
+    image.addEventListener("error", () => {
+      reject(new Error(`Failed to preload image: ${url}`));
+    });
     image.src = url;
   });
 }
@@ -107,6 +111,10 @@ export class PageImagePreloader {
     this.onError = onError;
   }
 
+  private jobKey(job: PreloadJob): string {
+    return `${job.quality}\0${job.pageId}`;
+  }
+
   configure({ pageIds, centerIndex, quality }: PreloaderConfig): void {
     this.stopped = false;
 
@@ -120,15 +128,6 @@ export class PageImagePreloader {
     this.resolvePageImage = resolvePageImage;
   }
 
-  stop(): void {
-    this.stopped = true;
-    this.queue = [];
-  }
-
-  private jobKey(job: PreloadJob): string {
-    return `${job.quality}\0${job.pageId}`;
-  }
-
   private pump(): void {
     while (
       !this.stopped
@@ -136,7 +135,7 @@ export class PageImagePreloader {
       && this.queue.length > 0
     ) {
       const job = this.queue.shift();
-      if (!job || this.startedJobs.has(this.jobKey(job))) continue;
+      if (!job || this.startedJobs.has(this.jobKey(job))) {continue;}
 
       this.startedJobs.add(this.jobKey(job));
       this.activeCount++;
@@ -144,10 +143,15 @@ export class PageImagePreloader {
     }
   }
 
+  stop(): void {
+    this.stopped = true;
+    this.queue = [];
+  }
+
   private async run(job: PreloadJob): Promise<void> {
     try {
       const url = await this.resolvePageImage(job.pageId, job.quality);
-      if (!url || this.triggeredUrls.has(url)) return;
+      if (!url || this.triggeredUrls.has(url)) {return;}
 
       this.triggeredUrls.add(url);
       await this.loadImage(url);
@@ -179,5 +183,5 @@ export function usePageImagePreloader({
     });
   }, [currentPageIndex, onLoadPageImage, pages, preloader, quality]);
 
-  useEffect(() => () => preloader.stop(), [preloader]);
+  useEffect(() => () => { preloader.stop(); }, [preloader]);
 }

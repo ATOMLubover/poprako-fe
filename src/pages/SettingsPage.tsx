@@ -1,8 +1,6 @@
 import { SettingsPanel, AcknowledgementsFooter } from "@/features/Settings";
 
-type Props = Record<string, never>;
-
-export default function SettingsPage(_: Props) {
+export default function SettingsPage() {
   return (
     <div className="min-h-screen flex items-start justify-center pt-32 bg-[#FEFDF9]">
       <div

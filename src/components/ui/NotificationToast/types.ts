@@ -2,7 +2,7 @@
 // info 类型不常用
 export type ToastType = "success" | "error" | "info";
 
-export type ToastData = {
+export interface ToastData {
   message: string;
   type: ToastType;
-};
+}

@@ -3,6 +3,7 @@ import type {
   PageInfo,
   AllocChapterPagesArgs,
   AllocChapterPagesResult,
+  AllocatedPage,
 } from "@/types";
 import type { Result } from "@/types/utils/result";
 import {
@@ -11,13 +12,14 @@ import {
   type RawAllocChapterPagesArgs,
   type RawAllocChapterPagesResult,
   type RawPageInfo,
+  type RawAllocatedPage,
 } from "@/types/raw/page";
 
-export type ListPageArgs = {
+export interface ListPageArgs {
   chapterId: string;
   offset?: number;
   limit?: number;
-};
+}
 
 export async function listPages(
   args: ListPageArgs,
@@ -29,7 +31,7 @@ export async function listPages(
       limit: args.limit,
     },
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   const items = Array.isArray(res.data) ? res.data : [];
   return {
@@ -55,31 +57,31 @@ export async function allocChapterPages(
     RawAllocChapterPagesResult,
     RawAllocChapterPagesArgs
   >(`/chapters/${args.chapterId}/pages/alloc`, rawArgs);
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   return {
     success: true,
     data: unwrapRawAllocChapterPagesResult(
-      res.data as RawAllocChapterPagesResult,
+      res.data,
     ),
   };
 }
 
-type AllocExistingPageUploadArgs = {
+interface AllocExistingPageUploadArgs {
   pageId: string;
   imageHash: string;
   newByteLen: number;
   extension: string;
-};
+}
 
-type RawAllocExistingPageUploadArgs = {
+interface RawAllocExistingPageUploadArgs {
   image_hash: string;
   new_byte_len: number;
   ext: string;
-};
+}
 
-type AllocExistingPageUploadResult = import("@/types").AllocatedPage;
-type RawAllocExistingPageUploadResult = import("@/types/raw/page").RawAllocatedPage;
+type AllocExistingPageUploadResult = AllocatedPage;
+type RawAllocExistingPageUploadResult = RawAllocatedPage;
 
 export async function allocExistingPageUpload(
   args: AllocExistingPageUploadArgs,
@@ -95,7 +97,7 @@ export async function allocExistingPageUpload(
     RawAllocExistingPageUploadArgs
   >(`/pages/${args.pageId}/image/alloc`, rawArgs);
 
-  if (!res.success) return res;
+  if (!res.success) {return res;}
 
   return {
     success: true,
@@ -105,52 +107,53 @@ export async function allocExistingPageUpload(
 
 export async function getPage(pageId: string): Promise<Result<PageInfo>> {
   const res = await api.get<RawPageInfo>(`/pages/${pageId}`);
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: unwrapRawPageInfo(res.data) };
 }
 
-export async function deletePage(_pageId: string): Promise<Result<void>> {
+export function deletePage(pageId: string): Promise<Result<undefined>> {
+  void pageId;
   return {
     success: false,
     error: "当前后端不支持删除单页",
   };
 }
 
-export async function deleteChapterPages(chapterId: string): Promise<Result<void>> {
-  const res = await api.delete<void>(`/chapters/${chapterId}/pages`);
-  if (!res.success) return res;
+export async function deleteChapterPages(chapterId: string): Promise<Result<undefined>> {
+  const res = await api.delete<undefined>(`/chapters/${chapterId}/pages`);
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }
 
 export async function updatePage(
   pageId: string,
   args: { isUploaded?: boolean; imageVersion?: number },
-): Promise<Result<void>> {
+): Promise<Result<undefined>> {
   if (!args.isUploaded) {
     return { success: true, data: undefined };
   }
-  const res = await api.post<void, { image_version: number }>(
+  const res = await api.post<undefined, { image_version: number }>(
     `/pages/${pageId}/image/mark-uploaded`,
     { image_version: args.imageVersion ?? 0 },
   );
-  if (!res.success) return res;
+  if (!res.success) {return res;}
   return { success: true, data: undefined };
 }
 
 function extractUploadError(xhr: XMLHttpRequest): string {
   try {
     const text = xhr.responseText.trim();
-    if (!text) return "";
+    if (!text) {return "";}
 
     try {
       const body = JSON.parse(text) as { message?: unknown };
-      if (typeof body.message === "string") return body.message;
+      if (typeof body.message === "string") {return body.message;}
     } catch {
       // Object storage commonly returns XML rather than JSON.
     }
 
     const match = /<Message>([^<]+)<\/Message>/.exec(text);
-    if (match?.[1]) return match[1];
+    if (match?.[1]) {return match[1];}
     return text.slice(0, 200);
   } catch {
     return "";
@@ -176,7 +179,7 @@ export async function uploadToPresignedUrl(
   onProgress?: (percent: number) => void,
   signal?: AbortSignal,
 ): Promise<
-  Result<void> & {
+  Result<undefined> & {
     httpStatus?: number;
     failureKind?: "http" | "timeout" | "network" | "aborted";
   }
@@ -186,25 +189,25 @@ export async function uploadToPresignedUrl(
 
   return new Promise((resolve) => {
     const xhr = new XMLHttpRequest();
-    let settled = false;
+    let isSettled = false;
 
     const finish = (
-      result: Result<void> & {
+      result: Result<undefined> & {
         httpStatus?: number;
         failureKind?: "http" | "timeout" | "network" | "aborted";
       },
     ) => {
-      if (settled) return;
-      settled = true;
+      if (isSettled) {return;}
+      isSettled = true;
       signal?.removeEventListener("abort", abortUpload);
       resolve(result);
     };
 
-    const abortUpload = () => xhr.abort();
+    const abortUpload = () => { xhr.abort(); };
 
     xhr.open("PUT", putUrl, true);
     for (const [name, value] of Object.entries(headers)) {
-      if (isBrowserManagedHeader(name)) continue;
+      if (isBrowserManagedHeader(name)) {continue;}
       xhr.setRequestHeader(name, value);
     }
     xhr.timeout = 8 * 60_000; // 8 分钟超时，容纳对象存储完成写入与响应。
@@ -214,8 +217,8 @@ export async function uploadToPresignedUrl(
       return;
     }
 
-    xhr.upload.onprogress = (event) => {
-      if (!event.lengthComputable) return;
+    xhr.upload.onprogress = (event) => { // eslint-disable-line unicorn/prefer-add-event-listener
+      if (!event.lengthComputable) {return;}
       const percent = Math.max(
         0,
         Math.min(99, Math.round((event.loaded / event.total) * 100)),
@@ -223,7 +226,7 @@ export async function uploadToPresignedUrl(
       progress?.(percent);
     };
 
-    xhr.onload = () => {
+    xhr.onload = () => { // eslint-disable-line unicorn/prefer-add-event-listener
       if (xhr.status >= 200 && xhr.status < 300) {
         finish({ success: true, data: undefined, httpStatus: xhr.status });
         return;
@@ -231,11 +234,11 @@ export async function uploadToPresignedUrl(
 
       const responseMessage = extractUploadError(xhr);
       if (responseMessage) {
-        console.error(
-          `[uploadToPresignedUrl] S3 错误 (HTTP ${xhr.status}): ${responseMessage}`,
+        console.error( // eslint-disable-line no-console
+          `[uploadToPresignedUrl] S3 错误 (HTTP ${String(xhr.status)}): ${responseMessage}`,
         );
       }
-      const error = responseMessage || `上传失败: HTTP ${xhr.status}`;
+      const error = responseMessage || `上传失败: HTTP ${String(xhr.status)}`;
       const failure = createHttpFailure(error, xhr.status);
       finish({
         ...failure,
@@ -246,31 +249,31 @@ export async function uploadToPresignedUrl(
     xhr.ontimeout = () => {
       const host = extractUrlHost(putUrl);
       const sizeMiB = (file.size / 1024 / 1024).toFixed(1);
-      console.error(
+      console.error( // eslint-disable-line no-console
           `[uploadToPresignedUrl] 上传超时 (8m), 目标: ${host}, `
           + `文件: ${file.name} (${sizeMiB}MB)`,
       );
       finish({ success: false, error: "上传超时", failureKind: "timeout" });
     };
 
-    xhr.onerror = () => {
+    xhr.onerror = () => { // eslint-disable-line unicorn/prefer-add-event-listener
       const host = extractUrlHost(putUrl);
-      console.error(
+      console.error( // eslint-disable-line no-console
         `[uploadToPresignedUrl] 网络错误, 目标: ${host}, 文件: ${file.name}`,
       );
       finish({ success: false, error: "上传失败", failureKind: "network" });
     };
 
-    xhr.onabort = () => {
+    xhr.onabort = () => { // eslint-disable-line unicorn/prefer-add-event-listener
       finish({ success: false, error: "上传已取消", failureKind: "aborted" });
     };
 
     try {
       xhr.send(file);
-    } catch (err) {
+    } catch (error) {
       finish({
         success: false,
-        error: err instanceof Error ? err.message : "上传失败",
+        error: error instanceof Error ? error.message : "上传失败",
         failureKind: "network",
       });
     }

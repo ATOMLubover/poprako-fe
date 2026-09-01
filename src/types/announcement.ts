@@ -1,6 +1,6 @@
 import type { UserInfo } from "./user";
 
-export type AnnouncementInfo = {
+export interface AnnouncementInfo {
   id: string;
   teamId: string;
   userId: string;
@@ -8,4 +8,4 @@ export type AnnouncementInfo = {
   title: string;
   content: string;
   createdAt: number;
-};
+}

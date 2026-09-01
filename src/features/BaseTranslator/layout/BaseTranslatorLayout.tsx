@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
-type Props = {
+interface Props {
   canvas: ReactNode;
   sidebar: ReactNode;
-};
+}
 
 export default function BaseTranslatorLayout({ canvas, sidebar }: Props) {
   return (
