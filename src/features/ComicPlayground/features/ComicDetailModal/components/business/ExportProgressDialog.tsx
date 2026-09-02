@@ -50,9 +50,6 @@ export default function ExportProgressDialog({
               style={{ width: `${String(Math.max(0, Math.min(progress, 100)))}%` }}
             />
           </div>
-          <p className="mt-2 text-right text-xs tabular-nums text-slate-400">
-            {Math.round(progress)}%
-          </p>
         </div>
       </div>
     </AppDialog>
