@@ -3,23 +3,23 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
-run_pnpm() {
-    if command -v pnpm >/dev/null 2>&1; then
-        pnpm "$@"
-        return
-    fi
+run_bun() {
+    command -v bun >/dev/null 2>&1 || {
+        echo "Bun 1.3 is required to run CI checks." >&2
+        exit 127
+    }
 
-    corepack pnpm "$@"
+    bun "$@"
 }
 
 cd "$project_root"
 
-run_pnpm install --frozen-lockfile
-run_pnpm lint
-run_pnpm test:unit
-run_pnpm build
+run_bun install --frozen-lockfile
+run_bun run lint
+run_bun run test:unit
+run_bun run build
 sh scripts/test-deployment.sh
-run_pnpm build-storybook
+run_bun run build-storybook
 
 if [ -n "${LINE_LENGTH_BASE_SHA:-}" ]; then
     sh scripts/ci-line-length.sh "$LINE_LENGTH_BASE_SHA"

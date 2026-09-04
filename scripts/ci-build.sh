@@ -3,16 +3,16 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
-run_pnpm() {
-    if command -v pnpm >/dev/null 2>&1; then
-        pnpm "$@"
-        return
-    fi
+run_bun() {
+    command -v bun >/dev/null 2>&1 || {
+        echo "Bun 1.3 is required to build the application." >&2
+        exit 127
+    }
 
-    corepack pnpm "$@"
+    bun "$@"
 }
 
 cd "$project_root"
 
-run_pnpm install --frozen-lockfile
-run_pnpm build
+run_bun install --frozen-lockfile
+run_bun run build

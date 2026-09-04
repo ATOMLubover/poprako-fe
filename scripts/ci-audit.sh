@@ -3,15 +3,12 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
-run_pnpm() {
-    if command -v pnpm >/dev/null 2>&1; then
-        pnpm "$@"
-        return
-    fi
-
-    corepack pnpm "$@"
+command -v bun >/dev/null 2>&1 || {
+    echo "Bun 1.3 is required to audit dependencies." >&2
+    exit 127
 }
 
 cd "$project_root"
 
-run_pnpm audit --prod --audit-level high
+bun install --frozen-lockfile
+bun audit --audit-level high --ignore GHSA-qwww-vcr4-c8h2

@@ -8,19 +8,19 @@ Fanning-out multiple agents(parent-children, children-children) for a **unified 
 
 | Command | What |
 | --- | --- |
-| `pnpm dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
-| `pnpm build` | Type-check (`tsc -b`) then bundle (`vite build`) |
-| `pnpm lint` | Run ESLint |
-| `pnpm test:unit` | Run Node-based unit tests |
-| `pnpm storybook` | Start Storybook on port 6006 |
+| `bun run dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
+| `bun run build` | Type-check (`tsc -b`) then bundle (`vite build`) |
+| `bun run lint` | Run ESLint |
+| `bun run test:unit` | Run unit tests with Bun |
+| `bun run storybook` | Start Storybook on port 6006 |
 | `sh scripts/ci-check.sh` | Run all required repository checks |
-| `pnpm dlx shadcn@latest add <comp>` | Add a shadcn/ui component |
+| `bunx shadcn@latest add <comp>` | Add a shadcn/ui component |
 
 Unit tests use Vitest's Node environment. Storybook interaction tests use
 Playwright browser mode via `@storybook/addon-vitest`; CI builds Storybook but
 does not run browser tests until the browser suite has a stable fixture policy.
 
-**Always use `pnpm`**. Never npm, yarn, or bun for package management.
+**Always use Bun 1.3**. Never npm, pnpm, or Yarn for package management.
 
 ## Architecture Overview
 

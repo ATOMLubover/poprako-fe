@@ -12,6 +12,6 @@
 - Upstream state: 2026-08-03 的 registry 稳定最新版为 7.18.2；advisory 标记的
   patched version 是尚无稳定发布的 8.3.0。
 - Control: CI 只忽略此 advisory，其他 high/critical production advisory 仍失败。
-- Config: 精确 ID 保存在 `pnpm-workspace.yaml` 的 `auditConfig.ignoreGhsas`。
+- Config: `scripts/ci-audit.sh` 将精确 ID 传给 `bun audit --ignore`。
 - Review: React Router 发布可兼容的修复版本、项目引入 SSR/RSC，或 2026-09-03，
   以最早发生者为准。

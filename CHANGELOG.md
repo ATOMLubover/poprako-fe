@@ -8,7 +8,7 @@ Fixed、Security 和 Removed 分类。
 - Added organization-transfer CI/CD, immutable frontend releases, atomic
   deployment, rollback, retention, and post-deployment verification.
 - Changed repository documentation and tooling to use the `poprako-web`
-  organization identity and one canonical pnpm check path.
+  organization identity and one canonical Bun check path.
 - Changed production deployment documentation to match the containerized nginx,
   webroot certificate renewal, and the existing `deploy` account.
 - Changed repository governance to accept pull requests directly into protected

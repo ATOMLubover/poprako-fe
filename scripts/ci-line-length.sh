@@ -21,4 +21,4 @@ fi
     exit 1
 }
 
-node scripts/check-added-line-length.mjs "$base_sha" "$baseline_file"
+bun scripts/check-added-line-length.mjs "$base_sha" "$baseline_file"
