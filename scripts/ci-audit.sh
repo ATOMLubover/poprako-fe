@@ -11,4 +11,4 @@ command -v bun >/dev/null 2>&1 || {
 cd "$project_root"
 
 bun install --frozen-lockfile
-bun audit --audit-level high --ignore GHSA-qwww-vcr4-c8h2
+bun audit --prod --audit-level high
