@@ -21,5 +21,5 @@ fi
     exit 1
 }
 
-deno run --allow-read --allow-run=git scripts/check-added-line-length.mjs \
+deno run --allow-read --allow-run=git --allow-env scripts/check-added-line-length.mjs \
     "$base_sha" "$baseline_file"
