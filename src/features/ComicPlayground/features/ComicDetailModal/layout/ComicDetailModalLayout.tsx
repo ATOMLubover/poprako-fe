@@ -18,6 +18,7 @@ export default function ComicDetailModalLayout({
       "bg-stone-950/25",
     )}>
       <div
+        data-comic-detail-boundary
         className={clsx(
           "relative w-full max-w-240 h-[85vh]",
           "bg-stone-50 rounded-sm border border-stone-200",

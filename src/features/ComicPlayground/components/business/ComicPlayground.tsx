@@ -445,7 +445,9 @@ export default function ComicPlayground() {
         onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
         onComicClick={openComicDetail}
-        onCreateComic={isAdmin ? () => { setComicCreatorTeamId(teamId); } : undefined}
+        onCreateComic={isAdmin && activeWorkset
+          ? () => { setComicCreatorTeamId(teamId); }
+          : undefined}
         onChangeFuzzyTitle={setActiveFuzzyTitle}
         activeFuzzyTitle={activeFuzzyTitle}
         activeUploadStatus={activeUploadStatus}
