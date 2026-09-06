@@ -16,9 +16,8 @@ Fanning-out multiple agents(parent-children, children-children) for a **unified 
 | `sh scripts/ci-check.sh` | Run all required repository checks |
 | `bunx shadcn@latest add <comp>` | Add a shadcn/ui component |
 
-Unit tests use Vitest's Node environment. Storybook interaction tests use
-Playwright browser mode via `@storybook/addon-vitest`; CI builds Storybook but
-does not run browser tests until the browser suite has a stable fixture policy.
+Unit tests use Vitest's Node environment. CI builds Storybook; browser interaction
+tests are not part of the required suite.
 
 **Always use Bun 1.3**. Never npm, pnpm, or Yarn for package management.
 
