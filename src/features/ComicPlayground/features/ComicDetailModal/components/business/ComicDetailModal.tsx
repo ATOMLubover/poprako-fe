@@ -13,6 +13,8 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import AssignmentGroup from "./AssignmentGroup";
+import ArtworkUploadDialog from "./ArtworkUploadDialog";
+import { canUploadArtwork } from "../../artworkUpload";
 import ComicDetailContent, { type ComicDetailView } from "./ComicDetailContent";
 import ComicDetailHeader from "./ComicDetailHeader";
 import ComicDetailSidebar from "./ComicDetailSidebar";
@@ -65,6 +67,7 @@ export default function ComicDetailModal({
   onClose,
 }: ComicDetailModalProps) {
   const { showToast } = useToastStore();
+  const [artworkChapter, setArtworkChapter] = useState<ChapterInfo | null>(null);
   const accessToken = useAppStore((s) => s.accessToken);
   const [activeMember, setActiveMember] = useState<MemberInfo | null>(null);
   const [activeView, setActiveView] = useState<ComicDetailView>("pages");
@@ -147,6 +150,7 @@ export default function ComicDetailModal({
 
   const {
     assignments,
+    currentAssignment,
     isAssignmentsLoading,
     memberSelectorRole,
     setMemberSelectorRole,
@@ -371,6 +375,8 @@ export default function ComicDetailModal({
       comicInfo={comicInfo}
       selectedChapter={selectedChapter}
       pagesLength={pages.length}
+      canUploadArtwork={canUploadArtwork(selectedChapter, currentAssignment)}
+      onUploadArtwork={() => { if (selectedChapter) {setArtworkChapter(selectedChapter);} }}
       canReadOnly={canReadOnly}
       canUploadCover={canUploadCover}
       canTranslateOrProofread={canTranslateOrProofread}
@@ -495,6 +501,17 @@ export default function ComicDetailModal({
 
   return (
     <>
+      {artworkChapter && (
+        <ArtworkUploadDialog
+          chapterId={artworkChapter.id}
+          chapterLabel={`第 ${String(artworkChapter.index + 1)} 话 · ${artworkChapter.subtitle}`}
+          onClose={() => { setArtworkChapter(null); }}
+          onUploaded={() => {
+            void reloadLoadedChapters();
+            handleWorkflowRecordsChanged();
+          }}
+        />
+      )}
       <ExportProgressDialog
         open={isExportingData}
         title={exportProgress.title}
