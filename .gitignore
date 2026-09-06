@@ -34,3 +34,5 @@ storybook-static
 # Local agent state
 .claude/settings.local.json
 .omx/
+
+/test-resources/
