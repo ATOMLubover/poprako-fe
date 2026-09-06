@@ -9,12 +9,14 @@ import {
   Eraser,
   Image as ImageIcon,
   Languages,
+  MoreHorizontal,
   Search,
   Tag,
   Trash2,
   Upload,
 } from "lucide-react";
 import clsx from "clsx";
+import { DropdownMenu } from "radix-ui";
 import type { ChapterInfo, ComicInfo } from "@/types";
 import ActionButton from "./ActionButton";
 import LazyImage from "./LazyImage";
@@ -25,6 +27,8 @@ interface Props {
   comicInfo: ComicInfo;
   selectedChapter?: ChapterInfo | undefined;
   pagesLength: number;
+  canUploadArtwork: boolean;
+  onUploadArtwork: () => void;
   canReadOnly: boolean;
   canUploadCover: boolean;
   canTranslateOrProofread: boolean;
@@ -50,6 +54,8 @@ export default function ComicDetailSidebar({
   comicInfo,
   selectedChapter,
   pagesLength: _pagesLength,
+  canUploadArtwork,
+  onUploadArtwork,
   canReadOnly,
   canUploadCover,
   canTranslateOrProofread,
@@ -210,14 +216,6 @@ export default function ComicDetailSidebar({
                 onClick={onNavigateReadOnly}
               />
             )}
-            {canDeleteChapterPages && (
-              <ActionButton
-                icon={Eraser}
-                title="清空页面"
-                onClick={onDeletePages}
-                disabled={isDeletingChapterPages}
-              />
-            )}
             {canTranslateOrProofread && (
               <ActionButton
                 icon={CloudUpload}
@@ -225,6 +223,9 @@ export default function ComicDetailSidebar({
                 onClick={handleOpenImportPicker}
                 disabled={isImportingData}
               />
+            )}
+            {canUploadArtwork && (
+              <ActionButton icon={Upload} title="上传嵌稿" onClick={onUploadArtwork} />
             )}
             <ActionButton
               icon={Download}
@@ -241,22 +242,43 @@ export default function ComicDetailSidebar({
             />
           </>
         )}
-        {canArchiveComic && (
-          <ActionButton
-            icon={Archive}
-            title="归档漫画"
-            onClick={onArchiveComic}
-            disabled={isArchivingComic}
-          />
-        )}
-        {isTeamAdmin && (
-          <ActionButton
-            icon={Trash2}
-            title="删除漫画"
-            onClick={onDeleteComic}
-            disabled={isDeletingComic}
-            danger
-          />
+        {(canDeleteChapterPages || canArchiveComic || isTeamAdmin) && (
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button type="button" className={clsx(
+                "flex h-7 w-full items-center justify-center gap-1.5 rounded-sm",
+                "text-[10px] font-semibold text-stone-400 hover:text-stone-700",
+              )}>
+                <MoreHorizontal size={13} />更多操作
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content side="right" align="end" sideOffset={8}
+                className={clsx(
+                  "z-100 min-w-32 rounded-md border border-stone-200 bg-stone-50 p-1",
+                  "text-xs text-stone-600 shadow-md",
+                )}>
+                {[
+                  { visible: canDeleteChapterPages && Boolean(selectedChapter),
+                    label: "清空页面", icon: Eraser, action: onDeletePages,
+                    disabled: isDeletingChapterPages },
+                  { visible: canArchiveComic, label: "归档漫画", icon: Archive,
+                    action: onArchiveComic, disabled: isArchivingComic },
+                  { visible: isTeamAdmin, label: "删除漫画", icon: Trash2,
+                    action: onDeleteComic, disabled: isDeletingComic },
+                ].filter((item) => item.visible).map((item) => (
+                  <DropdownMenu.Item key={item.label} onSelect={item.action}
+                    disabled={item.disabled} className={clsx(
+                      "flex cursor-pointer items-center gap-2 rounded-sm px-3 py-2 outline-none",
+                      "data-highlighted:bg-stone-200 data-disabled:opacity-40",
+                      item.label === "删除漫画" && "text-red-500",
+                    )}>
+                    <item.icon size={13} />{item.label}
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         )}
       </div>
     </>

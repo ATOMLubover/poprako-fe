@@ -213,7 +213,7 @@ export async function uploadToPresignedUrl(
     xhr.timeout = 8 * 60_000; // 8 分钟超时，容纳对象存储完成写入与响应。
     signal?.addEventListener("abort", abortUpload, { once: true });
     if (signal?.aborted) {
-      abortUpload();
+      finish({ success: false, error: "上传已取消", failureKind: "aborted" });
       return;
     }
 
