@@ -46,7 +46,7 @@ export function unwrapRawChapterDetail(raw: RawChapterInfo): ChapterInfo {
     proofreadUnitCount: raw.proofread_unit_count,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as ChapterInfo;
+  };
 }
 
 export interface RawCreateChapterArgs {
@@ -59,7 +59,7 @@ export function unwrapRawCreateChapterArgs(
   return {
     comicId: raw.comic_id,
     subtitle: raw.subtitle,
-  } as CreateChapterArgs;
+  };
 }
 
 export interface RawCreateChapterResult { id: string }

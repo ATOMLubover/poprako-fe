@@ -28,7 +28,7 @@ export function unwrapRawUserInfo(raw: RawUserInfo): UserInfo {
     lastActiveAt: raw.last_active_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as UserInfo;
+  };
 }
 
 export type RawAllocUserAvatarResult = RawAllocImageResult;

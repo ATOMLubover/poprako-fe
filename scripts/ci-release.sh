@@ -53,7 +53,7 @@ esac
 site_root="$project_root/dist"
 artifact_name="poprako-web-${release_tag}"
 archive_file="${release_root}/${artifact_name}.tar.gz"
-dependency_file="${release_root}/${artifact_name}.pnpm-lock.yaml"
+dependency_file="${release_root}/${artifact_name}.deno.lock"
 provenance_file="${release_root}/${artifact_name}.provenance.json"
 
 [ -f "$site_root/index.html" ] || {
@@ -65,25 +65,18 @@ mkdir -p "$release_root"
 tar -czf "$archive_file" -C "$site_root" .
 
 cd "$project_root"
-cp pnpm-lock.yaml "$dependency_file"
+cp deno.lock "$dependency_file"
 
-node_version=$(node --version)
-
-if command -v pnpm >/dev/null 2>&1; then
-    pnpm_version=$(pnpm --version)
-else
-    pnpm_version=$(corepack pnpm --version)
-fi
+deno_version=$(deno --version | sed -n '1s/^deno //p')
 
 printf '{\n  "source_commit": "%s",\n' "$release_sha" >"$provenance_file"
 printf '  "release_tag": "%s",\n' "$release_tag" >>"$provenance_file"
-printf '  "node": "%s",\n' "$node_version" >>"$provenance_file"
-printf '  "pnpm": "%s",\n' "$pnpm_version" >>"$provenance_file"
+printf '  "deno": "%s",\n' "$deno_version" >>"$provenance_file"
 printf '  "builder": "github-actions"\n}\n' >>"$provenance_file"
 
 cd "$release_root"
 sha256sum \
     "${artifact_name}.tar.gz" \
-    "${artifact_name}.pnpm-lock.yaml" \
+    "${artifact_name}.deno.lock" \
     "${artifact_name}.provenance.json" \
     >SHA256SUMS

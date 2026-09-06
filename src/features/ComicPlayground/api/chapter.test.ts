@@ -29,9 +29,7 @@ function noContent(): Promise<Response> {
 }
 
 function installFetch(response: Promise<Response>) {
-  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    void input;
-    void init;
+  const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => {
     const value = await response;
     return value.clone();
   });

@@ -8,10 +8,8 @@
     "url": "git+https://github.com/poprako-dev/poprako-web.git"
   },
   "engines": {
-    "node": ">=24 <25",
-    "pnpm": ">=11 <12"
+    "deno": ">=2.9 <2.10"
   },
-  "packageManager": "pnpm@11.13.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,7 +17,7 @@
     "typecheck": "tsc -b",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix --max-warnings 0",
-    "check": "pnpm typecheck && pnpm lint",
+    "check": "tsc -b && eslint . --max-warnings 0",
     "preview": "vite preview",
     "test:unit": "vitest run --config vitest.unit.config.ts",
     "storybook": "storybook dev -p 6006",
@@ -34,7 +32,7 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.18.2",
+    "react-router-dom": "^7.18.3",
     "tailwind-merge": "^3.5.0",
     "zustand": "^5.0.12"
   },

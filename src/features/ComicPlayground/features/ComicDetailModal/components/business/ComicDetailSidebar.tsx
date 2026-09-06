@@ -49,7 +49,7 @@ interface Props {
 export default function ComicDetailSidebar({
   comicInfo,
   selectedChapter,
-  pagesLength,
+  pagesLength: _pagesLength,
   canReadOnly,
   canUploadCover,
   canTranslateOrProofread,
@@ -70,7 +70,6 @@ export default function ComicDetailSidebar({
   coverInputRef,
   coverUpload,
 }: Props) {
-  void pagesLength;
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const handleOpenImportPicker = () => importFileInputRef.current?.click();
   return (

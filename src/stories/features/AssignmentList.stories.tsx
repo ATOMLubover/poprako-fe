@@ -14,11 +14,9 @@ interface AssignmentListProps {
 
 function AssignmentList({
   mode,
-  onMyLoadAssignments,
-  onLoadChapterAssignments,
+  onMyLoadAssignments: _onMyLoadAssignments,
+  onLoadChapterAssignments: _onLoadChapterAssignments,
 }: AssignmentListProps) {
-  void onMyLoadAssignments;
-  void onLoadChapterAssignments;
   return (
     <div className="rounded border border-border p-4 text-sm text-muted-foreground">
       AssignmentList Story Placeholder ({mode})

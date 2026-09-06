@@ -47,7 +47,7 @@ export async function createWorkset(
     rawArgs,
   );
   if (!res.success) {return res;}
-  return { success: true, data: (res.data as { id: string }).id };
+  return { success: true, data: (res.data).id };
 }
 
 export async function updateWorkset(

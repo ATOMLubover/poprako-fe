@@ -40,7 +40,7 @@ export function unwrapRawAssignmentInfo(
     assignedAdminAt: roles.includes("admin") ? ts : undefined,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as AssignmentInfo;
+  };
 }
 
 export interface RawListAssignmentArgs {

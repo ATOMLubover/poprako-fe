@@ -1,4 +1,7 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import { mergeConfig } from "vite";
+
+const STORYBOOK_CHUNK_SIZE_WARNING_LIMIT = 1200;
 
 const config: StorybookConfig = {
   "stories": [
@@ -12,6 +15,13 @@ const config: StorybookConfig = {
     "@storybook/addon-docs",
     "@storybook/addon-onboarding"
   ],
-  "framework": "@storybook/react-vite"
+  "framework": "@storybook/react-vite",
+  viteFinal(viteConfig) {
+    return mergeConfig(viteConfig, {
+      build: {
+        chunkSizeWarningLimit: STORYBOOK_CHUNK_SIZE_WARNING_LIMIT,
+      },
+    });
+  },
 };
 export default config;

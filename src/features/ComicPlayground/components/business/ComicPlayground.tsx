@@ -83,7 +83,6 @@ export default function ComicPlayground() {
     setActiveWorksetId,
     activeWorkset,
     loadWorksets,
-    handleDeleteWorkset,
     handleCreateWorkset,
   } = useComicPlaygroundWorksets({ teamId, showToast });
 
@@ -182,10 +181,9 @@ export default function ComicPlayground() {
 
   const handleLoadAssignableMembers = useCallback(
     async (
-      chapterId: string,
+      _chapterId: string,
       args: { role: Role; keyword?: string | undefined; offset: number; limit: number },
     ): Promise<Result<MemberInfo[]>> => {
-      void chapterId;
       if (!teamId) {
         return { success: true, data: [] };
       }
@@ -312,9 +310,11 @@ export default function ComicPlayground() {
   );
 
   const handleUpdateComic = useCallback(
-    async (args: { title: string; author: string; description?: string | undefined }) => {
+    async (
+      args: { title: string; author: string; description?: string | undefined },
+    ): Promise<Result<void>> => {
       if (!selectedComic) {
-        return { success: false, error: "未选择漫画" } as Result<void>;
+        return { success: false, error: "未选择漫画" };
       }
       const result = await updateComic(selectedComic.id, args);
       if (!result.success) {
@@ -350,7 +350,10 @@ export default function ComicPlayground() {
   );
 
   const handleUpdateWorkset = useCallback(
-    async (id: string, args: { name: string; description?: string | undefined }) => {
+    async (
+      id: string,
+      args: { name: string; description?: string | undefined },
+    ): Promise<Result<void>> => {
       const result = await updateWorkset(id, args);
       if (!result.success) {
         console.error("[ComicPlayground] 更新作品集失败:", result.error); // eslint-disable-line no-console
@@ -439,7 +442,6 @@ export default function ComicPlayground() {
         activeWorksetId={activeWorksetId}
         onChangeWorkset={setActiveWorksetId}
         onCreateWorkset={() => { setShowWorksetCreatorModal(true); }}
-        onDeleteWorkset={(id) => { void handleDeleteWorkset(id); }}
         onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
         onComicClick={openComicDetail}

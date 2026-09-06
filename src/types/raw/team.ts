@@ -30,7 +30,7 @@ export function unwrapRawTeamInfo(raw: RawTeamInfo): TeamInfo {
     avatarThumbnailUrl: ensureHttpsUrl(raw.avatar_thumbnail_url),
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as TeamInfo;
+  };
 }
 
 export interface RawCreateTeamArgs { name: string; description: string }

@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { getUser } from "./user";
 
 function installFetch(response: Response) {
-  const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-    void input;
-    void init;
+  const fetchMock = vi.fn((_input: RequestInfo | URL, _init?: RequestInit) => {
     return Promise.resolve(response.clone());
   });
   vi.stubGlobal("fetch", fetchMock);

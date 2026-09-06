@@ -112,8 +112,7 @@ export async function getPage(pageId: string): Promise<Result<PageInfo>> {
   return { success: true, data: unwrapRawPageInfo(res.data) };
 }
 
-export function deletePage(pageId: string): Promise<Result<undefined>> {
-  void pageId;
+export function deletePage(_pageId: string): Promise<Result<undefined>> {
   return Promise.resolve({
     success: false,
     error: "当前后端不支持删除单页",

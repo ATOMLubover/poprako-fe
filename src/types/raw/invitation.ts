@@ -25,7 +25,7 @@ export function unwrapRawInvitationInfo(
     isPending: raw.is_pending,
     roles: raw.roles,
     createdAt: 0,
-  } as InvitationInfo;
+  };
 }
 
 export interface RawCreateInvitationArgs {
@@ -40,7 +40,7 @@ export function unwrapRawCreateInvitationArgs(
     teamId: raw.team_id,
     inviteeQq: raw.invitee_qid,
     roles: raw.roles,
-  } as CreateInvitationArgs;
+  };
 }
 
 export interface RawUpdateInvitationArgs {
@@ -53,5 +53,5 @@ export function unwrapRawUpdateInvitationArgs(
   return {
     id: raw.id,
     roles: raw.roles,
-  } as UpdateInvitationArgs;
+  };
 }

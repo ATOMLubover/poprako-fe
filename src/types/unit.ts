@@ -121,7 +121,7 @@ export function createUnit(
     index: 0,
     isBubble,
     isProofread: false,
-  } as UnitInfo;
+  };
 }
 
 export function modifyUnitPosition(

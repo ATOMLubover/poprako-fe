@@ -53,9 +53,7 @@ function noContent() {
 }
 
 function installFetch(response: Response | Promise<Response> = okJson([])) {
-  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    void input;
-    void init;
+  const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => {
     const resolvedResponse = await response;
     return resolvedResponse.clone();
   });

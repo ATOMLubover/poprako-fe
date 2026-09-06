@@ -59,10 +59,7 @@ export const WithUpload: Story = {
   args: {
     pages: makePages(8),
     onClickPage: () => { return; },
-    // eslint-disable-next-line @typescript-eslint/require-await
-    onAddPages: async (files) => {
-      void files;
-    },
+    onAddPages: (_files) => Promise.resolve(),
   },
 };
 
@@ -71,10 +68,7 @@ export const Empty: Story = {
   args: {
     pages: [],
     onClickPage: () => { return; },
-    // eslint-disable-next-line @typescript-eslint/require-await
-    onAddPages: async (files) => {
-      void files;
-    },
+    onAddPages: (_files) => Promise.resolve(),
   },
 };
 
@@ -85,10 +79,7 @@ export const WithDeleteAndUpload: Story = {
     onClickPage: () => { return; },
     enableDelete: true,
     onDeletePage: () => { return; },
-    // eslint-disable-next-line @typescript-eslint/require-await
-    onAddPages: async (files) => {
-      void files;
-    },
+    onAddPages: (_files) => Promise.resolve(),
   },
 };
 

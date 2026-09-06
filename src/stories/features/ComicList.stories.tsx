@@ -139,13 +139,6 @@ function InteractiveComicList({ canCreateComic = true }: InteractiveComicListPro
     setActiveWsId(id);
   };
 
-  const handleDeleteWorkset = (wsId: string) => {
-    setWorksets((prev) => prev.filter((ws) => ws.id !== wsId));
-    if (activeWsId === wsId && worksets.length > 1) {
-      const next = worksets.find((ws) => ws.id !== wsId);
-      if (next) {setActiveWsId(next.id);}
-    }
-  };
   return (
     <div className="h-screen w-full">
       <ComicList
@@ -153,7 +146,6 @@ function InteractiveComicList({ canCreateComic = true }: InteractiveComicListPro
         activeWorksetId={activeWsId}
         onChangeWorkset={(id) => { setActiveWsId(id); }}
         onCreateWorkset={handleCreateWorkset}
-        onDeleteWorkset={handleDeleteWorkset}
         onLoadComics={makePagedLoader(FULL_COMICS, 400)}
         onComicClick={() => { return; }}
         onCreateComic={canCreateComic ? () => { return; } : undefined}
@@ -214,7 +206,6 @@ function ReviewerComicList() {
         activeWorksetId={activeWsId}
         onChangeWorkset={(id) => { setActiveWsId(id); }}
         onCreateWorkset={() => { return; }}
-        onDeleteWorkset={() => { return; }}
         onLoadComics={makePagedLoader(FULL_COMICS)}
         onComicClick={() => { return; }}
         onCreateComic={() => { return; }}
@@ -260,7 +251,6 @@ function EmptyComicList() {
         activeWorksetId="ws-1"
         onChangeWorkset={() => { return; }}
         onCreateWorkset={() => { return; }}
-        onDeleteWorkset={() => { return; }}
         onLoadComics={() => Promise.resolve({ success: true, data: [] })}
         onCreateComic={() => { return; }}
         activeFuzzyTitle={title}
@@ -305,7 +295,6 @@ function SingleWorksetComicList() {
         activeWorksetId="ws-1"
         onChangeWorkset={() => { return; }}
         onCreateWorkset={() => { return; }}
-        onDeleteWorkset={() => { return; }}
         onLoadComics={makePagedLoader(FULL_COMICS.slice(0, 5), 400)}
         onCreateComic={() => { return; }}
         activeFuzzyTitle={title}

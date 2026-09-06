@@ -8,19 +8,19 @@ Fanning-out multiple agents(parent-children, children-children) for a **unified 
 
 | Command | What |
 | --- | --- |
-| `pnpm dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
-| `pnpm build` | Type-check (`tsc -b`) then bundle (`vite build`) |
-| `pnpm lint` | Run ESLint |
-| `pnpm test:unit` | Run Node-based unit tests |
-| `pnpm storybook` | Start Storybook on port 6006 |
+| `deno task dev` | Start Vite dev server (HMR, proxies `/api` → `localhost:8888`) |
+| `deno task build` | Type-check (`tsc -b`) then bundle (`vite build`) |
+| `deno task lint` | Run ESLint |
+| `deno task test:unit` | Run unit tests with Deno |
+| `deno task storybook` | Start Storybook on port 6006 |
 | `sh scripts/ci-check.sh` | Run all required repository checks |
-| `pnpm dlx shadcn@latest add <comp>` | Add a shadcn/ui component |
+| `deno run -A npm:shadcn@latest add <comp>` | Add a shadcn/ui component |
 
 Unit tests use Vitest's Node environment. Storybook interaction tests use
 Playwright browser mode via `@storybook/addon-vitest`; CI builds Storybook but
 does not run browser tests until the browser suite has a stable fixture policy.
 
-**Always use `pnpm`**. Never npm, yarn, or bun for package management.
+**Always use Deno 2.9**. Never Bun, npm, pnpm, or Yarn for package management.
 
 ## Architecture Overview
 

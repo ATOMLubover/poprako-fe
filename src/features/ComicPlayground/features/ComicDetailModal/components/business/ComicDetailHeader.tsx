@@ -32,7 +32,7 @@ export default function ComicDetailHeader({
   comicInfo,
   chapters,
   selectedChapter,
-  selectedChapterId,
+  selectedChapterId: _selectedChapterId,
   hasMore,
   isLoading,
   canCreateChapter,
@@ -46,7 +46,6 @@ export default function ComicDetailHeader({
   onLongPressChapter,
   onClose,
 }: Props) {
-  void selectedChapterId;
   const titleLongPress = useLongPress({
     onLongPress: onLongPressTitle ?? (() => { return; }),
     threshold: 500,

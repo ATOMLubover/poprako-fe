@@ -42,8 +42,6 @@ function makePagedLoader(allComics: ComicInfo[], delay = 800) {
     offset: number,
     limit: number,
   ): Promise<Result<ComicTranslationListItem[]>> => {
-    void offset;
-    void limit;
     await new Promise((resolve) => setTimeout(resolve, delay));
     return {
       success: true,
@@ -63,9 +61,7 @@ export const TranslatorMode: Story = {
 
 export const EmptyState: Story = {
   args: {
-    onLoadComics: async (offset: number, limit: number) => {
-      void offset;
-      void limit;
+    onLoadComics: async (_offset: number, _limit: number) => {
       await new Promise((resolve) => setTimeout(resolve, 600));
       return { success: true, data: [] };
     },
@@ -74,9 +70,7 @@ export const EmptyState: Story = {
 
 export const ErrorState: Story = {
   args: {
-    onLoadComics: async (offset: number, limit: number) => {
-      void offset;
-      void limit;
+    onLoadComics: async (_offset: number, _limit: number) => {
       await new Promise((resolve) => setTimeout(resolve, 600));
       return { success: false, error: "服务器错误，请稍后重试" };
     },

@@ -159,9 +159,8 @@ export const EmptyPending: Story = {
             onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => {
+            onDeleteInvitation={async (_id) => {
               await new Promise((resolve) => setTimeout(resolve, 400));
-              void id;
               return { success: true, data: undefined };
             }}
           />
@@ -202,9 +201,8 @@ export const LoadError: Story = {
             onClose={() => { setOpen(false); }}
             onLoadInvitations={handleLoad}
             onCreateInvitation={handleCreate}
-            onDeleteInvitation={async (id) => {
+            onDeleteInvitation={async (_id) => {
               await new Promise((resolve) => setTimeout(resolve, 400));
-              void id;
               return { success: true, data: undefined };
             }}
           />

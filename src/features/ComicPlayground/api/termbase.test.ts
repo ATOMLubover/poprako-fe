@@ -33,9 +33,7 @@ function noContent(): Response {
 
 function installFetch(...responses: Response[]) {
   let responseIndex = 0;
-  const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-    void input;
-    void init;
+  const fetchMock = vi.fn((_input: RequestInfo | URL, _init?: RequestInit) => {
     const response = responses[responseIndex];
     responseIndex += 1;
     if (!response) {throw new Error("Missing mocked response");}
