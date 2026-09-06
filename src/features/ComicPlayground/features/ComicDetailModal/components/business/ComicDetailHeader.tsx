@@ -83,7 +83,7 @@ export default function ComicDetailHeader({
         <h1
           {...titleLongPress}
           className={clsx(
-            "text-lg font-black tracking-tight text-stone-700 min-w-0 flex-1",
+            "min-w-0 flex-1 truncate text-lg font-black tracking-tight text-stone-700",
             onLongPressTitle && "select-none touch-none",
           )}
           title={onLongPressTitle ? "长按修改作品信息" : undefined}
