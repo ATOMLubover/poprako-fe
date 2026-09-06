@@ -2,5 +2,6 @@
   "nodeModulesDir": "auto",
   "lock": {
     "frozen": true
-  }
+  },
+  "allowScripts": ["npm:esbuild@0.28.2", "npm:fsevents@2.3.3", "npm:msw@2.15.0", "npm:node-liblzma@5.1.1"]
 }

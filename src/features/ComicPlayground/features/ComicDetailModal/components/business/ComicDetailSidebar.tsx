@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   Archive,
   BookOpen,
@@ -77,6 +77,24 @@ export default function ComicDetailSidebar({
   coverUpload,
 }: Props) {
   const importFileInputRef = useRef<HTMLInputElement>(null);
+  const [menuBoundary, setMenuBoundary] = useState<Element | null>(null);
+  const [menuSide, setMenuSide] = useState<"right" | "bottom">("right");
+  const moreTriggerRef = useCallback((node: HTMLButtonElement | null) => {
+    if (!node) {return;}
+    const trigger = node;
+    const boundary = node.closest("[data-comic-detail-boundary]");
+    setMenuBoundary(boundary);
+    function updateSide() {
+      const available = (boundary?.getBoundingClientRect().right ?? window.innerWidth)
+        - trigger.getBoundingClientRect().right;
+      setMenuSide(available >= 156 ? "right" : "bottom");
+    }
+    updateSide();
+    const observer = new ResizeObserver(updateSide);
+    observer.observe(node);
+    if (boundary) {observer.observe(boundary);}
+    return () => { observer.disconnect(); };
+  }, []);
   const handleOpenImportPicker = () => importFileInputRef.current?.click();
   return (
     <>
@@ -245,7 +263,7 @@ export default function ComicDetailSidebar({
         {(canDeleteChapterPages || canArchiveComic || isTeamAdmin) && (
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button type="button" className={clsx(
+              <button ref={moreTriggerRef} type="button" className={clsx(
                 "flex h-7 w-full items-center justify-center gap-1.5 rounded-sm",
                 "text-[10px] font-semibold text-stone-400 hover:text-stone-700",
               )}>
@@ -253,10 +271,18 @@ export default function ComicDetailSidebar({
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
-              <DropdownMenu.Content side="right" align="end" sideOffset={8}
+              <DropdownMenu.Content
+                side={menuSide}
+                align="center"
+                sideOffset={menuSide === "right" ? 20 : 8}
+                collisionBoundary={menuBoundary}
+                collisionPadding={8}
+                sticky="always"
                 className={clsx(
                   "z-100 min-w-32 rounded-md border border-stone-200 bg-stone-50 p-1",
-                  "text-xs text-stone-600 shadow-md",
+                  "text-xs text-stone-600 shadow-md overflow-y-auto",
+                  "max-h-(--radix-dropdown-menu-content-available-height)",
+                  "max-w-(--radix-dropdown-menu-content-available-width)",
                 )}>
                 {[
                   { visible: canDeleteChapterPages && Boolean(selectedChapter),
