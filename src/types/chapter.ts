@@ -301,11 +301,11 @@ export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
     id: raw.id,
     comicId: raw.comic_id,
     comic: raw.comic
-      ? (unwrapRawComicInfo(raw.comic) as unknown as ComicInfo)
+      ? (unwrapRawComicInfo(raw.comic))
       : undefined,
     creatorId: raw.creator_id,
     creator: raw.creator
-      ? (unwrapRawUserInfo(raw.creator) as unknown as UserInfo)
+      ? (unwrapRawUserInfo(raw.creator))
       : undefined,
     index: raw.index,
     subtitle: raw.subtitle,
@@ -317,5 +317,5 @@ export function toChapterInfo(raw?: RawChapterInfo): ChapterInfo | undefined {
     stages: raw.stages,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as ChapterInfo;
+  };
 }

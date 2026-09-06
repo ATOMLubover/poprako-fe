@@ -114,11 +114,10 @@ function formatDate(ts: number | undefined): string {
 
 export default function ComicProgressItem({
   comicInfo,
-  mode,
+  mode: _mode,
   // mode is reserved for future differentiated rendering
   onClick,
 }: Props) {
-  void mode;
   const chapter: ChapterInfo | null = comicInfo.pinnedChapter ?? null;
   const [assignments] = useState<AssignmentInfo[]>(
     comicInfo.pinnedChapterAssignments ?? [],

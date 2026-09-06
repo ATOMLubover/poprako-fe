@@ -15,7 +15,6 @@ interface Props {
   worksets: WorksetInfo[];
   onClose: () => void;
   onCreateWorkset: () => void;
-  onDeleteWorkset: (worksetId: string) => void;
   onChangeWorkset: (worksetId: string) => void;
   onUpdateWorkset?: ((id: string, args: UpdateWorksetArgs) => Promise<Result<void>>) | undefined;
 }
@@ -25,11 +24,9 @@ export default function WorksetSidebar({
   worksets,
   onClose,
   onCreateWorkset,
-  onDeleteWorkset,
   onChangeWorkset,
   onUpdateWorkset,
 }: Props) {
-  void onDeleteWorkset;
   const [worksetToModify, setWorksetToModify] = useState<WorksetInfo | null>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressWorksetRef = useRef<WorksetInfo | null>(null);

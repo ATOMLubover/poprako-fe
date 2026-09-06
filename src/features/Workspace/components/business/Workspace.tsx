@@ -224,10 +224,9 @@ export default function Workspace() {
 
   const handleLoadAssignableMembers = useCallback(
     async (
-      chapterId: string,
+      _chapterId: string,
       args: { role: Role; keyword?: string | undefined; offset: number; limit: number },
     ): Promise<Result<MemberInfo[]>> => {
-      void chapterId;
       if (!selectedComicTeamId) {
         return { success: true, data: [] };
       }
@@ -382,9 +381,11 @@ export default function Workspace() {
   );
 
   const handleUpdateComic = useCallback(
-    async (args: { title: string; author: string; description?: string | undefined }) => {
+    async (
+      args: { title: string; author: string; description?: string | undefined },
+    ): Promise<Result<void>> => {
       if (!selectedComic) {
-        return { success: false, error: "未选择漫画" } as Result<void>;
+        return { success: false, error: "未选择漫画" };
       }
       const result = await updateComic(selectedComic.id, args);
       if (!result.success) {

@@ -9,16 +9,16 @@ Tailwind CSS 构建。项目目前处于活跃开发阶段。
 
 ## 环境要求
 
-- Bun 1.3
+- Deno 2.9
 
-`package.json` 固定了受支持的 Bun 版本范围。请使用 Bun，不要使用 npm、pnpm 或
-Yarn 安装依赖。
+`package.json` 固定了受支持的 Deno 版本范围。请使用 Deno，不要使用 Bun、npm、
+pnpm 或 Yarn 安装依赖。
 
 ## 本地开发
 
 ```sh
-bun install --frozen-lockfile
-bun run dev
+deno install
+deno task dev
 ```
 
 开发服务器把 `/api` 代理到 `http://localhost:8888`。如需连接其他 API，可复制
@@ -31,10 +31,10 @@ cp .env.example .env.development
 ## 常用命令
 
 ```sh
-bun run lint
-bun run test:unit
-bun run build
-bun run build-storybook
+deno task lint
+deno task test:unit
+deno task build
+deno task build-storybook
 sh scripts/ci-check.sh
 ```
 

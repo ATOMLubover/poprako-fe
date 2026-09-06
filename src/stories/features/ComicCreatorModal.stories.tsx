@@ -30,9 +30,8 @@ type Story = StoryObj<typeof ComicCreatorModal>;
 export const Default: Story = {
   args: {
     currWorkset: mockWorkset,
-    onCreateComic: async (args) => {
+    onCreateComic: async (_args) => {
       await new Promise((r) => setTimeout(r, 800));
-      void args;
       return { success: true, data: "new-comic-id" };
     },
     onClose: () => {return;},
@@ -43,9 +42,8 @@ export const SubmitError: Story = {
   name: "提交失败",
   args: {
     currWorkset: mockWorkset,
-    onCreateComic: async (args) => {
+    onCreateComic: async (_args) => {
       await new Promise((r) => setTimeout(r, 800));
-      void args;
       return { success: false, error: "作品标题已存在" };
     },
     onClose: () => {return;},
@@ -56,9 +54,8 @@ export const LongWorksetName: Story = {
   name: "作品集名称较长",
   args: {
     currWorkset: { ...mockWorkset, name: "超级无敌长的作品集名称组织队伍名" },
-    onCreateComic: async (args) => {
+    onCreateComic: async (_args) => {
       await new Promise((r) => setTimeout(r, 800));
-      void args;
       return { success: true, data: "new-comic-id" };
     },
     onClose: () => {return;},

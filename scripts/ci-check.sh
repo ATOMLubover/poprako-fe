@@ -3,23 +3,23 @@ set -eu
 
 project_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
-run_bun() {
-    command -v bun >/dev/null 2>&1 || {
-        echo "Bun 1.3 is required to run CI checks." >&2
+run_deno() {
+    command -v deno >/dev/null 2>&1 || {
+        echo "Deno 2.9 is required to run CI checks." >&2
         exit 127
     }
 
-    bun "$@"
+    deno "$@"
 }
 
 cd "$project_root"
 
-run_bun install --frozen-lockfile
-run_bun run lint
-run_bun run test:unit
-run_bun run build
+run_deno ci
+run_deno task lint
+run_deno task test:unit
+run_deno task build
 sh scripts/test-deployment.sh
-run_bun run build-storybook
+run_deno task build-storybook
 
 if [ -n "${LINE_LENGTH_BASE_SHA:-}" ]; then
     sh scripts/ci-line-length.sh "$LINE_LENGTH_BASE_SHA"

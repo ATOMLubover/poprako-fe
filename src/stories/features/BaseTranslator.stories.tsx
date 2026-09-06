@@ -531,9 +531,7 @@ function createStoryArgs({
     // eslint-disable-next-line @typescript-eslint/require-await
     onLoadUnits: async (pageId: string) => unitsByPage.get(pageId) ?? [],
     // eslint-disable-next-line @typescript-eslint/require-await
-    onLoadPageImage: async (pageId: string, quality: PageImageQuality) => {
-      void pageId;
-      void quality;
+    onLoadPageImage: async (_pageId: string, _quality: PageImageQuality) => {
       return DEMO_IMAGE;
     },
     onSaveUnits: mockSaveUnits,

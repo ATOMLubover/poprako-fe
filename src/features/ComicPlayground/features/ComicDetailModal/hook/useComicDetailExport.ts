@@ -375,8 +375,7 @@ export function useComicDetailExport({
           exportedAt: new Date().toISOString(),
           skippedImageCount: skippedImages,
           pages: pagesWithAssets.map((pageWithImage) => {
-            const { sourceImageUrl, ...page } = pageWithImage;
-            void sourceImageUrl;
+            const { sourceImageUrl: _sourceImageUrl, ...page } = pageWithImage;
             return page;
           }),
         };

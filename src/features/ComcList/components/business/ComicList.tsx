@@ -23,7 +23,6 @@ interface Props {
   activeWorksetId: string;
   onChangeWorkset: (worksetId: string) => void;
   onCreateWorkset: () => void;
-  onDeleteWorkset: (worksetId: string) => void;
   onUpdateWorkset?: ((
     id: string,
     args: { name: string; description?: string | undefined },
@@ -58,7 +57,6 @@ export default function ComicList({
   activeWorksetId,
   onChangeWorkset,
   onCreateWorkset,
-  onDeleteWorkset,
   onLoadComics,
   onComicClick,
   onCreateComic,
@@ -211,7 +209,6 @@ export default function ComicList({
           worksets={worksets}
           onClose={() => { setIsSidebarOpen(false); }}
           onCreateWorkset={onCreateWorkset}
-          onDeleteWorkset={onDeleteWorkset}
           onChangeWorkset={onChangeWorkset}
           onUpdateWorkset={onUpdateWorkset}
         />

@@ -20,7 +20,7 @@ sh scripts/ci-check.sh
 检查。`scripts/line-length-baseline.txt` 只冻结启用 CI 前的既有债务；修改基线
 需要独立说明和审查，不能用于放过新代码。
 
-Bun 1.3 是受支持的运行时和包管理工具。`AGENTS.md` 与
+Deno 2.9 是受支持的运行时和包管理工具。`AGENTS.md` 与
 `.agents/skills/` 中仍在使用的项目规则对所有变更生效。
 
 更新 API 调用时，应在 API 边界把 `src/types/raw/` 的蛇形结构转换为

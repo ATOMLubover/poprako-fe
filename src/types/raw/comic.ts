@@ -57,7 +57,7 @@ export function unwrapRawComicInfo(raw: RawComicInfo): ComicInfo {
     lastActiveAt: raw.last_active_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as ComicInfo;
+  };
 }
 
 export interface RawCreateComicArgs {
@@ -76,7 +76,7 @@ export function unwrapRawCreateComicArgs(
     author: raw.author,
     description: raw.description,
     firstChapterTitle: raw.first_chapter_subtitle,
-  } as CreateComicArgs;
+  };
 }
 
 export interface RawCreateComicResult { id: string }
@@ -100,5 +100,5 @@ export function unwrapRawUpdateComicArgs(
     title: raw.title,
     author: raw.author,
     description: raw.description,
-  } as UpdateComicArgs;
+  };
 }

@@ -39,7 +39,7 @@ export function unwrapRawPageInfo(raw: RawPageInfo): PageInfo {
     creatorId: "",
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
-  } as PageInfo;
+  };
 }
 
 export interface RawAllocatedPage {

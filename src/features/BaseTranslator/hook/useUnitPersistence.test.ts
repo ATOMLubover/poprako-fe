@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/require-await */
 import { describe, expect, test, vi } from "vitest";
 
 import { buildUnitDiff, persistDirtyUnits } from "./useUnitPersistence";

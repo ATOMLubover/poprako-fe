@@ -53,6 +53,10 @@ export default defineConfig([
       "@typescript-eslint/consistent-type-exports": "error",
       "@typescript-eslint/no-import-type-side-effects": "error",
       "@typescript-eslint/prefer-readonly": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "unicorn/filename-case": "off",
       "unicorn/name-replacements": "off",
       "unicorn/no-null": "off",

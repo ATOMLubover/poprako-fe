@@ -18,9 +18,8 @@ function AssignmentCard({
   assignmentInfo,
   mode,
   onClick,
-  onLoadAssignments,
+  onLoadAssignments: _onLoadAssignments,
 }: AssignmentCardProps) {
-  void onLoadAssignments;
   const subtitle = assignmentInfo.chapter?.subtitle ?? "未指定章节";
 
   return (

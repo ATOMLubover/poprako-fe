@@ -422,10 +422,7 @@ function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
 
 const removeCombinedTypesetAssignment = fn(
   // eslint-disable-next-line @typescript-eslint/require-await
-  async (chapterId: string, userId: string, role: Role) => {
-    void chapterId;
-    void userId;
-    void role;
+  async (_chapterId: string, _userId: string, _role: Role) => {
     return { success: true as const, data: undefined };
   },
 );

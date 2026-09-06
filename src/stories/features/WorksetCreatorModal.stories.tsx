@@ -18,9 +18,8 @@ type Story = StoryObj<typeof WorksetCreatorModal>;
 export const Default: Story = {
   args: {
     teamId: "team-1",
-    onCreateWorkset: async (args: CreateWorksetArgs) => {
+    onCreateWorkset: async (_args: CreateWorksetArgs) => {
       await new Promise((r) => setTimeout(r, 800));
-      void args;
       return { success: true, data: "new-workset-id" };
     },
     onClose: () => {return;},
@@ -31,9 +30,8 @@ export const SubmitError: Story = {
   name: "提交失败",
   args: {
     teamId: "team-1",
-    onCreateWorkset: async (args: CreateWorksetArgs) => {
+    onCreateWorkset: async (_args: CreateWorksetArgs) => {
       await new Promise((r) => setTimeout(r, 800));
-      void args;
       return { success: false, error: "网络错误，请稍后重试" };
     },
     onClose: () => {return;},

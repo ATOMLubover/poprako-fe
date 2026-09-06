@@ -69,14 +69,6 @@ function InteractiveWorksetSidebar() {
   const [worksets, setWorksets] = useState<WorksetInfo[]>(mockWorksets);
   const [activeId, setActiveId] = useState("ws-1");
 
-  const handleDelete = (worksetId: string) => {
-    setWorksets((prev) => prev.filter((ws) => ws.id !== worksetId));
-    if (activeId === worksetId && worksets.length > 1) {
-      const next = worksets.find((ws) => ws.id !== worksetId);
-      if (next) {setActiveId(next.id);}
-    }
-  };
-
   const handleCreate = () => {
     const id = `ws-${String(Date.now())}`;
     const newWs: WorksetInfo = {
@@ -100,7 +92,6 @@ function InteractiveWorksetSidebar() {
         worksets={worksets}
         onClose={() => { return; }}
         onCreateWorkset={handleCreate}
-        onDeleteWorkset={handleDelete}
         onChangeWorkset={(id) => {
           setActiveId(id);
         }}
@@ -123,7 +114,6 @@ export const Empty: Story = {
         worksets={[]}
         onClose={() => { return; }}
         onCreateWorkset={() => { return; }}
-        onDeleteWorkset={() => { return; }}
         onChangeWorkset={() => { return; }}
       />
     </div>
@@ -139,7 +129,6 @@ export const SingleWorkset: Story = {
         worksets={[required(mockWorksets[0])]}
         onClose={() => { return; }}
         onCreateWorkset={() => { return; }}
-        onDeleteWorkset={() => { return; }}
         onChangeWorkset={() => { return; }}
       />
     </div>

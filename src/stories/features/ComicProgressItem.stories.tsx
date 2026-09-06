@@ -274,7 +274,7 @@ export const AllRolesFilled: Story = {
         assignedReviewerAt: now - 1000 * 60 * 60 * 2,
         createdAt: now,
         updatedAt: now,
-      } as AssignmentInfo,
+      },
       {
         id: "a-user-pub1",
         chapterId: "chapter-1",
@@ -292,7 +292,7 @@ export const AllRolesFilled: Story = {
         assignedPublisherAt: now - 1000 * 60 * 60 * 1,
         createdAt: now,
         updatedAt: now,
-      } as AssignmentInfo,
+      },
       {
         id: "a-user-rp1",
         chapterId: "chapter-1",
@@ -310,7 +310,7 @@ export const AllRolesFilled: Story = {
         assignedRawProviderAt: now - 1000 * 60 * 60 * 72,
         createdAt: now,
         updatedAt: now,
-      } as AssignmentInfo,
+      },
     ],
   ),
 };
