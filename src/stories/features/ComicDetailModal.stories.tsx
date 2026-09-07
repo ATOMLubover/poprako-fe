@@ -804,3 +804,37 @@ export const LoadError: Story = {
     },
   },
 };
+
+export const ArtworkActions: Story = {
+  name: "嵌稿上传（多分工管理员 · 最多操作）",
+  args: {
+    ...Default.args,
+    currentUserId: "u-admin",
+    onResolveActiveMember: () => makeMember("u-admin", "Mori", { assignedAdminAt: now }),
+    onLoadAssignments: (chapterId) => Promise.resolve({
+      success: true,
+      data: [{
+        ...required(makeAssignments(chapterId)[0]),
+        assignedRawProviderAt: now,
+        assignedTranslatorAt: now,
+        assignedTypesetterAt: now,
+      }],
+    }),
+    onDeleteChapterPages: fn(() => Promise.resolve({ success: true as const, data: undefined })),
+    onArchiveComic: fn(() => Promise.resolve({ success: true as const, data: undefined })),
+    onDeleteComic: fn(() => Promise.resolve({ success: true as const, data: undefined })),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const upload = await canvas.findByRole("button", { name: "上传嵌稿" });
+    await expect(canvas.queryByRole("button", { name: "只读查看" })).not.toBeInTheDocument();
+    await expect(canvas.getByRole("button", { name: "导入翻校" })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "清空页面" })).not.toBeInTheDocument();
+    await userEvent.click(upload);
+    const body = within(document.body);
+    await expect(await body.findByRole("dialog", { name: "上传嵌稿" })).toBeVisible();
+    await expect(body.getByRole("button", { name: "上传" })).toBeDisabled();
+    await expect(body.queryByText(/压缩/)).not.toBeInTheDocument();
+    await expect(body.queryByText(/请一次选齐/)).not.toBeInTheDocument();
+  },
+};

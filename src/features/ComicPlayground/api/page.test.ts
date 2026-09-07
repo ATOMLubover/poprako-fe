@@ -53,3 +53,18 @@ describe("page upload API", () => {
     expect(showToast).toHaveBeenCalledWith("对象存储校验消息", "error");
   });
 });
+
+// A signal can be cancelled before XHR has registered its event handlers.
+test("settles immediately when the upload signal is already aborted", async () => {
+  vi.stubGlobal("XMLHttpRequest", MockXmlHttpRequest);
+  const controller = new AbortController();
+  controller.abort();
+  try {
+    await expect(uploadToPresignedUrl(
+      "https://upload.example/artwork", new File(["xz"], "artwork.tar.xz"),
+      {}, undefined, controller.signal,
+    )).resolves.toEqual({ success: false, error: "上传已取消", failureKind: "aborted" });
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});

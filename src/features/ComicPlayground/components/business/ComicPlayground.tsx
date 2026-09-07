@@ -263,6 +263,7 @@ export default function ComicPlayground() {
   const handleAllocPageUpload = useCallback(
     async (args: {
       pageId: string;
+      rawIdent?: string | undefined;
       imageHash: string;
       newByteLen: number;
       extension: string;
@@ -273,7 +274,13 @@ export default function ComicPlayground() {
   );
 
   const handleExportChapter = useCallback(
-    async (chapterId: string, options?: { signal?: AbortSignal | undefined }) => {
+    async (
+      chapterId: string,
+      options?: {
+        signal?: AbortSignal | undefined;
+        withRawIdent?: boolean | undefined;
+      },
+    ) => {
       return exportChapter(chapterId, options);
     },
     [],
@@ -445,7 +452,9 @@ export default function ComicPlayground() {
         onUpdateWorkset={isAdmin ? handleUpdateWorkset : undefined}
         onLoadComics={handleLoadComics}
         onComicClick={openComicDetail}
-        onCreateComic={isAdmin ? () => { setComicCreatorTeamId(teamId); } : undefined}
+        onCreateComic={isAdmin && activeWorkset
+          ? () => { setComicCreatorTeamId(teamId); }
+          : undefined}
         onChangeFuzzyTitle={setActiveFuzzyTitle}
         activeFuzzyTitle={activeFuzzyTitle}
         activeUploadStatus={activeUploadStatus}

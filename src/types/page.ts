@@ -37,6 +37,7 @@ export type PageInfo = Page & {
 
 export interface PageImageInput {
   pageId?: string | undefined;
+  rawIdent?: string | undefined;
   imageHash: string;
   newByteLen?: number | undefined;
   extension: string;

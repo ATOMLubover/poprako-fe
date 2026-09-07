@@ -47,6 +47,7 @@ export async function allocChapterPages(
     chapter_id: args.chapterId,
     pages: args.pages.map((page) => ({
       page_id: page.pageId,
+      raw_ident: page.rawIdent,
       image_hash: page.imageHash,
       new_byte_len: page.newByteLen,
       ext: page.extension,
@@ -69,12 +70,14 @@ export async function allocChapterPages(
 
 interface AllocExistingPageUploadArgs {
   pageId: string;
+  rawIdent?: string | undefined;
   imageHash: string;
   newByteLen: number;
   extension: string;
 }
 
 interface RawAllocExistingPageUploadArgs {
+  raw_ident?: string | undefined;
   image_hash: string;
   new_byte_len: number;
   ext: string;
@@ -87,6 +90,7 @@ export async function allocExistingPageUpload(
   args: AllocExistingPageUploadArgs,
 ): Promise<Result<AllocExistingPageUploadResult>> {
   const rawArgs: RawAllocExistingPageUploadArgs = {
+    raw_ident: args.rawIdent,
     image_hash: args.imageHash,
     new_byte_len: args.newByteLen,
     ext: args.extension,
@@ -213,7 +217,7 @@ export async function uploadToPresignedUrl(
     xhr.timeout = 8 * 60_000; // 8 分钟超时，容纳对象存储完成写入与响应。
     signal?.addEventListener("abort", abortUpload, { once: true });
     if (signal?.aborted) {
-      abortUpload();
+      finish({ success: false, error: "上传已取消", failureKind: "aborted" });
       return;
     }
 

@@ -101,6 +101,7 @@ export interface ComicDetailModalProps {
   onDeleteChapterPages?: ((chapterId: string) => Promise<Result<void>>) | undefined;
   onAllocPageUpload?: ((args: {
     pageId: string;
+    rawIdent?: string | undefined;
     imageHash: string;
     newByteLen: number;
     extension: string;
@@ -113,7 +114,10 @@ export interface ComicDetailModalProps {
   }) => Promise<Result<ImportChapterResult>>) | undefined;
   onExportChapter?: ((
     chapterId: string,
-    options?: { signal?: AbortSignal | undefined },
+    options?: {
+      signal?: AbortSignal | undefined;
+      withRawIdent?: boolean | undefined;
+    },
   ) => Promise<Result<ChapterExports>>) | undefined;
   onArchiveComic?: ((comicId: string) => Promise<Result<void>>) | undefined;
   onDeleteComic?: ((comicId: string) => Promise<Result<void>>) | undefined;

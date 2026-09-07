@@ -393,6 +393,7 @@ describe("chapter API", () => {
     const exportFetch = installFetch(Promise.resolve(
       Response.json({
         label_plus: "text",
+        raw_idents: null,
         poprako: {
           comic_id: "comic_1",
           comic_title: "Comic",
@@ -411,6 +412,7 @@ describe("chapter API", () => {
       success: true,
       data: {
         labelPlus: "text",
+        rawIdents: [],
         poprako: {
           comicId: "comic_1",
           comicTitle: "Comic",
@@ -449,5 +451,30 @@ describe("chapter API", () => {
     });
     expect(showToast).toHaveBeenCalledOnce();
     expect(showToast).toHaveBeenCalledWith("导出参数无效", "error");
+  });
+
+  test("requests original image names when exporting", async () => {
+    const fetchMock = installFetch(Promise.resolve(Response.json({
+      label_plus: "text",
+      raw_idents: [{ page_id: "page_1", raw_ident: "原稿 01.PNG" }],
+      poprako: {
+        comic_id: "comic_1",
+        comic_title: "Comic",
+        chapter_id: "chapter_1",
+        chapter_index: 0,
+        chapter_subtitle: "Chapter",
+        pages: [],
+      },
+    })));
+
+    const result = await exportChapter("chapter_1", { withRawIdent: true });
+
+    expect(lastFetchCall(fetchMock).url).toBe(
+      "/api/v1/chapters/chapter_1/translations/export" +
+        "?format=poprako,label_plus&with_raw_ident=true",
+    );
+    expect(result.success && result.data.rawIdents).toEqual([
+      { pageId: "page_1", rawIdent: "原稿 01.PNG" },
+    ]);
   });
 });

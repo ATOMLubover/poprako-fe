@@ -114,6 +114,7 @@ describe("page upload coordinator", () => {
           extension: "png",
         },
         {
+          rawIdent: "001.png",
           imageHash: "new-hash",
           newByteLen: 1,
           extension: "png",
@@ -143,6 +144,7 @@ describe("page upload coordinator", () => {
     expect(apiMocks.allocChapterPages).toHaveBeenCalledWith({
       chapterId: "chapter-1",
       pages: [{
+        rawIdent: "oversized.png",
         imageHash: "oversized-hash",
         newByteLen: oversizedByteLength,
         extension: "png",
@@ -210,6 +212,7 @@ describe("page upload coordinator", () => {
       pages: [
         {
           pageId: "page-pending",
+          rawIdent: "001.png",
           imageHash: "pending-hash",
           newByteLen: 1,
           extension: "png",
@@ -265,6 +268,7 @@ describe("page upload coordinator", () => {
       pages: [
         {
           pageId: "page-uploaded",
+          rawIdent: "001.png",
           imageHash: "uploaded-hash",
           newByteLen: 1,
           extension: "png",
@@ -375,6 +379,7 @@ describe("page upload coordinator", () => {
     expect(apiMocks.allocExistingPageUpload).toHaveBeenCalledTimes(2);
     expect(apiMocks.allocExistingPageUpload).toHaveBeenCalledWith({
       pageId: "page-1",
+      rawIdent: "001.png",
       imageHash: "hash-page-1",
       newByteLen: 1,
       extension: "png",
