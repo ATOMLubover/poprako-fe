@@ -85,7 +85,7 @@ export function useComicDetailAssignments({
 
   const reloadAssignments = useCallback(async () => {
     if (!selectedChapterId) {return null;}
-    setIsAssignmentsLoading(true);
+    // Keep existing avatars mounted during refresh; loading skeletons are for chapter loads.
     try {
       const refreshed = await onLoadAssignments(selectedChapterId);
       if (!refreshed.success) {
@@ -99,8 +99,6 @@ export function useComicDetailAssignments({
       console.error("[ComicDetailModal] 刷新分工异常:", error); // eslint-disable-line no-console
       showLocalCaughtError(error, showToast, "刷新分工失败");
       return null;
-    } finally {
-      setIsAssignmentsLoading(false);
     }
   }, [onLoadAssignments, selectedChapterId, showToast]);
 
@@ -250,17 +248,23 @@ export function useComicDetailAssignments({
     async (userId: string) => {
       if (!selectedChapterId || !memberSelectorRole || !onAddAssignment) {return;}
       setIsAddingAssignment(true);
-      const result = await onAddAssignment(selectedChapterId, userId, memberSelectorRole);
-      setIsAddingAssignment(false);
+      try {
+        const result = await onAddAssignment(selectedChapterId, userId, memberSelectorRole);
 
-      if (!result.success) {
-        showLocalApiFailure(result, showToast);
-        return;
+        if (!result.success) {
+          showLocalApiFailure(result, showToast);
+          return;
+        }
+
+        await reloadAssignments();
+        onWorkflowRecordsChanged?.();
+        setMemberSelectorRole(null);
+      } catch (error) {
+        console.error("[ComicDetailModal] 添加分工异常:", error); // eslint-disable-line no-console
+        showLocalCaughtError(error, showToast, "添加分工失败");
+      } finally {
+        setIsAddingAssignment(false);
       }
-
-      await reloadAssignments();
-      onWorkflowRecordsChanged?.();
-      setMemberSelectorRole(null);
     },
     [
       memberSelectorRole,
