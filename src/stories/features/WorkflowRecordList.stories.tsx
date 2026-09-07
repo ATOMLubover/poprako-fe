@@ -67,6 +67,19 @@ function makeState(
 }
 
 const ALL_EVENT_RECORDS: ChapterWorkflowRecord[] = [
+  makeRecord("record_12", {
+    kind: "stage_transitioned",
+    data: {
+      stage: "typeset_redraw",
+      previousPhase: "active",
+      nextPhase: "completed",
+      origin: "artwork_upload",
+    },
+  }, { actorUserId: "actor_translator", createdAt: NOW }),
+  makeRecord("record_11", {
+    kind: "artwork_exported",
+    data: { artworkVersion: 7 },
+  }, { actorUserId: "actor_translator", createdAt: NOW - 5 * 60_000 }),
   makeRecord("record_10", {
     kind: "stage_transitioned",
     data: {
@@ -241,17 +254,19 @@ export default meta;
 type Story = StoryObj<typeof WorkflowRecordList>;
 
 export const AllEvents: Story = {
-  name: "全部 10 种事件",
+  name: "全部 11 种事件与来源",
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const items = await canvas.findAllByRole("listitem");
-    await expect(items).toHaveLength(10);
+    await expect(items).toHaveLength(12);
     for (const item of items) {
       await expect(item.querySelectorAll("p")).toHaveLength(1);
     }
     await expect(canvas.getByText("创建了章节")).toBeInTheDocument();
     await expect(canvas.getByText("翻校数据导出")).toBeInTheDocument();
     await expect(canvas.getByText("翻校数据导入")).toBeInTheDocument();
+    await expect(canvas.getByText("嵌稿上传推进")).toBeInTheDocument();
+    await expect(canvas.getByText("嵌稿导出")).toBeInTheDocument();
     await expect(canvasElement.querySelectorAll("[data-workflow-variable]").length)
       .toBeGreaterThan(10);
   },

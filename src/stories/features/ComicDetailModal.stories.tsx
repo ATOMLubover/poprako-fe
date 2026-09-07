@@ -314,6 +314,31 @@ function delay(ms: number) {
 function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
   return [
     {
+      id: `${chapterId}-record-12`,
+      chapterId,
+      actorUserId: "u-aki",
+      event: {
+        kind: "stage_transitioned",
+        data: {
+          stage: "typeset_redraw",
+          previousPhase: "active",
+          nextPhase: "completed",
+          origin: "artwork_upload",
+        },
+      },
+      createdAt: now - 1000 * 60,
+    },
+    {
+      id: `${chapterId}-record-11`,
+      chapterId,
+      actorUserId: "u-aki",
+      event: {
+        kind: "artwork_exported",
+        data: { artworkVersion: 7 },
+      },
+      createdAt: now - 1000 * 60 * 2,
+    },
+    {
       id: `${chapterId}-record-10`,
       chapterId,
       actorUserId: "u-aki",
@@ -693,6 +718,8 @@ export const WorkflowTimeline: Story = {
       "翻译阶段已完成： Aki 翻校数据导入推进",
     );
     await expect(record?.querySelectorAll("p")).toHaveLength(1);
+    await expect(canvas.getByText("嵌稿上传推进")).toBeInTheDocument();
+    await expect(canvas.getByText("嵌稿导出")).toBeInTheDocument();
     await expect(canvas.queryByText("总管")).not.toBeInTheDocument();
   },
 };

@@ -116,6 +116,31 @@ describe("chapter API", () => {
   test("lists and unwraps every adjacent-tagged workflow event", async () => {
     const fetchMock = installFetch(okJson([
       {
+        id: "record_12",
+        chapter_id: "chapter_1",
+        actor_user_id: "user_2",
+        event: {
+          kind: "artwork_exported",
+          data: { artwork_version: 7 },
+        },
+        created_at: 12,
+      },
+      {
+        id: "record_11",
+        chapter_id: "chapter_1",
+        actor_user_id: "user_2",
+        event: {
+          kind: "stage_transitioned",
+          data: {
+            stage: "typeset_redraw",
+            previous_phase: "active",
+            next_phase: "completed",
+            origin: "artwork_upload",
+          },
+        },
+        created_at: 11,
+      },
+      {
         id: "record_10",
         chapter_id: "chapter_1",
         actor_user_id: "user_1",
@@ -241,6 +266,31 @@ describe("chapter API", () => {
     expect(result).toEqual({
       success: true,
       data: [
+        {
+          id: "record_12",
+          chapterId: "chapter_1",
+          actorUserId: "user_2",
+          event: {
+            kind: "artwork_exported",
+            data: { artworkVersion: 7 },
+          },
+          createdAt: 12,
+        },
+        {
+          id: "record_11",
+          chapterId: "chapter_1",
+          actorUserId: "user_2",
+          event: {
+            kind: "stage_transitioned",
+            data: {
+              stage: "typeset_redraw",
+              previousPhase: "active",
+              nextPhase: "completed",
+              origin: "artwork_upload",
+            },
+          },
+          createdAt: 11,
+        },
         {
           id: "record_10",
           chapterId: "chapter_1",

@@ -58,6 +58,12 @@ export type RawChapterWorkflowRecordEvent =
       };
     }
   | {
+      kind: "artwork_exported";
+      data: {
+        artwork_version: number;
+      };
+    }
+  | {
       kind: "stage_transitioned";
       data: {
         stage: ChapterWorkflowRecordStage;
@@ -143,6 +149,14 @@ export function unwrapRawChapterWorkflowRecordEvent(
             labelPlus: event.data.formats.label_plus,
             poprako: event.data.formats.poprako,
           },
+        },
+      };
+    }
+    case "artwork_exported": {
+      return {
+        kind: event.kind,
+        data: {
+          artworkVersion: event.data.artwork_version,
         },
       };
     }

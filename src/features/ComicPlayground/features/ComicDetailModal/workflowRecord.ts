@@ -102,6 +102,9 @@ function stageOriginLabel(
     case "raw_provide_check": {
       return "图源完整性检查推进";
     }
+    case "artwork_upload": {
+      return "嵌稿上传推进";
+    }
     default: {
       return assertNever(origin);
     }
@@ -215,6 +218,16 @@ export function presentWorkflowRecordEvent(
         ],
       };
     }
+    case "artwork_exported": {
+      return {
+        title: [fixed("嵌稿导出")],
+        detail: [
+          fixed("导出了第 "),
+          variable(String(event.data.artworkVersion)),
+          fixed(" 版嵌稿"),
+        ],
+      };
+    }
     case "stage_transitioned": {
       return stageTransitionPresentation(event);
     }
@@ -273,6 +286,7 @@ export function workflowRecordUserIds(
     case "chapter_unpinned":
     case "translation_imported":
     case "translation_exported":
+    case "artwork_exported":
     case "stage_transitioned": {
       return ids;
     }

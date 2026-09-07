@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { ChevronDown, FileArchive, FolderOpen, Wrench } from "lucide-react";
 import clsx from "clsx";
-import type { ArchiveMode } from "../../archive";
 import ArchiveTool from "./ArchiveTool";
+import BoundedCompressionTool from "./BoundedCompressionTool";
 
 const archiveTools = [
   { id: "compress", label: "打包并压缩嵌稿" },
   { id: "extract", label: "解压并解包嵌稿" },
+  { id: "bounded", label: "定界压缩" },
 ] as const;
 
 export default function Utilities() {
-  const [mode, setMode] = useState<ArchiveMode>("compress");
+  const [mode, setMode] = useState<(typeof archiveTools)[number]["id"]>("compress");
 
   return (
     <div className={clsx(
@@ -56,7 +57,7 @@ export default function Utilities() {
         </nav>
         {archiveTools.map((item) => (
           <div key={item.id} hidden={mode !== item.id} className="min-h-0 min-w-0 flex-1">
-            <ArchiveTool mode={item.id} />
+            {item.id === "bounded" ? <BoundedCompressionTool /> : <ArchiveTool mode={item.id} />}
           </div>
         ))}
       </div>
