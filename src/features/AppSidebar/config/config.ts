@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, BookOpen, Mail, Settings } from "lucide-react";
+import { LayoutDashboard, Users, BookOpen, Mail, Settings, Wrench } from "lucide-react";
 import type { NavConfig, TeamConfig } from "../types/types";
 
 export const mainNavConfigs: NavConfig[] = [
@@ -27,6 +27,13 @@ export const mainNavConfigs: NavConfig[] = [
     path: "/system-mail",
   },
 ];
+
+export const utilityNavConfig: NavConfig = {
+  id: "utilities",
+  label: "实用工具",
+  icon: Wrench,
+  path: "/utilities",
+};
 
 export const footerNavConfig: NavConfig = {
   id: "settings",
