@@ -18,9 +18,10 @@ export default defineConfig({
     include: [
       "@zip.js/zip.js",
       "modern-tar",
-      "node-liblzma/wasm",
-      "node-liblzma/wasm/liblzma.js",
     ],
+    // The archive Worker is loaded on demand. Serving this ESM package directly avoids stale
+    // pre-bundle URLs returning 504 when the optimizer has changed since the page was opened.
+    exclude: ["node-liblzma"],
   },
   resolve: {
     alias: {

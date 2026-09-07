@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useCallback } from "react";
 import type { NavId, TeamConfig } from "../../types/types";
-import { mainNavConfigs, footerNavConfig } from "../../config/config";
+import { mainNavConfigs, footerNavConfig, utilityNavConfig } from "../../config/config";
 import { useAppStore } from "@/store/app";
 import { updateTeam } from "@/api/team";
 import { hasRole } from "@/types/role";
@@ -16,6 +16,7 @@ import SettingsFooter from "./SettingsFooter";
 const navPathMap: Record<NavId, string> = {
   ...Object.fromEntries(mainNavConfigs.map((c) => [c.id, c.path])),
   settings: footerNavConfig.path,
+  utilities: utilityNavConfig.path,
 } as Record<NavId, string>;
 
 const pathNavMap: Record<string, NavId> = Object.fromEntries(
@@ -122,6 +123,12 @@ export default function AppSidebar() {
               hasBadge={item.id === "system-mail" && hasUnread}
             />
           ))}
+          <NavItem
+            icon={utilityNavConfig.icon}
+            label={utilityNavConfig.label}
+            isActive={activeNavId === "utilities"}
+            onClick={() => { handleNavSelect("utilities"); }}
+          />
         </>
       }
       footer={
