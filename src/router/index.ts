@@ -66,6 +66,10 @@ export const router = createBrowserRouter([
         element: lazyElement(() => import("@/pages/SystemMailPage")),
       },
       {
+        path: "utilities",
+        element: lazyElement(() => import("@/pages/UtilitiesPage")),
+      },
+      {
         path: "settings",
         element: lazyElement(() => import("@/pages/SettingsPage")),
       },

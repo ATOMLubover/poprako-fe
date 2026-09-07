@@ -5,6 +5,7 @@ export type NavId =
   | "comic-playground"
   | "member-list"
   | "system-mail"
+  | "utilities"
   | "settings";
 
 export interface NavConfig {
