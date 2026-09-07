@@ -148,7 +148,8 @@ export default function ArchiveOutput({ tool, isCompress }: Props) {
                               "relative flex h-9 cursor-pointer select-none items-center",
                               "rounded-sm px-3 pr-8 text-sm text-slate-600 outline-none",
                               "data-[highlighted]:bg-green-50 data-[highlighted]:text-green-600",
-                              "data-[state=checked]:font-semibold data-[state=checked]:text-green-600",
+                              "data-[state=checked]:font-semibold",
+                              "data-[state=checked]:text-green-600",
                             )}
                           >
                             <Select.ItemText>{option.text}</Select.ItemText>
