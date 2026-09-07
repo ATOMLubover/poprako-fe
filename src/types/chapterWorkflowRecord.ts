@@ -20,7 +20,8 @@ export type ChapterWorkflowRecordOrigin =
   | "unit_edit"
   | "translation_import"
   | "translation_export"
-  | "raw_provide_check";
+  | "raw_provide_check"
+  | "artwork_upload";
 
 export type ChapterWorkflowRecordEvent =
   | { kind: "chapter_created" }
@@ -69,6 +70,7 @@ export type ChapterWorkflowRecordEvent =
         formats: ChapterWorkflowRecordExportFormats;
       };
     }
+  | { kind: "artwork_exported" }
   | {
       kind: "stage_transitioned";
       data: {

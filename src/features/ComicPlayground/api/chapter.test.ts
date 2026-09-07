@@ -227,16 +227,41 @@ describe("chapter API", () => {
         },
         created_at: 1,
       },
+      {
+        id: "record_artwork_export",
+        chapter_id: "chapter_1",
+        actor_user_id: "user_2",
+        event: {
+          kind: "artwork_exported",
+          data: { artwork_version: 7 },
+        },
+        created_at: 0,
+      },
+      {
+        id: "record_artwork_upload",
+        chapter_id: "chapter_1",
+        actor_user_id: "user_2",
+        event: {
+          kind: "stage_transitioned",
+          data: {
+            stage: "typeset_redraw",
+            previous_phase: "active",
+            next_phase: "completed",
+            origin: "artwork_upload",
+          },
+        },
+        created_at: 0,
+      },
     ]));
 
     const result = await listChapterWorkflowRecords({
       chapterId: "chapter_1",
       offset: 20,
-      limit: 10,
+      limit: 12,
     });
 
     expect(lastFetchCall(fetchMock).url).toBe(
-      "/api/v1/chapters/chapter_1/workflow-records?offset=20&limit=10",
+      "/api/v1/chapters/chapter_1/workflow-records?offset=20&limit=12",
     );
     expect(result).toEqual({
       success: true,
@@ -349,6 +374,30 @@ describe("chapter API", () => {
             },
           },
           createdAt: 1,
+        },
+        {
+          id: "record_artwork_export",
+          chapterId: "chapter_1",
+          actorUserId: "user_2",
+          event: {
+            kind: "artwork_exported",
+          },
+          createdAt: 0,
+        },
+        {
+          id: "record_artwork_upload",
+          chapterId: "chapter_1",
+          actorUserId: "user_2",
+          event: {
+            kind: "stage_transitioned",
+            data: {
+              stage: "typeset_redraw",
+              previousPhase: "active",
+              nextPhase: "completed",
+              origin: "artwork_upload",
+            },
+          },
+          createdAt: 0,
         },
       ],
     });

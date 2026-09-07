@@ -6,6 +6,13 @@ export interface ArtworkAllocation {
   slot: { putUrl: string; headers: Record<string, string> } | null;
 }
 
+export interface ArtworkExport {
+  artworkVersion: number;
+  artworkHash: string;
+  extension: string;
+  downloadUrl: string;
+}
+
 export async function allocArtwork(
   chapterId: string,
   artworkHash: string,
@@ -36,4 +43,25 @@ export function markArtworkUploaded(chapterId: string, artworkVersion: number) {
     `/chapters/${chapterId}/artwork/mark-uploaded`,
     { artwork_version: artworkVersion },
   );
+}
+
+export async function exportArtwork(
+  chapterId: string,
+): Promise<Result<ArtworkExport>> {
+  const result = await api.get<{
+    artwork_version: number;
+    artwork_hash: string;
+    ext: string;
+    download_url: string;
+  }>(`/chapters/${chapterId}/artwork/export`);
+  if (!result.success) {return result;}
+  return {
+    success: true,
+    data: {
+      artworkVersion: result.data.artwork_version,
+      artworkHash: result.data.artwork_hash,
+      extension: result.data.ext,
+      downloadUrl: result.data.download_url,
+    },
+  };
 }

@@ -78,6 +78,12 @@ describe("formatWorkflowRecordEvent", () => {
     ],
     [
       {
+        kind: "artwork_exported",
+      },
+      "嵌稿导出：导出了嵌稿",
+    ],
+    [
+      {
         kind: "stage_transitioned",
         data: {
           stage: "translate",
@@ -104,6 +110,18 @@ describe("formatWorkflowRecordEvent", () => {
     })).toBe("嵌字阶段已开始：手动推进");
   });
 
+  test("formats artwork upload as the typesetting transition origin", () => {
+    expect(formatWorkflowRecordEvent({
+      kind: "stage_transitioned",
+      data: {
+        stage: "typeset_redraw",
+        previousPhase: "active",
+        nextPhase: "completed",
+        origin: "artwork_upload",
+      },
+    })).toBe("嵌字阶段已完成：嵌稿上传推进");
+  });
+
   test("marks every displayed import payload value as variable", () => {
     const presentation = presentWorkflowRecordEvent({
       kind: "translation_imported",
@@ -120,6 +138,7 @@ describe("formatWorkflowRecordEvent", () => {
       { text: "120", variable: true },
     ]);
   });
+
 });
 
 describe("workflow record metadata", () => {

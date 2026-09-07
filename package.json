@@ -20,7 +20,7 @@
     "check": "tsc -b && eslint . --max-warnings 0",
     "preview": "vite preview",
     "test:unit": "vitest run --config vitest.unit.config.ts",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "npm_config_user_agent=npm/10.0.0 storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "dependencies": {

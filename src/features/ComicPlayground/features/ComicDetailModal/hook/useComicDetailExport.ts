@@ -503,12 +503,12 @@ export function useComicDetailExport({
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFile = event.target.files?.[0];
       event.target.value = "";
-      if (!selectedFile || !selectedChapterId || !onImportChapter) {return;}
+      if (!selectedFile || !selectedChapterId || !onImportChapter) {return false;}
 
       const format = detectImportFormat(selectedFile);
       if (!format) {
         showToast("仅支持 .json 或 .txt 文件", "error");
-        return;
+        return false;
       }
 
       setIsImportingData(true);
@@ -522,7 +522,7 @@ export function useComicDetailExport({
 
         if (!result.success) {
           showLocalApiFailure(result, showToast);
-          return;
+          return false;
         }
 
         await Promise.all([reloadCurrentPages(), reloadLoadedChapters()]);
@@ -533,9 +533,11 @@ export function useComicDetailExport({
           + `${String(result.data.importedUnitCount)} 单元`,
           "success",
         );
+        return true;
       } catch (error) {
         console.error("[ComicDetailModal] 导入章节数据异常:", error); // eslint-disable-line no-console
         showLocalCaughtError(error, showToast, "导入失败");
+        return false;
       } finally {
         setIsImportingData(false);
       }

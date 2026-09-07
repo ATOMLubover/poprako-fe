@@ -1,7 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import clsx from "clsx";
-import { FileArchive, Image as ImageIcon, Images } from "lucide-react";
-import { Switch } from "radix-ui";
 import { canApplyWorkflowTransition, type ChapterInfo } from "@/types/chapter";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
@@ -9,19 +6,21 @@ import type { Role } from "@/types/role";
 import type { WorkflowTransition } from "@/features/ComicPlayground/types/chapter";
 import { useToastStore } from "@/components/ui/NotificationToast/hooks";
 import { showLocalApiFailure } from "@/api/util";
+import { exportArtwork } from "@/features/ComicPlayground/api/artwork";
 import { useAppStore } from "@/store/app";
 import PageList from "@/features/PageList/components/business/PageList";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import ComicDetailModalLayout from "../../layout/ComicDetailModalLayout";
 import AssignmentGroup from "./AssignmentGroup";
-import ArtworkUploadDialog from "./ArtworkUploadDialog";
+import UploadDataDialog from "./UploadDataDialog";
 import { canUploadArtwork } from "../../artworkUpload";
 import ComicDetailContent, { type ComicDetailView } from "./ComicDetailContent";
 import ComicDetailHeader from "./ComicDetailHeader";
 import ComicDetailSidebar from "./ComicDetailSidebar";
 import ComicModifierModal from "./ComicModifierModal";
 import ChapterModifierModal from "./ChapterModifierModal";
+import DownloadDataDialog from "./DownloadDataDialog";
 import ExportProgressDialog from "./ExportProgressDialog";
 import MemberSelectorModal from "./MemberSelectorModal";
 import WorkflowPanel from "./WorkflowPanel";
@@ -69,14 +68,14 @@ export default function ComicDetailModal({
   onClose,
 }: ComicDetailModalProps) {
   const { showToast } = useToastStore();
-  const [artworkChapter, setArtworkChapter] = useState<ChapterInfo | null>(null);
+  const [uploadChapter, setUploadChapter] = useState<ChapterInfo | null>(null);
   const accessToken = useAppStore((s) => s.accessToken);
   const [activeMember, setActiveMember] = useState<MemberInfo | null>(null);
   const [activeView, setActiveView] = useState<ComicDetailView>("pages");
   const [pendingConfirmAction, setPendingConfirmAction] = useState<
     "delete-pages" | "archive-comic" | "delete-comic" | "export-data" | null
   >(null);
-  const [useRawImageNames, setUseRawImageNames] = useState(false);
+  const [isDownloadingArtwork, setIsDownloadingArtwork] = useState(false);
   const [isArchivingComic, setIsArchivingComic] = useState(false);
   const [isDeletingComic, setIsDeletingComic] = useState(false);
   const [showComicModifier, setShowComicModifier] = useState(false);
@@ -263,6 +262,8 @@ export default function ComicDetailModal({
     Boolean(selectedChapterId) &&
     Boolean(onAddPages);
   const canReuploadRawPages = canUploadRawPages && Boolean(onAllocPageUpload);
+  const canUploadTranslation = canTranslateOrProofread && Boolean(onImportChapter);
+  const isArtworkUploadAllowed = canUploadArtwork(selectedChapter, currentAssignment);
   const canClickPage = canTranslateOrProofread || canReadOnly;
 
   const handleTransition = async (
@@ -329,6 +330,35 @@ export default function ComicDetailModal({
     showToast("漫画归档成功", "success");
   };
 
+  const handleDownloadArtwork = async () => {
+    if (!selectedChapter) {return;}
+
+    setIsDownloadingArtwork(true);
+    try {
+      const result = await exportArtwork(selectedChapter.id);
+      if (!result.success) {
+        console.error("[ComicDetailModal] 下载嵌稿失败:", result); // eslint-disable-line no-console
+        showLocalApiFailure(result, showToast, "嵌稿下载失败");
+        return;
+      }
+
+      const link = document.createElement("a");
+      link.href = result.data.downloadUrl;
+      link.download = `第 ${String(selectedChapter.index + 1)} 话-嵌稿.${result.data.extension}`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      handleWorkflowRecordsChanged();
+      setPendingConfirmAction(null);
+      showToast("嵌稿下载已开始", "success");
+    } catch (error) {
+      console.error("[ComicDetailModal] 下载嵌稿异常:", error); // eslint-disable-line no-console
+      showToast("嵌稿下载失败", "error");
+    } finally {
+      setIsDownloadingArtwork(false);
+    }
+  };
+
   const handleUpdateChapterLocal = useCallback(
     (chapterId: string, subtitle?: string) => {
       setChapters((prev) =>
@@ -378,11 +408,11 @@ export default function ComicDetailModal({
       comicInfo={comicInfo}
       selectedChapter={selectedChapter}
       pagesLength={pages.length}
-      canUploadArtwork={canUploadArtwork(selectedChapter, currentAssignment)}
-      onUploadArtwork={() => { if (selectedChapter) {setArtworkChapter(selectedChapter);} }}
+      canUploadTranslation={canUploadTranslation}
+      canUploadArtwork={isArtworkUploadAllowed}
+      onUploadData={() => { if (selectedChapter) {setUploadChapter(selectedChapter);} }}
       canReadOnly={canReadOnly}
       canUploadCover={canUploadCover}
-      canTranslateOrProofread={canTranslateOrProofread}
       canDeleteChapterPages={canDeleteChapterPages}
       canArchiveComic={isTeamAdmin && Boolean(onArchiveComic)}
       isTeamAdmin={isTeamAdmin && Boolean(onDeleteComic)}
@@ -390,7 +420,7 @@ export default function ComicDetailModal({
       isArchivingComic={isArchivingComic}
       isDeletingComic={isDeletingComic}
       isExportingData={isExportingData}
-      isImportingData={isImportingData}
+      isUploadingData={isImportingData}
       onNavigateReadOnly={
         canReadOnly && selectedChapterId && onNavigateToTranslator
           ? () => {
@@ -405,11 +435,6 @@ export default function ComicDetailModal({
       }
       onExport={
         onExportChapter ? () => { setPendingConfirmAction("export-data"); } : undefined
-      }
-      onImportFileChange={
-        onImportChapter
-          ? (event) => { void handleImportFileChange(event); }
-          : undefined
       }
       onDeletePages={() => { setPendingConfirmAction("delete-pages"); }}
       onArchiveComic={() => { setPendingConfirmAction("archive-comic"); }}
@@ -504,12 +529,17 @@ export default function ComicDetailModal({
 
   return (
     <>
-      {artworkChapter && (
-        <ArtworkUploadDialog
-          chapterId={artworkChapter.id}
-          chapterLabel={`第 ${String(artworkChapter.index + 1)} 话 · ${artworkChapter.subtitle}`}
-          onClose={() => { setArtworkChapter(null); }}
-          onUploaded={() => {
+      {uploadChapter && (canUploadTranslation || isArtworkUploadAllowed) && (
+        <UploadDataDialog
+          chapterId={uploadChapter.id}
+          chapterLabel={`第 ${String(uploadChapter.index + 1)} 话 · ${uploadChapter.subtitle}`}
+          canUploadTranslation={canUploadTranslation}
+          canUploadArtwork={isArtworkUploadAllowed}
+          isImportingTranslation={isImportingData}
+          onImportTranslation={onImportChapter ? handleImportFileChange : undefined}
+          onClose={() => { setUploadChapter(null); }}
+          onArtworkUploaded={() => {
+            setUploadChapter(null);
             void reloadLoadedChapters();
             handleWorkflowRecordsChanged();
           }}
@@ -585,86 +615,18 @@ export default function ComicDetailModal({
         />
       )}
       {pendingConfirmAction === "export-data" && (
-        <ConfirmDialog
-          title="下载数据"
-          hideFooter
-          onCancel={() => { setPendingConfirmAction(null); }}
-        >
-          <div className="px-5 pb-5 pt-1">
-            <div
-              className={clsx(
-                "mb-3 flex h-8 items-center gap-2 rounded-lg px-2",
-                "text-xs font-medium text-slate-500 hover:bg-slate-50",
-              )}
-            >
-              <ImageIcon size={14} className="text-slate-400" />
-              <label
-                htmlFor="export-raw-image-names"
-                className="flex-1 cursor-pointer"
-              >
-                使用原始图片名
-              </label>
-              <Switch.Root
-                id="export-raw-image-names"
-                checked={useRawImageNames}
-                onCheckedChange={setUseRawImageNames}
-                className={clsx(
-                  "relative h-4.5 w-8 rounded-full bg-slate-200 transition-colors",
-                  "data-[state=checked]:bg-(--primary)",
-                )}
-              >
-                <Switch.Thumb
-                  className={clsx(
-                    "block size-3.5 translate-x-0.5 rounded-full bg-white shadow-sm",
-                    "transition-transform data-[state=checked]:translate-x-4",
-                  )}
-                />
-              </Switch.Root>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setPendingConfirmAction(null);
-                  void handleExportData({
-                    includeImages: false,
-                    withRawIdent: useRawImageNames,
-                  });
-                }}
-                className={clsx(
-                  "flex flex-1 items-center justify-center gap-1 py-2",
-                  "rounded-lg text-xs font-semibold",
-                  "transition-all duration-200 active:scale-[0.98]",
-                  "border border-slate-100 bg-slate-50 text-slate-500",
-                  "hover:bg-slate-100",
-                )}
-              >
-                <FileArchive size={14} />
-                仅翻校数据
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPendingConfirmAction(null);
-                  void handleExportData({
-                    includeImages: true,
-                    withRawIdent: useRawImageNames,
-                  });
-                }}
-                className={clsx(
-                  "flex flex-1 items-center justify-center gap-1 py-2",
-                  "rounded-lg text-xs font-semibold",
-                  "transition-all duration-200 active:scale-[0.98]",
-                  "border border-green-200 bg-green-50 text-green-600",
-                  "hover:bg-green-100",
-                )}
-              >
-                <Images size={14} />
-                包含图源
-              </button>
-            </div>
-          </div>
-        </ConfirmDialog>
+        <DownloadDataDialog
+          isDownloadingArtwork={isDownloadingArtwork}
+          onDownloadTranslation={({ isIncludeImages, isUsingRawIdent }) => {
+            setPendingConfirmAction(null);
+            void handleExportData({
+              includeImages: isIncludeImages,
+              withRawIdent: isUsingRawIdent,
+            });
+          }}
+          onDownloadArtwork={() => { void handleDownloadArtwork(); }}
+          onClose={() => { setPendingConfirmAction(null); }}
+        />
       )}
       {showComicModifier && onUpdateComic && (
         <ComicModifierModal

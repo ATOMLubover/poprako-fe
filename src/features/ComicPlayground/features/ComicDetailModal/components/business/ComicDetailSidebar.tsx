@@ -1,10 +1,9 @@
 import type { RefObject } from "react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Archive,
   BookOpen,
   CheckSquare,
-  CloudUpload,
   Download,
   Eraser,
   Image as ImageIcon,
@@ -27,11 +26,11 @@ interface Props {
   comicInfo: ComicInfo;
   selectedChapter?: ChapterInfo | undefined;
   pagesLength: number;
+  canUploadTranslation: boolean;
   canUploadArtwork: boolean;
-  onUploadArtwork: () => void;
+  onUploadData: () => void;
   canReadOnly: boolean;
   canUploadCover: boolean;
-  canTranslateOrProofread: boolean;
   canDeleteChapterPages: boolean;
   canArchiveComic: boolean;
   isTeamAdmin: boolean;
@@ -39,10 +38,9 @@ interface Props {
   isArchivingComic: boolean;
   isDeletingComic: boolean;
   isExportingData: boolean;
-  isImportingData?: boolean | undefined;
+  isUploadingData: boolean;
   onNavigateReadOnly?: (() => void) | undefined;
   onExport?: (() => void) | undefined;
-  onImportFileChange?: ((event: React.ChangeEvent<HTMLInputElement>) => void) | undefined;
   onDeletePages: () => void;
   onArchiveComic: () => void;
   onDeleteComic: () => void;
@@ -54,11 +52,11 @@ export default function ComicDetailSidebar({
   comicInfo,
   selectedChapter,
   pagesLength: _pagesLength,
+  canUploadTranslation,
   canUploadArtwork,
-  onUploadArtwork,
+  onUploadData,
   canReadOnly,
   canUploadCover,
-  canTranslateOrProofread,
   canDeleteChapterPages,
   canArchiveComic,
   isTeamAdmin,
@@ -66,17 +64,15 @@ export default function ComicDetailSidebar({
   isArchivingComic,
   isDeletingComic,
   isExportingData,
-  isImportingData,
+  isUploadingData,
   onNavigateReadOnly,
   onExport,
-  onImportFileChange,
   onDeletePages,
   onArchiveComic,
   onDeleteComic,
   coverInputRef,
   coverUpload,
 }: Props) {
-  const importFileInputRef = useRef<HTMLInputElement>(null);
   const [menuBoundary, setMenuBoundary] = useState<Element | null>(null);
   const [menuSide, setMenuSide] = useState<"right" | "bottom">("right");
   const moreTriggerRef = useCallback((node: HTMLButtonElement | null) => {
@@ -95,7 +91,6 @@ export default function ComicDetailSidebar({
     if (boundary) {observer.observe(boundary);}
     return () => { observer.disconnect(); };
   }, []);
-  const handleOpenImportPicker = () => importFileInputRef.current?.click();
   return (
     <>
       <div
@@ -234,29 +229,19 @@ export default function ComicDetailSidebar({
                 onClick={onNavigateReadOnly}
               />
             )}
-            {canTranslateOrProofread && (
+            {(canUploadTranslation || canUploadArtwork) && (
               <ActionButton
-                icon={CloudUpload}
-                title="导入翻校"
-                onClick={handleOpenImportPicker}
-                disabled={isImportingData}
+                icon={Upload}
+                title="上传数据"
+                onClick={onUploadData}
+                disabled={isUploadingData}
               />
-            )}
-            {canUploadArtwork && (
-              <ActionButton icon={Upload} title="上传嵌稿" onClick={onUploadArtwork} />
             )}
             <ActionButton
               icon={Download}
               title="下载数据"
               onClick={onExport}
               disabled={isExportingData}
-            />
-            <input
-              ref={importFileInputRef}
-              type="file"
-              accept=".json,.txt,application/json,text/plain"
-              className="hidden"
-              onChange={onImportFileChange}
             />
           </>
         )}

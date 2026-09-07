@@ -314,6 +314,30 @@ function delay(ms: number) {
 function makeWorkflowRecords(chapterId: string): ChapterWorkflowRecord[] {
   return [
     {
+      id: `${chapterId}-record-12`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: {
+        kind: "artwork_exported",
+      },
+      createdAt: now - 1000 * 60,
+    },
+    {
+      id: `${chapterId}-record-11`,
+      chapterId,
+      actorUserId: "u-admin",
+      event: {
+        kind: "stage_transitioned",
+        data: {
+          stage: "typeset_redraw",
+          previousPhase: "active",
+          nextPhase: "completed",
+          origin: "artwork_upload",
+        },
+      },
+      createdAt: now - 1000 * 60 * 2,
+    },
+    {
       id: `${chapterId}-record-10`,
       chapterId,
       actorUserId: "u-aki",
@@ -806,7 +830,7 @@ export const LoadError: Story = {
 };
 
 export const ArtworkActions: Story = {
-  name: "嵌稿上传（多分工管理员 · 最多操作）",
+  name: "嵌稿上传与下载（多分工管理员 · 最多操作）",
   args: {
     ...Default.args,
     currentUserId: "u-admin",
@@ -823,18 +847,39 @@ export const ArtworkActions: Story = {
     onDeleteChapterPages: fn(() => Promise.resolve({ success: true as const, data: undefined })),
     onArchiveComic: fn(() => Promise.resolve({ success: true as const, data: undefined })),
     onDeleteComic: fn(() => Promise.resolve({ success: true as const, data: undefined })),
+    onImportChapter: fn(() => Promise.resolve({
+      success: true as const,
+      data: { importedPageCount: 1, importedUnitCount: 1 },
+    })),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const upload = await canvas.findByRole("button", { name: "上传嵌稿" });
+    const upload = await canvas.findByRole("button", { name: "上传数据" });
     await expect(canvas.queryByRole("button", { name: "只读查看" })).not.toBeInTheDocument();
-    await expect(canvas.getByRole("button", { name: "导入翻校" })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "上传嵌稿" })).not.toBeInTheDocument();
+    await expect(canvas.queryByRole("button", { name: "导入翻校" })).not.toBeInTheDocument();
     await expect(canvas.queryByRole("button", { name: "清空页面" })).not.toBeInTheDocument();
     await userEvent.click(upload);
     const body = within(document.body);
-    await expect(await body.findByRole("dialog", { name: "上传嵌稿" })).toBeVisible();
-    await expect(body.getByRole("button", { name: "上传" })).toBeDisabled();
+    const uploadDialog = await body.findByRole("dialog", { name: "上传数据" });
+    await expect(uploadDialog).toBeVisible();
+    const dialog = within(uploadDialog);
+    await expect(dialog.getByRole("tab", { name: "译稿" }))
+      .toHaveAttribute("aria-selected", "true");
+    await userEvent.click(dialog.getByRole("tab", { name: "嵌稿" }));
+    await expect(dialog.getByRole("button", { name: "上传" })).toBeDisabled();
     await expect(body.queryByText(/压缩/)).not.toBeInTheDocument();
     await expect(body.queryByText(/请一次选齐/)).not.toBeInTheDocument();
+    const closeButton = dialog.getAllByRole("button", { name: "关闭" })[0];
+    if (!closeButton) {throw new Error("上传数据弹窗缺少关闭按钮");}
+    await userEvent.click(closeButton);
+
+    await userEvent.click(canvas.getByRole("button", { name: "下载数据" }));
+    await expect(await body.findByRole("dialog", { name: "下载数据" })).toBeVisible();
+    const artworkTab = body.getByRole("tab", { name: "嵌稿" });
+    await expect(artworkTab).toHaveAttribute("aria-selected", "false");
+    await userEvent.click(artworkTab);
+    await expect(artworkTab).toHaveAttribute("aria-selected", "true");
+    await expect(body.getByRole("button", { name: "下载嵌稿" })).toBeVisible();
   },
 };

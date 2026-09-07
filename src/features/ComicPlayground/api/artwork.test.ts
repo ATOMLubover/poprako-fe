@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { api } from "@/api/util";
-import { allocArtwork, markArtworkUploaded } from "./artwork";
+import { allocArtwork, exportArtwork, markArtworkUploaded } from "./artwork";
 
 afterEach(() => { vi.restoreAllMocks(); });
 
@@ -28,4 +28,21 @@ test("unwraps upload capability and preserves signed headers", async () => {
     artworkVersion: 8,
     slot: { putUrl: "https://storage.example/put", headers: { "content-length": "123" } },
   } });
+});
+
+test("unwraps the artwork export URL and metadata", async () => {
+  const get = vi.spyOn(api, "get").mockResolvedValue({ success: true, data: {
+    artwork_version: 9,
+    artwork_hash: "hash",
+    ext: "xz",
+    download_url: "https://storage.example/artwork",
+  } });
+
+  expect(await exportArtwork("chapter")).toEqual({ success: true, data: {
+    artworkVersion: 9,
+    artworkHash: "hash",
+    extension: "xz",
+    downloadUrl: "https://storage.example/artwork",
+  } });
+  expect(get).toHaveBeenCalledWith("/chapters/chapter/artwork/export");
 });
