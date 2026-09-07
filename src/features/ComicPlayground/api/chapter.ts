@@ -37,6 +37,7 @@ export type { ListChapterWorkflowRecordsArgs } from "../types/chapter";
 
 interface ExportRequestOptions {
   signal?: AbortSignal | undefined;
+  withRawIdent?: boolean | undefined;
 }
 
 function toStageUpdate(
@@ -223,8 +224,10 @@ export async function exportChapter(
   const token = useAppStore.getState().getAccessToken();
 
   try {
+    const rawIdentQuery = options?.withRawIdent ? "&with_raw_ident=true" : "";
     const response = await fetch(
-      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export?format=poprako,label_plus`,
+      `${appConfig.apiBaseUrl}/chapters/${chapterId}/translations/export` +
+        `?format=poprako,label_plus${rawIdentQuery}`,
       {
         ...(token && { headers: { Authorization: `Bearer ${token}` } }),
         credentials: "omit",
@@ -259,6 +262,10 @@ export async function exportChapter(
       data: {
         labelPlus: body.label_plus,
         poprako: unwrapRawChapterExport(body.poprako),
+        rawIdents: (body.raw_idents ?? []).map((item) => ({
+          pageId: item.page_id,
+          rawIdent: item.raw_ident,
+        })),
       },
     };
   } catch (error) {

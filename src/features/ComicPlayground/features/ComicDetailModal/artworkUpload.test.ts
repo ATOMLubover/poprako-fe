@@ -17,7 +17,7 @@ const assignment: AssignmentInfo = {
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); });
 
 describe("artwork upload permissions", () => {
-  test.each(["assignedTypesetterAt", "assignedRedrawerAt", "assignedAdminAt"] as const)(
+  test.each(["assignedTypesetterAt", "assignedRedrawerAt"] as const)(
     "allows chapter %s", (role) => {
       expect(canUploadArtwork(chapter, { ...assignment, [role]: 1 })).toBe(true);
     },
@@ -26,6 +26,7 @@ describe("artwork upload permissions", () => {
     const typesetter = { ...assignment, assignedTypesetterAt: 1 };
     expect(canUploadArtwork(chapter, undefined)).toBe(false);
     expect(canUploadArtwork(chapter, { ...assignment, assignedTranslatorAt: 1 })).toBe(false);
+    expect(canUploadArtwork(chapter, { ...assignment, assignedAdminAt: 1 })).toBe(false);
     expect(canUploadArtwork(chapter, { ...typesetter, chapterId: "other" })).toBe(false);
     expect(canUploadArtwork({ ...chapter, stages: 2 << 10 }, typesetter)).toBe(false);
     expect(canUploadArtwork({ ...chapter, publishedAt: 1 }, typesetter)).toBe(false);

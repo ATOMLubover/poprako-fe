@@ -254,6 +254,7 @@ describe("poprako-r API migration", () => {
       chapterId: "chapter_1",
       pages: [
         {
+          rawIdent: "原稿 01.PNG",
           imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
           newByteLen: 3,
           extension: "png",
@@ -265,6 +266,7 @@ describe("poprako-r API migration", () => {
       chapter_id: "chapter_1",
       pages: [
         {
+          raw_ident: "原稿 01.PNG",
           image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
           new_byte_len: 3,
           ext: "png",
@@ -289,12 +291,14 @@ describe("poprako-r API migration", () => {
     );
     await allocExistingPageUpload({
       pageId: "page_1",
+      rawIdent: "替换稿.png",
       imageHash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       newByteLen: 3,
       extension: "png",
     });
     expect(lastFetchCall(fetchMock).url).toBe("/api/v1/pages/page_1/image/alloc");
     expect(bodyOf(lastFetchCall(fetchMock))).toEqual({
+      raw_ident: "替换稿.png",
       image_hash: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
       new_byte_len: 3,
       ext: "png",
@@ -462,6 +466,7 @@ describe("poprako-r API migration", () => {
     fetchMock = installFetch(Promise.resolve(
       Response.json({
         label_plus: "text",
+        raw_idents: null,
         poprako: {
           comic_id: "comic_1",
           chapter_id: "chapter_1",

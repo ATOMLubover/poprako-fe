@@ -224,6 +224,7 @@ async function allocRetrySlot(
   return serializeChapterAlloc(task.chapterId, async () => {
     const result = await allocExistingPageUpload({
       pageId: task.pageId,
+      rawIdent: task.file.name,
       imageHash: task.imageHash,
       newByteLen: task.file.size,
       extension: task.extension,
@@ -237,6 +238,7 @@ async function allocInitialPage(task: RuntimeTask): Promise<AllocatedPage> {
   return serializeChapterAlloc(task.chapterId, async () => {
     const result = await allocExistingPageUpload({
       pageId: task.pageId,
+      rawIdent: task.file.name,
       imageHash: task.imageHash,
       newByteLen: task.file.size,
       extension: task.extension,
@@ -494,6 +496,7 @@ export async function startChapterPageUpload(
         }
         return {
           pageId: page.pageId,
+          rawIdent: prepared.file.name,
           imageHash: page.imageHash,
           newByteLen: prepared.file.size,
           extension: page.extension,
@@ -505,6 +508,7 @@ export async function startChapterPageUpload(
         pages: [
           ...manifestInputs,
           ...newFiles.map((prepared) => ({
+            rawIdent: prepared.file.name,
             imageHash: prepared.imageHash,
             newByteLen: prepared.file.size,
             extension: prepared.extension,

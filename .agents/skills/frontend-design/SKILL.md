@@ -33,6 +33,34 @@ Focus on:
 - **Spatial Composition**: Unexpected layouts. Asymmetry. Overlap. Diagonal flow. Grid-breaking elements. Generous negative space OR controlled density.
 - **Backgrounds & Visual Details**: Create atmosphere and depth rather than defaulting to solid colors. Add contextual effects and textures that match the overall aesthetic. Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays.
 
+## Interface Copy Discipline
+
+- Make recognizable icons the primary language for actions and states. Keep accessible names in
+  `aria-label`, tooltips, or screen-reader-only text instead of turning every control into a text
+  button.
+- Default transactional surfaces, especially dialogs, to zero explanatory or annotation copy. Do
+  not add helper paragraphs, instructional captions, step descriptions, reassurance copy, or
+  implementation notes unless the user explicitly asks for them or omitting them creates a real
+  safety, legal, or irreversible-action risk.
+- Expose the user's goal and outcome, never the implementation pipeline. Details such as local
+  preprocessing, compression, address allocation, transport stages, caching, or server-side
+  confirmation do not belong in user-facing copy.
+- Every visible string must earn its place by naming the object, reporting essential user data, or
+  enabling a decision. Prefer an icon, spatial state, progress indicator, or concise value whenever
+  it communicates the same thing.
+- Keep failures actionable and brief. Log diagnostic detail for developers; do not leak internal
+  mechanics into the interface.
+
+## Existing Product Consistency
+
+- In an established product, inspect the closest existing interaction before designing. Its
+  structure, spacing, control shapes, icon treatment, and state behavior take priority over this
+  skill's calls for boldness, novelty, or memorability.
+- Reuse the product's existing dialog, button, progress, upload, and feedback patterns. Do not
+  invent a one-off visual metaphor or interaction language for an isolated component.
+- Treat consistency as part of correctness: a locally attractive component is a failed design when
+  it looks or behaves unlike its closest product sibling.
+
 NEVER use generic AI-generated aesthetics like overused font families (Inter, Roboto, Arial, system fonts), cliched color schemes (particularly purple gradients on white backgrounds), predictable layouts and component patterns, and cookie-cutter design that lacks context-specific character.
 
 Interpret creatively and make unexpected choices that feel genuinely designed for the context. No design should be the same. Vary between light and dark themes, different fonts, different aesthetics. NEVER converge on common choices (Space Grotesk, for example) across generations.

@@ -1,7 +1,7 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { compressTarXz, type ArchiveProgress } from "@/lib/compress";
 import { publishWorkflowStatus, type ChapterInfo } from "@/types/chapter";
-import { hasRole } from "@/types/role";
+import { matchesAssignmentRole } from "@/types/role";
 import type { AssignmentInfo } from "@/types/assignment";
 
 export function canUploadArtwork(
@@ -10,7 +10,7 @@ export function canUploadArtwork(
 ) {
   return chapter !== undefined && assignment?.chapterId === chapter.id
     && publishWorkflowStatus(chapter) !== "completed"
-    && (["typesetter", "redrawer", "admin"] as const).some((role) => hasRole(assignment, role));
+    && matchesAssignmentRole(assignment, "typesetter");
 }
 
 export function validateArtworkFiles(files: readonly File[]) {

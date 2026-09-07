@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import clsx from "clsx";
+import { FileArchive, Image as ImageIcon, Images } from "lucide-react";
+import { Switch } from "radix-ui";
 import { canApplyWorkflowTransition, type ChapterInfo } from "@/types/chapter";
 import type { MemberInfo } from "@/types/member";
 import type { Result } from "@/types/utils/result";
@@ -74,6 +76,7 @@ export default function ComicDetailModal({
   const [pendingConfirmAction, setPendingConfirmAction] = useState<
     "delete-pages" | "archive-comic" | "delete-comic" | "export-data" | null
   >(null);
+  const [useRawImageNames, setUseRawImageNames] = useState(false);
   const [isArchivingComic, setIsArchivingComic] = useState(false);
   const [isDeletingComic, setIsDeletingComic] = useState(false);
   const [showComicModifier, setShowComicModifier] = useState(false);
@@ -584,41 +587,82 @@ export default function ComicDetailModal({
       {pendingConfirmAction === "export-data" && (
         <ConfirmDialog
           title="下载数据"
-          description="请选择导出方式"
           hideFooter
           onCancel={() => { setPendingConfirmAction(null); }}
         >
-          <div className="flex items-center gap-2 px-5 pb-5 pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                setPendingConfirmAction(null);
-                void handleExportData({ includeImages: false });
-              }}
+          <div className="px-5 pb-5 pt-1">
+            <div
               className={clsx(
-                "flex-1 py-2 text-xs font-semibold rounded-lg",
-                "transition-all duration-200 active:scale-[0.98]",
-                "text-slate-500 bg-slate-50 hover:bg-slate-100",
-                "border border-slate-100",
+                "mb-3 flex h-8 items-center gap-2 rounded-lg px-2",
+                "text-xs font-medium text-slate-500 hover:bg-slate-50",
               )}
             >
-              仅翻校数据
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setPendingConfirmAction(null);
-                void handleExportData({ includeImages: true });
-              }}
-              className={clsx(
-                "flex-1 py-2 text-xs font-semibold rounded-lg",
-                "flex items-center justify-center gap-1",
-                "transition-all duration-200 active:scale-[0.98]",
-                "border border-green-200 bg-green-50 text-green-600 hover:bg-green-100",
-              )}
-            >
-              包含图源
-            </button>
+              <ImageIcon size={14} className="text-slate-400" />
+              <label
+                htmlFor="export-raw-image-names"
+                className="flex-1 cursor-pointer"
+              >
+                使用原始图片名
+              </label>
+              <Switch.Root
+                id="export-raw-image-names"
+                checked={useRawImageNames}
+                onCheckedChange={setUseRawImageNames}
+                className={clsx(
+                  "relative h-4.5 w-8 rounded-full bg-slate-200 transition-colors",
+                  "data-[state=checked]:bg-(--primary)",
+                )}
+              >
+                <Switch.Thumb
+                  className={clsx(
+                    "block size-3.5 translate-x-0.5 rounded-full bg-white shadow-sm",
+                    "transition-transform data-[state=checked]:translate-x-4",
+                  )}
+                />
+              </Switch.Root>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingConfirmAction(null);
+                  void handleExportData({
+                    includeImages: false,
+                    withRawIdent: useRawImageNames,
+                  });
+                }}
+                className={clsx(
+                  "flex flex-1 items-center justify-center gap-1 py-2",
+                  "rounded-lg text-xs font-semibold",
+                  "transition-all duration-200 active:scale-[0.98]",
+                  "border border-slate-100 bg-slate-50 text-slate-500",
+                  "hover:bg-slate-100",
+                )}
+              >
+                <FileArchive size={14} />
+                仅翻校数据
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingConfirmAction(null);
+                  void handleExportData({
+                    includeImages: true,
+                    withRawIdent: useRawImageNames,
+                  });
+                }}
+                className={clsx(
+                  "flex flex-1 items-center justify-center gap-1 py-2",
+                  "rounded-lg text-xs font-semibold",
+                  "transition-all duration-200 active:scale-[0.98]",
+                  "border border-green-200 bg-green-50 text-green-600",
+                  "hover:bg-green-100",
+                )}
+              >
+                <Images size={14} />
+                包含图源
+              </button>
+            </div>
           </div>
         </ConfirmDialog>
       )}

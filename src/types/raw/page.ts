@@ -71,6 +71,7 @@ export interface RawAllocChapterPagesArgs {
   chapter_id: string;
   pages: {
     page_id?: string | undefined;
+    raw_ident?: string | undefined;
     image_hash: string;
     new_byte_len?: number | undefined;
     ext: string;
@@ -83,6 +84,7 @@ export function unwrapRawAllocChapterPagesArgs(
     chapterId: raw.chapter_id,
     pages: raw.pages.map((page) => ({
       pageId: page.page_id,
+      rawIdent: page.raw_ident,
       imageHash: page.image_hash,
       newByteLen: page.new_byte_len,
       extension: page.ext,
