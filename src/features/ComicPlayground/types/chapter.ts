@@ -147,11 +147,23 @@ export interface RawChapterExport {
 export interface ChapterExports {
   labelPlus: string;
   poprako: ChapterExport;
+  rawIdents: PageRawIdent[];
+}
+
+export interface PageRawIdent {
+  pageId: string;
+  rawIdent: string;
 }
 
 export interface RawChapterExports {
   label_plus: string | null;
   poprako: RawChapterExport | null;
+  raw_idents: RawPageRawIdent[] | null;
+}
+
+export interface RawPageRawIdent {
+  page_id: string;
+  raw_ident: string;
 }
 
 export type ImportChapterFormat = "json" | "lp";

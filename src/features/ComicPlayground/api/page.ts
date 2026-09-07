@@ -47,6 +47,7 @@ export async function allocChapterPages(
     chapter_id: args.chapterId,
     pages: args.pages.map((page) => ({
       page_id: page.pageId,
+      raw_ident: page.rawIdent,
       image_hash: page.imageHash,
       new_byte_len: page.newByteLen,
       ext: page.extension,
@@ -69,12 +70,14 @@ export async function allocChapterPages(
 
 interface AllocExistingPageUploadArgs {
   pageId: string;
+  rawIdent?: string | undefined;
   imageHash: string;
   newByteLen: number;
   extension: string;
 }
 
 interface RawAllocExistingPageUploadArgs {
+  raw_ident?: string | undefined;
   image_hash: string;
   new_byte_len: number;
   ext: string;
@@ -87,6 +90,7 @@ export async function allocExistingPageUpload(
   args: AllocExistingPageUploadArgs,
 ): Promise<Result<AllocExistingPageUploadResult>> {
   const rawArgs: RawAllocExistingPageUploadArgs = {
+    raw_ident: args.rawIdent,
     image_hash: args.imageHash,
     new_byte_len: args.newByteLen,
     ext: args.extension,

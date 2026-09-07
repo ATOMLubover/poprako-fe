@@ -833,6 +833,8 @@ export const ArtworkActions: Story = {
     await userEvent.click(upload);
     const body = within(document.body);
     await expect(await body.findByRole("dialog", { name: "上传嵌稿" })).toBeVisible();
-    await expect(body.getByRole("button", { name: "压缩并上传" })).toBeDisabled();
+    await expect(body.getByRole("button", { name: "上传" })).toBeDisabled();
+    await expect(body.queryByText(/压缩/)).not.toBeInTheDocument();
+    await expect(body.queryByText(/请一次选齐/)).not.toBeInTheDocument();
   },
 };

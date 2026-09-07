@@ -14,6 +14,14 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   plugins: [react(), tailwindcss(), ReactInspector()],
+  optimizeDeps: {
+    include: [
+      "@zip.js/zip.js",
+      "modern-tar",
+      "node-liblzma/wasm",
+      "node-liblzma/wasm/liblzma.js",
+    ],
+  },
   resolve: {
     alias: {
       "@": path.resolve(dirname, "./src"),

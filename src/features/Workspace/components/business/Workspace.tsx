@@ -330,6 +330,7 @@ export default function Workspace() {
   const handleAllocPageUpload = useCallback(
     async (args: {
       pageId: string;
+      rawIdent?: string | undefined;
       imageHash: string;
       newByteLen: number;
       extension: string;
@@ -340,7 +341,13 @@ export default function Workspace() {
   );
 
   const handleExportChapter = useCallback(
-    async (chapterId: string, options?: { signal?: AbortSignal | undefined }) => {
+    async (
+      chapterId: string,
+      options?: {
+        signal?: AbortSignal | undefined;
+        withRawIdent?: boolean | undefined;
+      },
+    ) => {
       return exportChapter(chapterId, options);
     },
     [],

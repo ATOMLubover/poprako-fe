@@ -22,6 +22,7 @@ import type {
 import { DEFAULT_EXPORT_PROGRESS } from "../types";
 import { getFileExtension } from "../utils";
 import { resolveComicDetailCoverUrl } from "../coverUrl";
+import { resolveArchiveImageNames } from "../exportImageNames";
 
 type ShowToast = (message: string, type: ToastType) => void;
 
@@ -274,10 +275,14 @@ export function useComicDetailExport({
     return rows.join("\n");
   }, [assignments]);
 
-  const handleExportData = useCallback(async (opts?: { includeImages?: boolean | undefined }) => {
+  const handleExportData = useCallback(async (opts?: {
+    includeImages?: boolean | undefined;
+    withRawIdent?: boolean | undefined;
+  }) => {
     if (!selectedChapterId || !onExportChapter) {return;}
     if (isExportingData) {return;}
     const isIncludeImages = opts?.includeImages ?? true;
+    const shouldUseRawIdent = opts?.withRawIdent ?? false;
 
     const abortController = new AbortController();
     exportAbortControllerRef.current = abortController;
@@ -289,6 +294,7 @@ export function useComicDetailExport({
 
       const exportResult = await onExportChapter(selectedChapterId, {
         signal: abortController.signal,
+        withRawIdent: shouldUseRawIdent,
       });
 
       assertExportNotAborted();
@@ -298,7 +304,21 @@ export function useComicDetailExport({
         return;
       }
 
-      const { labelPlus, poprako } = exportResult.data;
+      const { labelPlus, poprako, rawIdents } = exportResult.data;
+      const pageInfoById = new Map(pages.map((page) => [page.id, page]));
+      const imageNameInputs = poprako.pages.map((page) => {
+        const extension = pageInfoById.get(page.pageId)?.extension ?? "jpg";
+        return {
+          pageId: page.pageId,
+          defaultName: `${String(page.pageIndex).padStart(3, "0")}.${extension}`,
+        };
+      });
+      const rawIdentByPageId = new Map(
+        rawIdents.map((item) => [item.pageId, item.rawIdent]),
+      );
+      const archiveImageNamesByPageId = shouldUseRawIdent
+        ? resolveArchiveImageNames(imageNameInputs, rawIdentByPageId)
+        : new Map<string, string>();
 
       onWorkflowRecordsChanged?.();
 
@@ -308,16 +328,13 @@ export function useComicDetailExport({
       if (isIncludeImages) {
         const imageFolder = zip.folder("images");
         const totalPages = poprako.pages.length;
-        const imageUrlsByPageId = new Map(
-          pages.map((page) => [page.id, page.imageUrl]),
-        );
         let completedPages = 0;
 
         const pagesWithAssets = await Promise.all(
           poprako.pages.map(async (page) => {
             assertExportNotAborted();
 
-            const imageUrl = imageUrlsByPageId.get(page.pageId) ?? "";
+            const imageUrl = pageInfoById.get(page.pageId)?.imageUrl ?? "";
 
             if (!imageUrl) {
               completedPages += 1;
@@ -338,8 +355,8 @@ export function useComicDetailExport({
 
             if (imageFile && imageFolder) {
               const imageFileName =
-                `${String(page.pageIndex).padStart(3, "0")}.` +
-                imageFile.extension;
+                archiveImageNamesByPageId.get(page.pageId) ??
+                `${String(page.pageIndex).padStart(3, "0")}.${imageFile.extension}`;
               imageFolder.file(imageFileName, imageFile.blob);
               completedPages += 1;
               setExportProgressStep(
