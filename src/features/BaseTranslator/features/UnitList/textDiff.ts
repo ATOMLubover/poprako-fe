@@ -15,15 +15,17 @@ interface RawDiffPart {
   text: string;
 }
 
-const wordSegmenter = typeof Intl.Segmenter === "function"
-  ? new Intl.Segmenter("zh", { granularity: "word" })
+const graphemeSegmenter = typeof Intl.Segmenter === "function"
+  ? new Intl.Segmenter("zh", { granularity: "grapheme" })
   : undefined;
 
 function tokenizeText(text: string): string[] {
-  if (!wordSegmenter) {
+  if (!graphemeSegmenter) {
     return [...text]; // eslint-disable-line @typescript-eslint/no-misused-spread
   }
-  return Array.from(wordSegmenter.segment(text), ({ segment }) => segment);
+  // CRLF is one grapheme, but its LF must still align with an existing LF.
+  return Array.from(graphemeSegmenter.segment(text), ({ segment }) => segment)
+    .flatMap((segment) => segment === "\r\n" ? ["\r", "\n"] : [segment]);
 }
 
 function mergeAdjacentParts(parts: UnitTextDiffPart[]): UnitTextDiffPart[] {
@@ -62,22 +64,28 @@ function orderReplacementParts(parts: RawDiffPart[]): UnitTextDiffPart[] {
         index = parts.length;
       }
     }
-    const isReplacement = changed.some((part) => part.kind === "removed")
-      && changed.some((part) => part.kind === "added");
-    ordered.push(
-      ...changed
-        .filter((part) => part.kind === "removed")
-        .map<UnitTextDiffPart>((part) => ({
-          kind: isReplacement ? "replacement-removed" : "deleted",
-          text: part.text,
-        })),
-      ...changed
-        .filter((part) => part.kind === "added")
-        .map<UnitTextDiffPart>((part) => ({
-          kind: isReplacement ? "replacement-added" : "inserted",
-          text: part.text,
-        })),
-    );
+    // Whitespace edits must not turn adjacent text additions into replacements.
+    const hasRemovedText = changed.some((part) => (
+      part.kind === "removed" && /\S/u.test(part.text)
+    ));
+    const hasAddedText = changed.some((part) => (
+      part.kind === "added" && /\S/u.test(part.text)
+    ));
+    for (const kind of ["removed", "added"] as const) {
+      const changesOfKind = changed.filter((part) => part.kind === kind);
+      for (const change of changesOfKind) {
+        const fragments = change.text.match(/\s+|\S+/gu) ?? [];
+        for (const text of fragments) {
+          const isReplacement = hasRemovedText && hasAddedText && /\S/u.test(text);
+          ordered.push({
+            kind: kind === "removed"
+              ? (isReplacement ? "replacement-removed" : "deleted")
+              : (isReplacement ? "replacement-added" : "inserted"),
+            text,
+          });
+        }
+      }
+    }
   }
 
   return mergeAdjacentParts(ordered);
