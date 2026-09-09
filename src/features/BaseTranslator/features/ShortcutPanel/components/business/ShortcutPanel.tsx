@@ -59,11 +59,12 @@ export default function ShortcutPanel({
       }
     };
 
-    addEventListener("keydown", handleKeyDown);
-    addEventListener("keyup", handleKeyUp);
+    // Capture before the panel stops keyboard events from bubbling.
+    addEventListener("keydown", handleKeyDown, true);
+    addEventListener("keyup", handleKeyUp, true);
     return () => {
-      removeEventListener("keydown", handleKeyDown);
-      removeEventListener("keyup", handleKeyUp);
+      removeEventListener("keydown", handleKeyDown, true);
+      removeEventListener("keyup", handleKeyUp, true);
     };
   }, [
     recordingIndex,

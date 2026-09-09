@@ -13,6 +13,7 @@ const ROLE_MAP: { label: string; field: keyof MemberInfo }[] = [
   { label: "翻", field: "assignedTranslatorAt" },
   { label: "校", field: "assignedProofreaderAt" },
   { label: "嵌", field: "assignedTypesetterAt" },
+  { label: "美", field: "assignedRedrawerAt" },
   { label: "监", field: "assignedReviewerAt" },
   { label: "传", field: "assignedPublisherAt" },
 ];

@@ -19,6 +19,7 @@ function makeMockMember(idx: number): MemberInfo {
     "assignedTranslatorAt",
     "assignedProofreaderAt",
     "assignedTypesetterAt",
+    "assignedRedrawerAt",
     "assignedReviewerAt",
     "assignedPublisherAt",
   ];
