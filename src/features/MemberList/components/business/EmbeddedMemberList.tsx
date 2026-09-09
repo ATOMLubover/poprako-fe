@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import clsx from "clsx";
 import { LoaderCircle } from "lucide-react";
 import type { MemberInfo } from "@/types/member";
 import MemberCard from "@/features/MemberCard/components/business/MemberCard";
@@ -83,7 +84,12 @@ export default function EmbeddedMemberList({
       ref={scrollContainerRef}
       className="w-full h-full min-h-0 overflow-y-auto py-4 px-4"
     >
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        className={clsx(
+          "grid gap-4 xl:grid-cols-3",
+          "grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))]",
+        )}
+      >
         {members.map((m) => (
           <MemberCard
             key={m.id}
