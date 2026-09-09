@@ -14,15 +14,15 @@ describe("buildUnitTextDiff", () => {
     ]);
   });
 
-  test("groups Chinese replacements by word", () => {
+  test("preserves shared characters within Chinese replacements", () => {
     expect(buildUnitTextDiff(
       "不……这不可能。",
       "不……这怎么可能。",
     )).toEqual([
       { kind: "unchanged", text: "不……这" },
-      { kind: "replacement-removed", text: "不可能" },
-      { kind: "replacement-added", text: "怎么可能" },
-      { kind: "unchanged", text: "。" },
+      { kind: "replacement-removed", text: "不" },
+      { kind: "replacement-added", text: "怎么" },
+      { kind: "unchanged", text: "可能。" },
     ]);
   });
 
@@ -55,8 +55,8 @@ describe("buildUnitTextDiff", () => {
   test("preserves whitespace and punctuation edits", () => {
     expect(buildUnitTextDiff("你好 世界", "你好，世界")).toEqual([
       { kind: "unchanged", text: "你好" },
-      { kind: "replacement-removed", text: " " },
-      { kind: "replacement-added", text: "，" },
+      { kind: "deleted", text: " " },
+      { kind: "inserted", text: "，" },
       { kind: "unchanged", text: "世界" },
     ]);
   });
@@ -71,10 +71,72 @@ describe("buildUnitTextDiff", () => {
     expect(buildUnitTextDiff(null, null)).toEqual([]);
   });
 
-  test("keeps a joined emoji as one word token", () => {
+  test("keeps a joined emoji as one grapheme", () => {
     expect(buildUnitTextDiff("一家人", "一家人👨‍👩‍👧‍👦")).toEqual([
       { kind: "unchanged", text: "一家人" },
       { kind: "inserted", text: "👨‍👩‍👧‍👦" },
+    ]);
+  });
+
+  test.each([
+    ["今天很好", "今\n天很好", "今", "\n", "天很好"],
+    ["学生", "大学生", "", "大", "学生"],
+    ["一起玩", "一起来玩", "一起", "来", "玩"],
+    ["hello", "hellos", "hello", "s", ""],
+    ["你好世界", "你好\n世界", "你好", "\n", "世界"],
+  ])("isolates insertions and their inverse deletions: %s → %s", (
+    before, after, prefix, inserted, suffix,
+  ) => {
+    const unchangedPrefix = prefix ? [{ kind: "unchanged", text: prefix }] : [];
+    const unchangedSuffix = suffix ? [{ kind: "unchanged", text: suffix }] : [];
+    expect(buildUnitTextDiff(before, after)).toEqual([
+      ...unchangedPrefix,
+      { kind: "inserted", text: inserted },
+      ...unchangedSuffix,
+    ]);
+    expect(buildUnitTextDiff(after, before)).toEqual([
+      ...unchangedPrefix,
+      { kind: "deleted", text: inserted },
+      ...unchangedSuffix,
+    ]);
+  });
+
+  test("separates whitespace deletion from new text on the next line", () => {
+    expect(buildUnitTextDiff("诶 大山吗！？", "诶\n玩大山吗！？")).toEqual([
+      { kind: "unchanged", text: "诶" },
+      { kind: "deleted", text: " " },
+      { kind: "inserted", text: "\n玩" },
+      { kind: "unchanged", text: "大山吗！？" },
+    ]);
+  });
+
+  test("aligns LF across a CRLF change without absorbing adjacent additions", () => {
+    expect(buildUnitTextDiff("诶\r\n大山吗！？", "诶\n玩大山吗！？")).toEqual([
+      { kind: "unchanged", text: "诶" },
+      { kind: "deleted", text: "\r" },
+      { kind: "unchanged", text: "\n" },
+      { kind: "inserted", text: "玩" },
+      { kind: "unchanged", text: "大山吗！？" },
+    ]);
+  });
+
+  test("separates line breaks from actual text replacements", () => {
+    expect(buildUnitTextDiff("诶旧大山", "诶\n新大山")).toEqual([
+      { kind: "unchanged", text: "诶" },
+      { kind: "replacement-removed", text: "旧" },
+      { kind: "inserted", text: "\n" },
+      { kind: "replacement-added", text: "新" },
+      { kind: "unchanged", text: "大山" },
+    ]);
+  });
+
+  test.each([
+    ["👨‍👩‍👧‍👦", "👨‍👩‍👧"],
+    ["é", "è"],
+  ])("does not split a changed grapheme: %s → %s", (before, after) => {
+    expect(buildUnitTextDiff(before, after)).toEqual([
+      { kind: "replacement-removed", text: before },
+      { kind: "replacement-added", text: after },
     ]);
   });
 
